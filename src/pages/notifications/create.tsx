@@ -7,7 +7,7 @@ export const NotificationCreate = () => {
 
     const { selectProps: userSelectProps } = useSelect<IUser>({
         resource: "users",
-        optionLabel: "fullName",
+        optionLabel: "displayName",
     });
 
     const handleOnFinish = (values: any) => {

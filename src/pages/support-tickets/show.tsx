@@ -20,7 +20,7 @@ export const TicketShow = () => {
     });
     const userData = userQuery.data;
 
-    const { query: repliesQuery, refetch: refetchReplies } = useList<ITicketReply>({
+    const repliesResult = useList<ITicketReply>({
         resource: "support_tickets",
         meta: {
             subCollection: `${record?.id}/replies`,
@@ -29,8 +29,9 @@ export const TicketShow = () => {
             enabled: !!record?.id,
         },
     });
-    const repliesData = repliesQuery.data;
-    const repliesLoading = repliesQuery.isLoading;
+    const repliesData = repliesResult.result;
+    const repliesLoading = repliesResult.query.isLoading;
+    const refetchReplies = repliesResult.query.refetch;
 
     const { mutate: createReply } = useCreate<ITicketReply>();
     const { mutate: updateTicket } = useUpdate();

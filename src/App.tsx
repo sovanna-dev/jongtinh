@@ -279,7 +279,7 @@ function App() {
         </AntdApp>
         </ColorModeContextProvider>
       </RefineKbarProvider>
-    <HashRouter>
+    </HashRouter>
   );
 }
 
