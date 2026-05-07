@@ -1,17 +1,13 @@
 import { Create, useForm } from "@refinedev/antd";
 import { Form, Input, InputNumber } from "antd";
-import { ICategory } from "../../interfaces";
 
-export const CategoryCreate = () => {
-    const { formProps, saveButtonProps, onFinish } = useForm<ICategory>();
+export const FaqCreate = () => {
+    const { formProps, saveButtonProps, onFinish } = useForm();
 
     const handleOnFinish = (values: any) => {
         onFinish({
             ...values,
-            nameLowercase: values.name.toLowerCase(),
-            createdAt: Date.now(),
-            updatedAt: Date.now(),
-            productCount: values.productCount || 0,
+            order: values.order || 0,
         });
     };
 
@@ -23,24 +19,24 @@ export const CategoryCreate = () => {
                 onFinish={handleOnFinish}
             >
                 <Form.Item
-                    label="Category Name"
-                    name="name"
+                    label="Question"
+                    name="question"
                     rules={[{ required: true }]}
                 >
-                    <Input placeholder="e.g. Electronics" />
+                    <Input placeholder="e.g. How do I track my order?" />
                 </Form.Item>
 
                 <Form.Item
-                    label="Icon URL"
-                    name="icon"
-                    rules={[{ required: true, type: "url", message: "Please enter a valid image URL" }]}
+                    label="Answer"
+                    name="answer"
+                    rules={[{ required: true }]}
                 >
-                    <Input placeholder="https://example.com/icon.png" />
+                    <Input.TextArea rows={4} placeholder="Enter the answer..." />
                 </Form.Item>
 
                 <Form.Item
-                    label="Product Count"
-                    name="productCount"
+                    label="Display Order"
+                    name="order"
                     initialValue={0}
                 >
                     <InputNumber min={0} style={{ width: "100%" }} />

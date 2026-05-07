@@ -1,15 +1,12 @@
 import { Edit, useForm } from "@refinedev/antd";
 import { Form, Input, InputNumber } from "antd";
-import { ICategory } from "../../interfaces";
 
-export const CategoryEdit = () => {
-    const { formProps, saveButtonProps, onFinish } = useForm<ICategory>();
+export const FaqEdit = () => {
+    const { formProps, saveButtonProps, onFinish } = useForm();
 
     const handleOnFinish = (values: any) => {
         onFinish({
             ...values,
-            nameLowercase: values.name.toLowerCase(),
-            updatedAt: Date.now(),
         });
     };
 
@@ -21,22 +18,24 @@ export const CategoryEdit = () => {
                 onFinish={handleOnFinish}
             >
                 <Form.Item
-                    label="Category Name"
-                    name="name"
+                    label="Question"
+                    name="question"
                     rules={[{ required: true }]}
                 >
                     <Input />
                 </Form.Item>
+
                 <Form.Item
-                    label="Icon URL"
-                    name="icon"
-                    rules={[{ required: true, type: "url", message: "Please enter a valid image URL" }]}
+                    label="Answer"
+                    name="answer"
+                    rules={[{ required: true }]}
                 >
-                    <Input placeholder="https://example.com/icon.png" />
+                    <Input.TextArea rows={4} />
                 </Form.Item>
+
                 <Form.Item
-                    label="Product Count"
-                    name="productCount"
+                    label="Display Order"
+                    name="order"
                 >
                     <InputNumber min={0} style={{ width: "100%" }} />
                 </Form.Item>
