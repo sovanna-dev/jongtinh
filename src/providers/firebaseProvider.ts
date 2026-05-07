@@ -82,10 +82,15 @@ export const dataProvider = (): DataProvider => ({
     create: async ({ resource, variables }) => {
         const colRef = collection(db, resource);
         const docRef = await addDoc(colRef, variables as WithFieldValue<DocumentData>);
+
+        // Update the document to set the id field to match the document ID
+        await updateDoc(docRef, { id: docRef.id } as any);
+
         return {
             data: {
                 id: docRef.id,
                 ...variables,
+                id: docRef.id,  // Ensure id is set
             } as any,
         };
     },
