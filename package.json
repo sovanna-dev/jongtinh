@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
+  "homepage": "https://sovanna-dev.github.io/JongTinh-admin",
   "dependencies": {
     "@ant-design/icons": "^5.5.1",
     "@refinedev/antd": "^6.0.1",
@@ -38,12 +39,13 @@
     "vite": "^6.3.5"
   },
   "scripts": {
-    "dev": "refine dev",
-    "build": "tsc && refine build",
-    "start": "refine start",
-    "refine": "refine"
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "refine": "refine",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d dist"
   },
-  "homepage": "https://sovanna-dev/-JongTinh-admin.git",
   "browserslist": {
     "production": [
       ">0.2%",
