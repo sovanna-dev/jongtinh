@@ -27,7 +27,6 @@ export const dataProvider = (): DataProvider => ({
     getList: async ({ resource, pagination, sorters, filters }) => {
         const colRef = collection(db, resource);
 
-        // 1. Build Filter Constraints
         const filterConstraints: QueryConstraint[] = [];
         if (filters) {
             filters.forEach((filter) => {
@@ -37,7 +36,6 @@ export const dataProvider = (): DataProvider => ({
             });
         }
 
-        // 2. Build Data Constraints (Filters + Sorters + Pagination)
         const dataConstraints: QueryConstraint[] = [...filterConstraints];
 
         if (sorters && sorters.length > 0) {
@@ -50,11 +48,9 @@ export const dataProvider = (): DataProvider => ({
             dataConstraints.push(limit(pagination.pageSize));
         }
 
-        // 3. Execute Queries
         const q = query(colRef, ...dataConstraints);
         const snapshot = await getDocs(q);
 
-        // Accurate total count for Refine pagination
         const countSnapshot = await getCountFromServer(query(colRef, ...filterConstraints));
         const total = countSnapshot.data().count;
 
@@ -70,6 +66,9 @@ export const dataProvider = (): DataProvider => ({
     },
 
     getOne: async ({ resource, id }) => {
+        if (!id) {
+            return { data: {} as any };
+        }
         const docRef = doc(db, resource, id as string);
         const snapshot = await getDoc(docRef);
         return {
@@ -92,6 +91,9 @@ export const dataProvider = (): DataProvider => ({
     },
 
     update: async ({ resource, id, variables }) => {
+        if (!id) {
+            return { data: {} as any };
+        }
         const docRef = doc(db, resource, id as string);
         await updateDoc(docRef, variables as WithFieldValue<DocumentData>);
         return {
@@ -103,6 +105,9 @@ export const dataProvider = (): DataProvider => ({
     },
 
     deleteOne: async ({ resource, id }) => {
+        if (!id) {
+            return { data: { id: "" } as any };
+        }
         const docRef = doc(db, resource, id as string);
         await deleteDoc(docRef);
         return {
@@ -205,8 +210,8 @@ export const authProvider: AuthProvider = {
             const userData = userDoc.data();
             return {
                 id: user.uid,
-                name: userData?.fullName || user.displayName || user.email,
-                avatar: userData?.profileImage || user.photoURL,
+                name: userData?.displayName || userData?.fullName || user.displayName || user.email,
+                avatar: userData?.photoUrl || userData?.profileImage || user.photoURL,
             };
         }
         return null;
