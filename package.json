@@ -31,6 +31,7 @@
     "eslint": "^9.25.0",
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.19",
+    "gh-pages": "^6.3.0",
     "globals": "^16.0.0",
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.30.1",
@@ -42,6 +43,7 @@
     "start": "refine start",
     "refine": "refine"
   },
+  "homepage": "https://sovanna-dev/-JongTinh-admin.git",
   "browserslist": {
     "production": [
       ">0.2%",

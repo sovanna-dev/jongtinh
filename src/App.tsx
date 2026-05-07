@@ -11,7 +11,7 @@ import {
 } from "@refinedev/antd";
 import "@refinedev/antd/dist/reset.css";
 
-import { BrowserRouter, Route, Routes, Outlet, Navigate } from "react-router";
+import { HashRouter, Route, Routes, Outlet, Navigate } from "react-router";
 import routerBindings, {
     UnsavedChangesNotifier,
     DocumentTitleHandler,
@@ -64,7 +64,7 @@ import { FaqEdit } from "./pages/faqs/edit";
 
 function App() {
   return (
-    <BrowserRouter>
+    <HashRouter>
       <RefineKbarProvider>
         <ColorModeContextProvider>
           <AntdApp>
@@ -279,7 +279,7 @@ function App() {
         </AntdApp>
         </ColorModeContextProvider>
       </RefineKbarProvider>
-    </BrowserRouter>
+    <HashRouter>
   );
 }
 
