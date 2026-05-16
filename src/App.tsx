@@ -20,37 +20,58 @@ import { dataProvider, authProvider } from "./providers/firebaseProvider";
 import { Header } from "./components/header";
 import { ColorModeContextProvider } from "./contexts/color-mode";
 import { RoleProvider, useRole } from "./contexts/RoleContext";
+import { useState } from "react";
+import { IProduct } from "./interfaces";
 
-// Banners
+// Admin Pages
 import { BannerList } from "./pages/promotion-banners/list";
 import { BannerCreate } from "./pages/promotion-banners/create";
 import { BannerEdit } from "./pages/promotion-banners/edit";
-// Categories
 import { CategoryList } from "./pages/categories/list";
 import { CategoryCreate } from "./pages/categories/create";
 import { CategoryEdit } from "./pages/categories/edit";
-// Products
 import { ProductList } from "./pages/products/list";
 import { ProductCreate } from "./pages/products/create";
 import { ProductEdit } from "./pages/products/edit";
-// Orders
 import { OrderList } from "./pages/orders/list";
 import { OrderEdit } from "./pages/orders/edit";
-// Users
 import { UserList } from "./pages/users/list";
 import { UserEdit } from "./pages/users/edit";
-// Support Tickets
 import { TicketList } from "./pages/support-tickets/list";
 import { TicketShow } from "./pages/support-tickets/show";
-// Notifications
 import { NotificationList } from "./pages/notifications/list";
 import { NotificationCreate } from "./pages/notifications/create";
-// Dashboard
 import { DashboardPage } from "./pages/dashboard";
-// FAQs
 import { FaqList } from "./pages/faqs/list";
 import { FaqCreate } from "./pages/faqs/create";
 import { FaqEdit } from "./pages/faqs/edit";
+
+// Shop Pages
+import { ShopHomePage } from "./pages/shop/HomePage";
+import { ProductDetail } from "./pages/shop/ProductDetail";
+import { CartPage } from "./pages/shop/CartPage";
+import { CheckoutPage } from "./pages/shop/CheckoutPage";
+import { OrderTracking } from "./pages/shop/OrderTracking";
+
+interface CartItem {
+    product: IProduct;
+    quantity: number;
+}
+
+function ShopRoutes() {
+    const [cart, setCart] = useState<CartItem[]>([]);
+    const [searchQuery, setSearchQuery] = useState("");
+
+    return (
+        <Routes>
+            <Route path="/shop" element={<ShopHomePage />} />
+            <Route path="/shop/product/:id" element={<ProductDetail cart={cart} setCart={setCart} />} />
+            <Route path="/shop/cart" element={<CartPage cart={cart} setCart={setCart} />} />
+            <Route path="/shop/checkout" element={<CheckoutPage cart={cart} setCart={setCart} />} />
+            <Route path="/shop/order/:id" element={<OrderTracking cart={cart} setCart={setCart} />} />
+        </Routes>
+    );
+}
 
 function AppContent() {
     const { hasAccess, roleConfig } = useRole();
@@ -201,6 +222,8 @@ function App() {
                     <AntdApp>
                         <DevtoolsProvider>
                             <RoleProvider>
+                                {/* Shop routes OUTSIDE Refine — public, no auth needed */}
+                                <ShopRoutes />
                                 <AppContent />
                             </RoleProvider>
                             <DevtoolsPanel />

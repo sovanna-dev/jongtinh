@@ -1,17 +1,19 @@
 import React from "react";
-import { useGetIdentity, useList } from "@refinedev/core";
-import { Row, Col, Card, Statistic, List, Avatar, Typography, Skeleton, Progress, Tag, Space, Table, Spin } from "antd";
+import { useList } from "@refinedev/core";
+import { Row, Col, Card, Statistic, Table, Tag, Typography, List, Skeleton, Space } from "antd";
 import {
     ShoppingOutlined,
-    UserOutlined,
     OrderedListOutlined,
-    CustomerServiceOutlined,
+    DollarOutlined,
+    ClockCircleOutlined,
+    RiseOutlined,
+    FallOutlined,
 } from "@ant-design/icons";
 import {
-    BarChart, Bar, PieChart, Pie, Cell,
+    LineChart, Line, BarChart, Bar, PieChart, Pie, Cell,
     XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
 } from "recharts";
-import { IOrder, IProduct, IUser, ISupportTicket, ICategory } from "../../interfaces";
+import { IOrder, IProduct } from "../../interfaces";
 
 const { Title, Text } = Typography;
 
@@ -25,17 +27,15 @@ const STATUS_COLORS: Record<string, string> = {
     CANCELLED: "#E53935",
 };
 
-// ============================================================
-// VIEWER DASHBOARD (Read-only, e-commerce style)
-// ============================================================
-
-const ViewerDashboard: React.FC = () => {
+export const ViewerDashboard: React.FC = () => {
+    // Fetch all orders
     const { data: ordersData, isLoading: ordersLoading } = useList<IOrder>({
         resource: "orders",
         pagination: { pageSize: 100 },
         sorters: [{ field: "createdAt", order: "desc" }],
     });
 
+    // Fetch all products
     const { data: productsData, isLoading: productsLoading } = useList<IProduct>({
         resource: "products",
         pagination: { pageSize: 100 },
@@ -44,6 +44,7 @@ const ViewerDashboard: React.FC = () => {
     const orders = ordersData?.data || [];
     const products = productsData?.data || [];
 
+    // Calculate stats
     const totalRevenue = orders
         .filter((o) => o.orderStatus !== "CANCELLED")
         .reduce((sum, o) => sum + o.total, 0);
@@ -61,9 +62,7 @@ const ViewerDashboard: React.FC = () => {
 
     const revenueData = last7Days.map((date) => {
         const dayOrders = orders.filter(
-            (o) =>
-                new Date(o.createdAt).toISOString().split("T")[0] === date &&
-                o.orderStatus !== "CANCELLED"
+            (o) => new Date(o.createdAt).toISOString().split("T")[0] === date && o.orderStatus !== "CANCELLED"
         );
         return {
             date: new Date(date).toLocaleDateString("en-US", { month: "short", day: "numeric" }),
@@ -73,20 +72,24 @@ const ViewerDashboard: React.FC = () => {
     });
 
     // Order status distribution
-    const statusData = ["PENDING", "PROCESSING", "SHIPPING", "DELIVERED", "CANCELLED"]
-        .map((status) => ({
+    const statusData = ["PENDING", "PROCESSING", "SHIPPING", "DELIVERED", "CANCELLED"].map(
+        (status) => ({
             name: status,
             value: orders.filter((o) => o.orderStatus === status).length,
             color: STATUS_COLORS[status],
-        }))
-        .filter((s) => s.value > 0);
+        })
+    ).filter((s) => s.value > 0);
 
     // Top products by order count
     const productSales: Record<string, { name: string; count: number; revenue: number }> = {};
     orders.forEach((order) => {
         order.items?.forEach((item) => {
             if (!productSales[item.productId]) {
-                productSales[item.productId] = { name: item.productName, count: 0, revenue: 0 };
+                productSales[item.productId] = {
+                    name: item.productName,
+                    count: 0,
+                    revenue: 0,
+                };
             }
             productSales[item.productId].count += item.quantity;
             productSales[item.productId].revenue += item.price * item.quantity;
@@ -123,6 +126,7 @@ const ViewerDashboard: React.FC = () => {
                                 precision={2}
                                 prefix="$"
                                 valueStyle={{ color: "#4CAF50" }}
+                                suffix={<RiseOutlined />}
                             />
                         </Skeleton>
                     </Card>
@@ -145,7 +149,7 @@ const ViewerDashboard: React.FC = () => {
                             <Statistic
                                 title="Pending Orders"
                                 value={pendingOrders}
-                                prefix={<ClockCircleFilled />}
+                                prefix={<ClockCircleOutlined />}
                                 valueStyle={{ color: "#FFBE0B" }}
                             />
                         </Skeleton>
@@ -167,6 +171,7 @@ const ViewerDashboard: React.FC = () => {
 
             {/* Charts Row */}
             <Row gutter={[16, 16]} style={{ marginTop: 24 }}>
+                {/* Revenue Chart */}
                 <Col xs={24} lg={16}>
                     <Card title="💰 Revenue (Last 7 Days)" bordered={false}>
                         <ResponsiveContainer width="100%" height={300}>
@@ -181,6 +186,7 @@ const ViewerDashboard: React.FC = () => {
                     </Card>
                 </Col>
 
+                {/* Order Status Pie */}
                 <Col xs={24} lg={8}>
                     <Card title="📦 Order Status" bordered={false}>
                         <ResponsiveContainer width="100%" height={300}>
@@ -208,6 +214,7 @@ const ViewerDashboard: React.FC = () => {
 
             {/* Bottom Row */}
             <Row gutter={[16, 16]} style={{ marginTop: 24 }}>
+                {/* Top Products */}
                 <Col xs={24} lg={12}>
                     <Card title="🏆 Top Selling Products" bordered={false}>
                         <List
@@ -231,6 +238,7 @@ const ViewerDashboard: React.FC = () => {
                     </Card>
                 </Col>
 
+                {/* Low Stock Alert */}
                 <Col xs={24} lg={12}>
                     <Card
                         title="⚠️ Low Stock Alert"
@@ -245,7 +253,10 @@ const ViewerDashboard: React.FC = () => {
                                     <List.Item.Meta
                                         title={item.name}
                                         description={
-                                            <Text type="danger">Only {item.stockQuantity} left in stock</Text>
+                                            <Space>
+                                                <FallOutlined style={{ color: "#E53935" }} />
+                                                <Text type="danger">Only {item.stockQuantity} left</Text>
+                                            </Space>
                                         }
                                     />
                                     <Text strong>${item.price?.toFixed(2)}</Text>
@@ -279,12 +290,16 @@ const ViewerDashboard: React.FC = () => {
                             <Table.Column
                                 dataIndex="total"
                                 title="Amount"
-                                render={(value: number) => <Text strong>${value?.toFixed(2)}</Text>}
+                                render={(value: number) => (
+                                    <Text strong>${value?.toFixed(2)}</Text>
+                                )}
                             />
                             <Table.Column
                                 dataIndex="orderStatus"
                                 title="Status"
-                                render={(value: string) => <Tag color={STATUS_COLORS[value]}>{value}</Tag>}
+                                render={(value: string) => (
+                                    <Tag color={STATUS_COLORS[value]}>{value}</Tag>
+                                )}
                             />
                             <Table.Column
                                 dataIndex="createdAt"
@@ -305,193 +320,3 @@ const ViewerDashboard: React.FC = () => {
         </div>
     );
 };
-
-// ============================================================
-// CLOCK ICON (missing from ant-design/icons)
-// ============================================================
-const ClockCircleFilled: React.FC<{ style?: React.CSSProperties }> = ({ style }) => (
-    <span role="img" aria-label="clock" style={style}>
-        🕐
-    </span>
-);
-
-// ============================================================
-// FULL ADMIN DASHBOARD (Original - for Super Admin & other roles)
-// ============================================================
-
-const FullAdminDashboard: React.FC = () => {
-    const { query: ordersQuery } = useList<IOrder>({
-        resource: "orders",
-        pagination: { pageSize: 5 },
-        sorters: [{ field: "createdAt", order: "desc" }],
-    });
-    const ordersData = ordersQuery.data;
-    const ordersLoading = ordersQuery.isLoading;
-
-    const { query: productsQuery } = useList<IProduct>({
-        resource: "products",
-        pagination: { pageSize: 1 },
-    });
-    const productsData = productsQuery.data;
-    const productsLoading = productsQuery.isLoading;
-
-    const { query: usersQuery } = useList<IUser>({
-        resource: "users",
-        pagination: { pageSize: 1 },
-    });
-    const usersData = usersQuery.data;
-    const usersLoading = usersQuery.isLoading;
-
-    const { query: ticketsQuery } = useList<ISupportTicket>({
-        resource: "support_tickets",
-        filters: [{ field: "status", operator: "eq", value: "OPEN" }],
-        pagination: { pageSize: 1 },
-    });
-    const ticketsData = ticketsQuery.data;
-    const ticketsLoading = ticketsQuery.isLoading;
-
-    const { query: allOrdersQuery } = useList<IOrder>({
-        resource: "orders",
-        pagination: { pageSize: 100 },
-    });
-    const allOrders = allOrdersQuery.data?.data || [];
-    const statusCounts = allOrders.reduce((acc: any, order) => {
-        acc[order.orderStatus] = (acc[order.orderStatus] || 0) + 1;
-        return acc;
-    }, {});
-
-    const { query: categoriesQuery } = useList<ICategory>({
-        resource: "categories",
-        pagination: { pageSize: 10 },
-    });
-    const categoriesData = categoriesQuery.data?.data || [];
-
-    const stats = [
-        {
-            title: "Total Orders",
-            value: ordersData?.total ?? 0,
-            icon: <OrderedListOutlined style={{ color: "#3f8600" }} />,
-            loading: ordersLoading,
-        },
-        {
-            title: "Active Products",
-            value: productsData?.total ?? 0,
-            icon: <ShoppingOutlined style={{ color: "#cf1322" }} />,
-            loading: productsLoading,
-        },
-        {
-            title: "Total Users",
-            value: usersData?.total ?? 0,
-            icon: <UserOutlined style={{ color: "#1890ff" }} />,
-            loading: usersLoading,
-        },
-        {
-            title: "Open Tickets",
-            value: ticketsData?.total ?? 0,
-            icon: <CustomerServiceOutlined style={{ color: "#faad14" }} />,
-            loading: ticketsLoading,
-        },
-    ];
-
-    return (
-        <div style={{ padding: "24px" }}>
-            <Title level={2}>Dashboard Overview</Title>
-
-            <Row gutter={[16, 16]}>
-                {stats.map((stat, index) => (
-                    <Col xs={24} sm={12} lg={6} key={index}>
-                        <Card bordered={false}>
-                            <Skeleton loading={stat.loading} active avatar>
-                                <Statistic title={stat.title} value={stat.value} prefix={stat.icon} />
-                            </Skeleton>
-                        </Card>
-                    </Col>
-                ))}
-            </Row>
-
-            <Row gutter={[16, 16]} style={{ marginTop: "32px" }}>
-                <Col xs={24} lg={16}>
-                    <Card title="Recent Orders" bordered={false}>
-                        <List
-                            loading={ordersLoading}
-                            dataSource={ordersData?.data}
-                            renderItem={(item: IOrder) => (
-                                <List.Item
-                                    actions={[<Text key="total" strong>${item.total.toFixed(2)}</Text>]}
-                                >
-                                    <List.Item.Meta
-                                        title={`Order #${item.orderId.substring(0, 8)}`}
-                                        description={`${item.shippingAddress.fullName} - ${new Date(item.createdAt).toLocaleDateString()}`}
-                                    />
-                                    <Text type="secondary">{item.orderStatus}</Text>
-                                </List.Item>
-                            )}
-                        />
-                    </Card>
-                </Col>
-                <Col xs={24} lg={8}>
-                    <Card title="Order Status Distribution" bordered={false} style={{ marginBottom: "16px" }}>
-                        <div style={{ padding: "8px 0" }}>
-                            <Text>Pending</Text>
-                            <Progress percent={Math.round((statusCounts["PENDING"] || 0) / (allOrders.length || 1) * 100)} status="active" strokeColor="#faad14" />
-                            <Text>Processing/Shipping</Text>
-                            <Progress percent={Math.round(((statusCounts["PROCESSING"] || 0) + (statusCounts["SHIPPING"] || 0)) / (allOrders.length || 1) * 100)} status="active" strokeColor="#1890ff" />
-                            <Text>Delivered</Text>
-                            <Progress percent={Math.round((statusCounts["DELIVERED"] || 0) / (allOrders.length || 1) * 100)} status="active" strokeColor="#52c41a" />
-                        </div>
-                    </Card>
-                    <Card title="Categories" bordered={false} style={{ marginBottom: "16px" }}>
-                        <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
-                            {categoriesData.map((cat) => (
-                                <Tag key={cat.id} color="blue">{cat.name}</Tag>
-                            ))}
-                        </div>
-                    </Card>
-                    <Card title="Quick Actions" bordered={false}>
-                        <List
-                            size="small"
-                            dataSource={[
-                                { title: "Add New Product", link: "/#/products/create" },
-                                { title: "Manage Categories", link: "/#/categories" },
-                                { title: "View Support Tickets", link: "/#/support-tickets" },
-                                { title: "Send Notification", link: "/#/notifications/create" },
-                                { title: "Update Banners", link: "/#/promotion-banners" },
-                            ]}
-                            renderItem={(item) => (
-                                <List.Item>
-                                    <a href={item.link}>{item.title}</a>
-                                </List.Item>
-                            )}
-                        />
-                    </Card>
-                </Col>
-            </Row>
-        </div>
-    );
-};
-
-// ============================================================
-// MAIN DASHBOARD PAGE (Role-based routing)
-// ============================================================
-
-export const DashboardPage: React.FC = () => {
-    const { data: identity, isLoading } = useGetIdentity<{ role?: string }>();
-
-    if (isLoading) {
-        return (
-            <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100vh" }}>
-                <Spin size="large" />
-            </div>
-        );
-    }
-
-    // Viewer role → show read-only e-commerce dashboard
-    if (identity?.role === "viewer") {
-        return <ViewerDashboard />;
-    }
-
-    // All other admin roles → show full admin dashboard
-    return <FullAdminDashboard />;
-};
-
-export default DashboardPage;
