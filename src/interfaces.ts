@@ -1,4 +1,5 @@
 // src/interfaces.ts
+
 export interface IPromotionBanner {
     id: string;
     title: string;
@@ -87,6 +88,7 @@ export interface IUser {
     profileImage?: string;
     photoUrl?: string;
     isAdmin: boolean;
+    role?: "super_admin" | "product_manager" | "order_manager" | "support_agent" | "viewer";
     phoneNumber?: string;
     createdAt?: number;
 }

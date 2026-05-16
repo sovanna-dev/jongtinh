@@ -7,9 +7,11 @@ import {
   Switch,
   theme,
   Typography,
+  Tag,
 } from "antd";
 import React, { useContext } from "react";
 import { ColorModeContext } from "../../contexts/color-mode";
+import { useRole } from "../../contexts/RoleContext";
 
 const { Text } = Typography;
 const { useToken } = theme;
@@ -18,6 +20,7 @@ type IUser = {
   id: number;
   name: string;
   avatar: string;
+  role?: string;
 };
 
 export const Header: React.FC<RefineThemedLayoutHeaderProps> = ({
@@ -26,6 +29,7 @@ export const Header: React.FC<RefineThemedLayoutHeaderProps> = ({
   const { token } = useToken();
   const { data: user } = useGetIdentity<IUser>();
   const { mode, setMode } = useContext(ColorModeContext);
+  const { roleConfig } = useRole();
 
   const headerStyles: React.CSSProperties = {
     backgroundColor: token.colorBgElevated,
@@ -45,6 +49,7 @@ export const Header: React.FC<RefineThemedLayoutHeaderProps> = ({
   return (
     <AntdLayout.Header style={headerStyles}>
       <Space>
+        <Tag color={roleConfig.color}>{roleConfig.label}</Tag>
         <Switch
           checkedChildren="🌛"
           unCheckedChildren="🔆"

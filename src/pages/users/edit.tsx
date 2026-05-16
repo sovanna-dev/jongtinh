@@ -1,5 +1,5 @@
 import { Edit, useForm } from "@refinedev/antd";
-import { Form, Input, Switch, Avatar, Typography, Tag } from "antd";
+import { Form, Input, Switch, Avatar, Typography, Tag, Select } from "antd";
 import { IUser } from "../../interfaces";
 import { UserOutlined } from "@ant-design/icons";
 import { auth } from "../../firebase";
@@ -36,17 +36,11 @@ export const UserEdit = () => {
                     )}
                 </div>
 
-                <Form.Item
-                    label="Full Name"
-                    name="displayName"
-                >
+                <Form.Item label="Full Name" name="displayName">
                     <Input disabled />
                 </Form.Item>
 
-                <Form.Item
-                    label="Email"
-                    name="email"
-                >
+                <Form.Item label="Email" name="email">
                     <Input disabled />
                 </Form.Item>
 
@@ -63,6 +57,22 @@ export const UserEdit = () => {
                         unCheckedChildren="User"
                         disabled={isEditingSelf}
                     />
+                </Form.Item>
+
+                {/* NEW: Role Selection */}
+                <Form.Item
+                    label="Admin Role"
+                    name="role"
+                    rules={[{ required: true }]}
+                    extra="Determines which sections this admin can access."
+                >
+                    <Select>
+                        <Select.Option value="super_admin">Super Admin — Full Access</Select.Option>
+                        <Select.Option value="product_manager">Product Manager — Products, Categories, Banners</Select.Option>
+                        <Select.Option value="order_manager">Order Manager — Orders, Notifications</Select.Option>
+                        <Select.Option value="support_agent">Support Agent — Tickets, FAQs</Select.Option>
+                        <Select.Option value="viewer">Viewer — Dashboard Only (Read-Only)</Select.Option>
+                    </Select>
                 </Form.Item>
             </Form>
         </Edit>

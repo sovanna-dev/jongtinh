@@ -190,37 +190,37 @@ export const dataProvider = (): DataProvider => ({
 });
 
 export const authProvider: AuthProvider = {
-    login: async ({ email, password }) => {
-        try {
-            const userCredential = await signInWithEmailAndPassword(auth, email, password);
-            const user = userCredential.user;
+   login: async ({ email, password }) => {
+       try {
+           const userCredential = await signInWithEmailAndPassword(auth, email, password);
+           const user = userCredential.user;
 
-            const userDoc = await getDoc(doc(db, "users", user.uid));
-            if (userDoc.exists() && userDoc.data().isAdmin === true) {
-                return {
-                    success: true,
-                    redirectTo: "/",
-                };
-            } else {
-                await signOut(auth);
-                return {
-                    success: false,
-                    error: {
-                        name: "Login Error",
-                        message: "Unauthorized: You do not have Admin privileges.",
-                    },
-                };
-            }
-        } catch (error: any) {
-            return {
-                success: false,
-                error: {
-                    name: "Login Error",
-                    message: error.message,
-                },
-            };
-        }
-    },
+           const userDoc = await getDoc(doc(db, "users", user.uid));
+           if (userDoc.exists() && userDoc.data().isAdmin === true) {
+               return {
+                   success: true,
+                   redirectTo: "/",
+               };
+           } else {
+               await signOut(auth);
+               return {
+                   success: false,
+                   error: {
+                       name: "Login Error",
+                       message: "Unauthorized: You do not have Admin privileges.",
+                   },
+               };
+           }
+       } catch (error: any) {
+           return {
+               success: false,
+               error: {
+                   name: "Login Error",
+                   message: error.message,
+               },
+           };
+       }
+   },
     logout: async () => {
         await signOut(auth);
         return {
@@ -272,6 +272,7 @@ export const authProvider: AuthProvider = {
                 id: user.uid,
                 name: userData?.displayName || userData?.fullName || user.displayName || user.email,
                 avatar: userData?.photoUrl || userData?.profileImage || user.photoURL,
+                role: userData?.role || "viewer",
             };
         }
         return null;
