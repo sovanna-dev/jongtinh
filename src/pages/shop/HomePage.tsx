@@ -1,8 +1,9 @@
-import React, { useState } from "react";
-import { useList } from "@refinedev/core";
-import { Row, Col, Card, Typography, Tag, Image, Space, Button, message } from "antd";
+import React, { useState, useEffect } from "react";
+import { Row, Col, Card, Typography, Tag, Image, Space, Button, message, Spin } from "antd";
 import { ShoppingCartOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router";
+import { collection, getDocs, query, where, orderBy, limit } from "firebase/firestore";
+import { db } from "../../firebase";
 import { IProduct, ICategory } from "../../interfaces";
 import { ShopLayout } from "./ShopLayout";
 
@@ -19,22 +20,61 @@ export const ShopHomePage: React.FC = () => {
     const [searchQuery, setSearchQuery] = useState("");
     const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
     const [cart, setCart] = useState<CartItem[]>([]);
+    const [products, setProducts] = useState<IProduct[]>([]);
+    const [categories, setCategories] = useState<ICategory[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
 
-    const { data: productsData, isLoading } = useList<IProduct>({
-        resource: "products",
-        pagination: { pageSize: 50 },
-        filters: selectedCategory
-            ? [{ field: "category", operator: "eq", value: selectedCategory }]
-            : [],
-    });
+    // Fetch products
+    useEffect(() => {
+        const fetchProducts = async () => {
+            setIsLoading(true);
+            try {
+                let q;
+                if (selectedCategory) {
+                    q = query(
+                        collection(db, "products"),
+                        where("category", "==", selectedCategory),
+                        orderBy("createdAt", "desc"),
+                        limit(50)
+                    );
+                } else {
+                    q = query(
+                        collection(db, "products"),
+                        orderBy("createdAt", "desc"),
+                        limit(50)
+                    );
+                }
+                const snapshot = await getDocs(q);
+                const data = snapshot.docs.map((doc) => ({
+                    id: doc.id,
+                    ...doc.data(),
+                })) as IProduct[];
+                setProducts(data);
+            } catch (error) {
+                console.error("Failed to fetch products:", error);
+            }
+            setIsLoading(false);
+        };
+        fetchProducts();
+    }, [selectedCategory]);
 
-    const { data: categoriesData } = useList<ICategory>({
-        resource: "categories",
-        pagination: { pageSize: 20 },
-    });
-
-    const products = productsData?.data || [];
-    const categories = categoriesData?.data || [];
+    // Fetch categories
+    useEffect(() => {
+        const fetchCategories = async () => {
+            try {
+                const q = query(collection(db, "categories"), orderBy("name"));
+                const snapshot = await getDocs(q);
+                const data = snapshot.docs.map((doc) => ({
+                    id: doc.id,
+                    ...doc.data(),
+                })) as ICategory[];
+                setCategories(data);
+            } catch (error) {
+                console.error("Failed to fetch categories:", error);
+            }
+        };
+        fetchCategories();
+    }, []);
 
     const filteredProducts = products.filter((p) =>
         searchQuery ? p.name.toLowerCase().includes(searchQuery.toLowerCase()) : true
@@ -53,9 +93,7 @@ export const ShopHomePage: React.FC = () => {
         message.success(`${product.name} added to cart!`);
     };
 
-    const handleSearch = () => {
-        // Search is already reactive via filter
-    };
+    const finalPrice = (product: IProduct) => product.discountPrice ?? product.price;
 
     return (
         <ShopLayout
@@ -63,7 +101,7 @@ export const ShopHomePage: React.FC = () => {
             setCart={setCart}
             searchQuery={searchQuery}
             setSearchQuery={setSearchQuery}
-            onSearch={handleSearch}
+            onSearch={() => {}}
         >
             {/* Categories */}
             <div style={{ marginBottom: 24, display: "flex", gap: 8, flexWrap: "wrap" }}>
@@ -87,84 +125,95 @@ export const ShopHomePage: React.FC = () => {
                 ))}
             </div>
 
+            {/* Loading */}
+            {isLoading && (
+                <div style={{ textAlign: "center", padding: 48 }}>
+                    <Spin size="large" />
+                </div>
+            )}
+
             {/* Products Grid */}
-            <Row gutter={[16, 16]}>
-                {filteredProducts.map((product) => (
-                    <Col xs={24} sm={12} md={8} lg={6} key={product.id}>
-                        <Card
-                            hoverable
-                            onClick={() => navigate(`/shop/product/${product.id}`)}
-                            cover={
-                                <Image
-                                    src={product.images?.[0] || "https://via.placeholder.com/300"}
-                                    alt={product.name}
-                                    height={200}
-                                    style={{ objectFit: "cover" }}
-                                    fallback="https://via.placeholder.com/300?text=No+Image"
-                                    preview={false}
-                                />
-                            }
-                            actions={[
-                                <Button
-                                    type="primary"
-                                    icon={<ShoppingCartOutlined />}
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        addToCart(product);
-                                    }}
-                                    disabled={!product.isAvailable || product.stockQuantity <= 0}
-                                    style={{
-                                        background: product.isAvailable && product.stockQuantity > 0 ? "#FF006E" : "#d9d9d9",
-                                        border: "none",
-                                    }}
+            {!isLoading && (
+                <Row gutter={[16, 16]}>
+                    {filteredProducts.map((product) => {
+                        const price = finalPrice(product);
+                        const isInStock = product.isAvailable && (product.stockQuantity || 0) > 0;
+                        return (
+                            <Col xs={24} sm={12} md={8} lg={6} key={product.id}>
+                                <Card
+                                    hoverable
+                                    onClick={() => navigate(`/shop/product/${product.id}`)}
+                                    cover={
+                                        <Image
+                                            src={product.images?.[0] || "https://via.placeholder.com/300"}
+                                            alt={product.name}
+                                            height={200}
+                                            style={{ objectFit: "cover" }}
+                                            fallback="https://via.placeholder.com/300?text=No+Image"
+                                            preview={false}
+                                        />
+                                    }
+                                    actions={[
+                                        <Button
+                                            type="primary"
+                                            icon={<ShoppingCartOutlined />}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                addToCart(product);
+                                            }}
+                                            disabled={!isInStock}
+                                            style={{
+                                                background: isInStock ? "#FF006E" : "#d9d9d9",
+                                                border: "none",
+                                            }}
+                                        >
+                                            {isInStock ? "Add to Cart" : "Out of Stock"}
+                                        </Button>,
+                                    ]}
                                 >
-                                    {product.isAvailable && product.stockQuantity > 0 ? "Add to Cart" : "Out of Stock"}
-                                </Button>,
-                            ]}
-                        >
-                            <Meta
-                                title={
-                                    <Text strong style={{ fontSize: 14 }} ellipsis={{ tooltip: product.name }}>
-                                        {product.name}
-                                    </Text>
-                                }
-                                description={
-                                    <div>
-                                        <div style={{ marginBottom: 4 }}>
-                                            {product.discountPrice ? (
-                                                <Space>
-                                                    <Text strong style={{ color: "#FF006E", fontSize: 16 }}>
-                                                        ${product.discountPrice.toFixed(2)}
-                                                    </Text>
-                                                    <Text delete type="secondary" style={{ fontSize: 12 }}>
-                                                        ${product.price.toFixed(2)}
-                                                    </Text>
-                                                    <Tag color="red" style={{ fontSize: 10 }}>
-                                                        -{Math.round(((product.price - product.discountPrice) / product.price) * 100)}%
-                                                    </Tag>
-                                                </Space>
-                                            ) : (
-                                                <Text strong style={{ fontSize: 16 }}>
-                                                    ${product.price.toFixed(2)}
+                                    <Meta
+                                        title={
+                                            <Text strong style={{ fontSize: 14 }} ellipsis={{ tooltip: product.name }}>
+                                                {product.name}
+                                            </Text>
+                                        }
+                                        description={
+                                            <div>
+                                                <div style={{ marginBottom: 4 }}>
+                                                    {product.discountPrice ? (
+                                                        <Space>
+                                                            <Text strong style={{ color: "#FF006E", fontSize: 16 }}>
+                                                                ${product.discountPrice.toFixed(2)}
+                                                            </Text>
+                                                            <Text delete type="secondary" style={{ fontSize: 12 }}>
+                                                                ${product.price.toFixed(2)}
+                                                            </Text>
+                                                            <Tag color="red" style={{ fontSize: 10 }}>
+                                                                -{Math.round(((product.price - product.discountPrice) / product.price) * 100)}%
+                                                            </Tag>
+                                                        </Space>
+                                                    ) : (
+                                                        <Text strong style={{ fontSize: 16 }}>
+                                                            ${product.price.toFixed(2)}
+                                                        </Text>
+                                                    )}
+                                                </div>
+                                                <Text type="secondary" style={{ fontSize: 12 }}>
+                                                    ⭐ {product.rating} ({product.reviewCount})
                                                 </Text>
-                                            )}
-                                        </div>
-                                        <Text type="secondary" style={{ fontSize: 12 }}>
-                                            ⭐ {product.rating} ({product.reviewCount})
-                                        </Text>
-                                    </div>
-                                }
-                            />
-                        </Card>
-                    </Col>
-                ))}
-            </Row>
+                                            </div>
+                                        }
+                                    />
+                                </Card>
+                            </Col>
+                        );
+                    })}
+                </Row>
+            )}
 
             {filteredProducts.length === 0 && !isLoading && (
                 <div style={{ textAlign: "center", padding: 48 }}>
-                    <Text type="secondary" style={{ fontSize: 18 }}>
-                        No products found
-                    </Text>
+                    <Text type="secondary" style={{ fontSize: 18 }}>No products found</Text>
                 </div>
             )}
         </ShopLayout>

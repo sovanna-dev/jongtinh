@@ -169,7 +169,7 @@ export const ShopLayout: React.FC<ShopLayoutProps> = ({
                                         title={item.product.name}
                                         description={
                                             <Space>
-                                                <Text>${item.product.finalPrice.toFixed(2)}</Text>
+                                                <Text>${(item.product.discountPrice ?? item.product.price).toFixed(2)}</Text>
                                                 <Button
                                                     size="small"
                                                     onClick={() => updateQuantity(item.product.id, item.quantity - 1)}
