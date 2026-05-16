@@ -74,6 +74,7 @@ function ShopRoutes() {
 
             <Route path="/shop/orders" element={<OrdersPage cart={cart} setCart={setCart} />} />
             <Route path="/shop/profile" element={<ProfilePage cart={cart} setCart={setCart} />} />
+
         </Routes>
     );
 }
