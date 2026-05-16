@@ -52,6 +52,8 @@ import { ProductDetail } from "./pages/shop/ProductDetail";
 import { CartPage } from "./pages/shop/CartPage";
 import { CheckoutPage } from "./pages/shop/CheckoutPage";
 import { OrderTracking } from "./pages/shop/OrderTracking";
+import { OrdersPage } from "./pages/shop/OrdersPage";
+import { ProfilePage } from "./pages/shop/ProfilePage";
 
 interface CartItem {
     product: IProduct;
@@ -69,6 +71,9 @@ function ShopRoutes() {
             <Route path="/shop/cart" element={<CartPage cart={cart} setCart={setCart} />} />
             <Route path="/shop/checkout" element={<CheckoutPage cart={cart} setCart={setCart} />} />
             <Route path="/shop/order/:id" element={<OrderTracking cart={cart} setCart={setCart} />} />
+
+            <Route path="/shop/orders" element={<OrdersPage cart={cart} setCart={setCart} />} />
+            <Route path="/shop/profile" element={<ProfilePage cart={cart} setCart={setCart} />} />
         </Routes>
     );
 }
