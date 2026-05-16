@@ -59,32 +59,11 @@ import { CheckoutPage } from "./pages/shop/CheckoutPage";
 import { OrderTracking } from "./pages/shop/OrderTracking";
 import { OrdersPage } from "./pages/shop/OrdersPage";
 import { ProfilePage } from "./pages/shop/ProfilePage";
+import { SearchResultsPage } from "./pages/shop/SearchResultsPage";
 
 interface CartItem {
     product: IProduct;
     quantity: number;
-}
-
-// ═══════════════════════════════════════════════════
-// SHOP ROUTES (Public — No Login Required)
-// ═══════════════════════════════════════════════════
-function ShopRoutes() {
-    const [cart, setCart] = useState<CartItem[]>([]);
-
-    return (
-        <CartProvider>
-                    <Routes>
-                        <Route path="/" element={<Navigate to="/shop" replace />} />
-                        <Route path="/shop" element={<ShopHomePage />} />
-                        <Route path="/shop/product/:id" element={<ProductDetail />} />
-                        <Route path="/shop/cart" element={<CartPage />} />
-                        <Route path="/shop/checkout" element={<CheckoutPage />} />
-                        <Route path="/shop/order/:id" element={<OrderTracking />} />
-                        <Route path="/shop/orders" element={<OrdersPage />} />
-                        <Route path="/shop/profile" element={<ProfilePage />} />
-                    </Routes>
-        </CartProvider>
-    );
 }
 
 // ═══════════════════════════════════════════════════
@@ -147,7 +126,22 @@ function AppContent() {
             options={{ syncWithLocation: true, warnWhenUnsavedChanges: true }}
         >
             <Routes>
-                {/* Admin Authenticated Routes */}
+                {/* ═══════════════════════════════════════════════════ */}
+                {/* SHOP ROUTES (Public — No Login Required) */}
+                {/* ═══════════════════════════════════════════════════ */}
+                <Route path="/" element={<Navigate to="/shop" replace />} />
+                <Route path="/shop" element={<ShopHomePage />} />
+                <Route path="/shop/product/:id" element={<ProductDetail />} />
+                <Route path="/shop/cart" element={<CartPage />} />
+                <Route path="/shop/checkout" element={<CheckoutPage />} />
+                <Route path="/shop/order/:id" element={<OrderTracking />} />
+                <Route path="/shop/orders" element={<OrdersPage />} />
+                <Route path="/shop/profile" element={<ProfilePage />} />
+                <Route path="/shop/search" element={<SearchResultsPage />} />
+
+                {/* ═══════════════════════════════════════════════════ */}
+                {/* ADMIN ROUTES (Login Required) */}
+                {/* ═══════════════════════════════════════════════════ */}
                 <Route
                     element={
                         <Authenticated key="authenticated-inner" fallback={<CatchAllNavigate to="/login" />}>
@@ -264,10 +258,9 @@ function App() {
                     <AntdApp>
                         <DevtoolsProvider>
                             <RoleProvider>
-                                {/* Shop routes FIRST — public, no auth needed */}
-                                <ShopRoutes />
-                                {/* Admin routes — wrapped in Refine */}
-                                <AppContent />
+                                <CartProvider>
+                                    <AppContent />
+                                </CartProvider>
                             </RoleProvider>
                             <DevtoolsPanel />
                         </DevtoolsProvider>

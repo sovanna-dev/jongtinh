@@ -60,12 +60,12 @@ export const ProductList = () => {
                     filterDropdown={({ setSelectedKeys, selectedKeys, confirm, clearFilters }) => (
                         <div style={{ padding: 8 }}>
                             <Select
-                                {...categorySelectProps}
+                                {...(categorySelectProps as any)}
                                 style={{ width: 200, display: "block", marginBottom: 8 }}
                                 placeholder="Select Category"
                                 allowClear
-                                value={selectedKeys[0] as string | undefined}
-                                onChange={(value) => {
+                                value={selectedKeys[0] as string}
+                                onChange={(value: string) => {
                                     setSelectedKeys(value ? [value] : []);
                                     confirm();
                                 }}

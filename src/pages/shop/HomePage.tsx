@@ -1,15 +1,26 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Row, Col, Card, Typography, Tag, Image, Space, Button, message, Spin, Carousel } from "antd";
-import { ShoppingCartOutlined } from "@ant-design/icons";
+import { ShoppingCartOutlined, LeftOutlined, RightOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router";
-import { collection, getDocs, query, where, orderBy, limit } from "firebase/firestore";
+import { collection, getDocs, query, where, orderBy, limit, startAfter, QueryDocumentSnapshot, DocumentData } from "firebase/firestore";
+import Lottie from "lottie-react";
 import { db } from "../../firebase";
 import { IProduct, ICategory, IPromotionBanner } from "../../interfaces";
 import { ShopLayout } from "./ShopLayout";
 import { useCart } from "../../contexts/CartContext";
+import logo from "../../images/logo.webp";
+
+// Map category names to Lottie animation files
+const categoryAnimations: Record<string, string> = {
+    "Electronics": "iphone.json",
+    "Beauty": "beauty.json",
+    "Food": "fruits.json",
+    "Groceries": "fruit_basket.json",
+    "Fashion": "cosmetic.json",
+    "Lifestyle": "onboarding_shopping.json",
+};
 
 const { Title, Text } = Typography;
-const { Meta } = Card;
 
 export const ShopHomePage: React.FC = () => {
     const navigate = useNavigate();
@@ -19,7 +30,12 @@ export const ShopHomePage: React.FC = () => {
     const [categories, setCategories] = useState<ICategory[]>([]);
     const [banners, setBanners] = useState<IPromotionBanner[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [isLoadingMore, setIsLoadingMore] = useState(false);
+    const [lastDoc, setLastDoc] = useState<QueryDocumentSnapshot<DocumentData> | null>(null);
+    const [hasMore, setHasMore] = useState(true);
+    const PAGE_SIZE = 12;
     const { addToCart } = useCart();
+    const categoryCarouselRef = useRef<any>(null);
 
     // Fetch banners
     useEffect(() => {
@@ -45,30 +61,54 @@ export const ShopHomePage: React.FC = () => {
     }, []);
 
     // Fetch products
-    useEffect(() => {
-        const fetchProducts = async () => {
+    const fetchProducts = async (isNextPage = false) => {
+        if (isNextPage) {
+            setIsLoadingMore(true);
+        } else {
             setIsLoading(true);
-            try {
-                let q;
-                if (selectedCategory) {
-                    q = query(
-                        collection(db, "products"),
-                        where("category", "==", selectedCategory),
-                        orderBy("createdAt", "desc"),
-                        limit(50)
-                    );
-                } else {
-                    q = query(
-                        collection(db, "products"),
-                        orderBy("createdAt", "desc"),
-                        limit(50)
-                    );
-                }
-                const snapshot = await getDocs(q);
-                setProducts(snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })) as IProduct[]);
-            } catch (error) { console.error(error); }
+            setLastDoc(null);
+        }
+
+        try {
+            const constraints: any[] = [
+                orderBy("createdAt", "desc"),
+                limit(PAGE_SIZE)
+            ];
+
+            if (selectedCategory) {
+                constraints.unshift(where("category", "==", selectedCategory));
+            }
+
+            if (isNextPage && lastDoc) {
+                constraints.push(startAfter(lastDoc));
+            }
+
+            const q = query(collection(db, "products"), ...constraints);
+            const snapshot = await getDocs(q);
+
+            const newProducts = snapshot.docs.map((doc) => ({
+                id: doc.id,
+                ...doc.data()
+            })) as IProduct[];
+
+            if (isNextPage) {
+                setProducts(prev => [...prev, ...newProducts]);
+            } else {
+                setProducts(newProducts);
+            }
+
+            setLastDoc(snapshot.docs[snapshot.docs.length - 1] || null);
+            setHasMore(snapshot.docs.length === PAGE_SIZE);
+        } catch (error) {
+            console.error("Failed to fetch products:", error);
+            message.error("Failed to load products");
+        } finally {
             setIsLoading(false);
-        };
+            setIsLoadingMore(false);
+        }
+    };
+
+    useEffect(() => {
         fetchProducts();
     }, [selectedCategory]);
 
@@ -83,12 +123,74 @@ export const ShopHomePage: React.FC = () => {
         })();
     }, []);
 
-    const filteredProducts = products.filter((p) =>
-        searchQuery ? p.name.toLowerCase().includes(searchQuery.toLowerCase()) : true
-    );
+    const handleSearch = () => {
+        if (searchQuery.trim()) {
+            navigate(`/shop/search?q=${encodeURIComponent(searchQuery.trim())}`);
+        }
+    };
+
+    const CategoryItem: React.FC<{ cat: ICategory | null }> = ({ cat }) => {
+        const isSelected = selectedCategory === (cat?.id || null);
+        const [animationData, setAnimationData] = useState<any>(null);
+
+        useEffect(() => {
+            if (cat && categoryAnimations[cat.name]) {
+                fetch(`./animations/${categoryAnimations[cat.name]}`)
+                    .then(res => res.json())
+                    .then(data => setAnimationData(data))
+                    .catch(err => console.error("Lottie load error:", err));
+            }
+        }, [cat]);
+
+        return (
+            <div
+                onClick={() => setSelectedCategory(cat?.id || null)}
+                style={{
+                    padding: "10px 24px",
+                    borderRadius: "25px",
+                    cursor: "pointer",
+                    background: isSelected ? "#FF006E" : "rgba(255, 255, 255, 0.8)",
+                    color: isSelected ? "#fff" : "#555",
+                    fontWeight: 600,
+                    boxShadow: isSelected ? "0 4px 12px rgba(255, 0, 110, 0.3)" : "0 2px 8px rgba(0,0,0,0.05)",
+                    transition: "all 0.3s ease",
+                    border: "1px solid",
+                    borderColor: isSelected ? "#FF006E" : "rgba(0,0,0,0.05)",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 12,
+                    whiteSpace: "nowrap"
+                }}
+            >
+                {cat ? (
+                    <>
+                        {animationData ? (
+                            <div style={{ width: 28, height: 28 }}>
+                                <Lottie
+                                    animationData={animationData}
+                                    loop={true}
+                                    style={{ width: "100%", height: "100%" }}
+                                />
+                            </div>
+                        ) : cat.icon ? (
+                            <Image
+                                src={cat.icon}
+                                width={20}
+                                preview={false}
+                                style={{ filter: isSelected ? "brightness(0) invert(1)" : "none" }}
+                            />
+                        ) : null}
+                        {cat.name}
+                    </>
+                ) : (
+                    "All Products"
+                )}
+            </div>
+        );
+    };
 
     return (
-        <ShopLayout searchQuery={searchQuery} setSearchQuery={setSearchQuery} onSearch={() => {}}>
+        <ShopLayout searchQuery={searchQuery} setSearchQuery={setSearchQuery} onSearch={handleSearch}>
            {/* ═══════ BANNER CAROUSEL ═══════ */}
            {banners.length > 0 ? (
                <Carousel
@@ -237,27 +339,96 @@ export const ShopHomePage: React.FC = () => {
                <div style={{
                    background: "linear-gradient(135deg, #FF006E 0%, #8338EC 100%)",
                    borderRadius: 20,
-                   padding: "48px 32px",
+                   padding: "64px 32px",
                    marginBottom: 32,
                    color: "#fff",
                    textAlign: "center",
                    position: "relative",
                    overflow: "hidden",
                }}>
-                   <div style={{ position: "absolute", top: -40, right: -40, width: 180, height: 180, borderRadius: "50%", background: "rgba(255,255,255,0.1)" }} />
-                   <div style={{ position: "absolute", bottom: -30, left: -30, width: 120, height: 120, borderRadius: "50%", background: "rgba(255,255,255,0.08)" }} />
-                   <Title level={1} style={{ color: "#fff", marginBottom: 8, fontSize: 40, position: "relative" }}>Welcome to JongTinh</Title>
-                   <Text style={{ color: "rgba(255,255,255,0.9)", fontSize: 18, position: "relative" }}>Discover amazing products at the best prices in Cambodia 🇰🇭</Text>
+                   <div style={{ position: "absolute", top: -40, right: -40, width: 220, height: 220, borderRadius: "50%", background: "rgba(255,255,255,0.1)" }} />
+                   <div style={{ position: "absolute", bottom: -30, left: -30, width: 150, height: 150, borderRadius: "50%", background: "rgba(255,255,255,0.08)" }} />
+
+                   <div style={{ position: "relative", zIndex: 1 }}>
+                       <img
+                           src={logo}
+                           alt="SmartShop Logo"
+                           style={{
+                               width: 100,
+                               height: 100,
+                               marginBottom: 16,
+                               filter: "drop-shadow(0 4px 8px rgba(0,0,0,0.2))"
+                           }}
+                       />
+                       <Title level={1} style={{ color: "#fff", marginBottom: 8, fontSize: 48, fontWeight: 800 }}>JongTinh</Title>
+                       <Text style={{ color: "rgba(255,255,255,0.9)", fontSize: 20, maxWidth: 600, display: "inline-block" }}>
+                           Discover amazing products at the best prices in Cambodia 🇰🇭
+                       </Text>
+                   </div>
                </div>
            )}
-            {/* Categories */}
-            <div style={{ marginBottom: 24, display: "flex", gap: 8, flexWrap: "wrap" }}>
-                <Tag color={selectedCategory === null ? "#FF006E" : "default"} style={{ cursor: "pointer", padding: "4px 16px", fontSize: 14, borderRadius: 20 }} onClick={() => setSelectedCategory(null)}>All</Tag>
-                {categories.map((cat) => (
-                    <Tag key={cat.id} color={selectedCategory === cat.id ? "#FF006E" : "default"} style={{ cursor: "pointer", padding: "4px 16px", fontSize: 14, borderRadius: 20 }} onClick={() => setSelectedCategory(cat.id)}>
-                        {cat.icon && <Image src={cat.icon} width={16} style={{ marginRight: 4 }} preview={false} />}{cat.name}
-                    </Tag>
-                ))}
+
+            {/* Categories Carousel */}
+            <div style={{
+                marginBottom: 32,
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                background: "rgba(255, 255, 255, 0.5)",
+                padding: "12px",
+                borderRadius: "30px",
+                boxShadow: "0 4px 15px rgba(0,0,0,0.03)"
+            }}>
+                <Button
+                    icon={<LeftOutlined />}
+                    shape="circle"
+                    size="large"
+                    onClick={() => categoryCarouselRef.current?.prev()}
+                    style={{
+                        flexShrink: 0,
+                        border: "none",
+                        boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center"
+                    }}
+                />
+
+                <div style={{ flex: 1, overflow: "hidden" }}>
+                    <Carousel
+                        ref={categoryCarouselRef}
+                        dots={false}
+                        infinite={false}
+                        variableWidth={true}
+                        slidesToScroll={3}
+                        swipeToSlide={true}
+                        draggable={true}
+                    >
+                        <div style={{ padding: "0 6px" }}>
+                            <CategoryItem cat={null} />
+                        </div>
+                        {categories.map((cat) => (
+                            <div key={cat.id} style={{ padding: "0 6px" }}>
+                                <CategoryItem cat={cat} />
+                            </div>
+                        ))}
+                    </Carousel>
+                </div>
+
+                <Button
+                    icon={<RightOutlined />}
+                    shape="circle"
+                    size="large"
+                    onClick={() => categoryCarouselRef.current?.next()}
+                    style={{
+                        flexShrink: 0,
+                        border: "none",
+                        boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center"
+                    }}
+                />
             </div>
 
             {/* Loading */}
@@ -265,43 +436,134 @@ export const ShopHomePage: React.FC = () => {
 
             {/* Products Grid */}
             {!isLoading && (
-                <Row gutter={[16, 16]}>
-                    {filteredProducts.map((product) => {
-                        const price = product.discountPrice ?? product.price;
-                        const isInStock = product.isAvailable && (product.stockQuantity || 0) > 0;
-                        return (
-                            <Col xs={24} sm={12} md={8} lg={6} key={product.id}>
-                                <Card hoverable onClick={() => navigate(`/shop/product/${product.id}`)}
-                                    cover={<Image src={product.images?.[0] || "https://via.placeholder.com/300"} alt={product.name} height={200} style={{ objectFit: "cover" }} fallback="https://via.placeholder.com/300?text=No+Image" preview={false} />}
-                                    actions={[
-                                        <Button key="add" type="primary" icon={<ShoppingCartOutlined />}
-                                            onClick={(e) => { e.stopPropagation(); addToCart(product); message.success(`${product.name} added!`); }}
-                                            disabled={!isInStock} style={{ background: isInStock ? "#FF006E" : "#d9d9d9", border: "none" }}>
-                                            {isInStock ? "Add to Cart" : "Out of Stock"}
-                                        </Button>,
-                                    ]}>
-                                    <Meta title={<Text strong style={{ fontSize: 14 }} ellipsis={{ tooltip: product.name }}>{product.name}</Text>}
-                                        description={
-                                            <div>
-                                                <div style={{ marginBottom: 4 }}>
-                                                    {product.discountPrice ? (
-                                                        <Space>
-                                                            <Text strong style={{ color: "#FF006E", fontSize: 16 }}>${product.discountPrice.toFixed(2)}</Text>
-                                                            <Text delete type="secondary" style={{ fontSize: 12 }}>${product.price.toFixed(2)}</Text>
-                                                            <Tag color="red" style={{ fontSize: 10 }}>-{Math.round(((product.price - product.discountPrice) / product.price) * 100)}%</Tag>
-                                                        </Space>
-                                                    ) : <Text strong style={{ fontSize: 16 }}>${product.price.toFixed(2)}</Text>}
-                                                </div>
-                                                <Text type="secondary" style={{ fontSize: 12 }}>⭐ {product.rating} ({product.reviewCount})</Text>
+                <>
+                    <Row gutter={[24, 24]}>
+                        {products.map((product) => {
+                            const price = product.discountPrice ?? product.price;
+                            const isInStock = product.isAvailable && (product.stockQuantity || 0) > 0;
+                            return (
+                                <Col xs={24} sm={12} md={8} lg={6} key={product.id}>
+                                    <Card
+                                        hoverable
+                                        onClick={() => navigate(`/shop/product/${product.id}`)}
+                                        style={{
+                                            borderRadius: 20,
+                                            overflow: "hidden",
+                                            border: "none",
+                                            boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
+                                            height: "100%",
+                                            display: "flex",
+                                            flexDirection: "column"
+                                        }}
+                                        bodyStyle={{ padding: 16, flex: 1, display: "flex", flexDirection: "column" }}
+                                        cover={
+                                            <div style={{ position: "relative", height: 220, overflow: "hidden" }}>
+                                                <Image
+                                                    src={product.images?.[0] || "https://via.placeholder.com/300"}
+                                                    alt={product.name}
+                                                    height="100%"
+                                                    width="100%"
+                                                    style={{ objectFit: "cover", transition: "transform 0.5s ease" }}
+                                                    fallback="https://via.placeholder.com/300?text=No+Image"
+                                                    preview={false}
+                                                />
+                                                {!isInStock && (
+                                                    <div style={{
+                                                        position: "absolute",
+                                                        top: 0,
+                                                        left: 0,
+                                                        right: 0,
+                                                        bottom: 0,
+                                                        background: "rgba(0,0,0,0.4)",
+                                                        display: "flex",
+                                                        alignItems: "center",
+                                                        justifyContent: "center",
+                                                        zIndex: 2
+                                                    }}>
+                                                        <Tag color="default" style={{ padding: "4px 12px", borderRadius: 12, fontWeight: 700 }}>OUT OF STOCK</Tag>
+                                                    </div>
+                                                )}
+                                                {product.discountPrice && (
+                                                    <Tag color="#FF006E" style={{
+                                                        position: "absolute",
+                                                        top: 12,
+                                                        left: 12,
+                                                        margin: 0,
+                                                        borderRadius: 8,
+                                                        fontWeight: 700,
+                                                        border: "none"
+                                                    }}>
+                                                        SAVE {Math.round(((product.price - product.discountPrice) / product.price) * 100)}%
+                                                    </Tag>
+                                                )}
                                             </div>
-                                        } />
-                                </Card>
-                            </Col>
-                        );
-                    })}
-                </Row>
+                                        }
+                                    >
+                                        <div style={{ flex: 1 }}>
+                                            <Text type="secondary" style={{ fontSize: 11, textTransform: "uppercase", letterSpacing: 1 }}>{product.category}</Text>
+                                            <Title level={5} style={{ marginTop: 4, marginBottom: 8, fontSize: 16 }} ellipsis={{ rows: 2 }}>{product.name}</Title>
+                                            <div style={{ display: "flex", alignItems: "center", gap: 4, marginBottom: 12 }}>
+                                                <Text style={{ color: "#faad14", fontSize: 12 }}>★</Text>
+                                                <Text strong style={{ fontSize: 12 }}>{product.rating}</Text>
+                                                <Text type="secondary" style={{ fontSize: 12 }}>({product.reviewCount})</Text>
+                                            </div>
+                                        </div>
+
+                                        <div style={{ marginTop: "auto" }}>
+                                            <div style={{ marginBottom: 16 }}>
+                                                {product.discountPrice ? (
+                                                    <div style={{ display: "flex", flexDirection: "column" }}>
+                                                        <Text delete type="secondary" style={{ fontSize: 12 }}>${product.price.toFixed(2)}</Text>
+                                                        <Text strong style={{ color: "#FF006E", fontSize: 20 }}>${product.discountPrice.toFixed(2)}</Text>
+                                                    </div>
+                                                ) : (
+                                                    <Text strong style={{ fontSize: 20 }}>${product.price.toFixed(2)}</Text>
+                                                )}
+                                            </div>
+
+                                            <Button
+                                                block
+                                                type="primary"
+                                                icon={<ShoppingCartOutlined />}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    addToCart(product);
+                                                    message.success(`${product.name} added to cart!`);
+                                                }}
+                                                disabled={!isInStock}
+                                                style={{
+                                                    height: 40,
+                                                    borderRadius: 12,
+                                                    background: isInStock ? "#FF006E" : "#d9d9d9",
+                                                    border: "none",
+                                                    fontWeight: 600,
+                                                    boxShadow: isInStock ? "0 4px 12px rgba(255, 0, 110, 0.2)" : "none"
+                                                }}
+                                            >
+                                                {isInStock ? "Add to Cart" : "Out of Stock"}
+                                            </Button>
+                                        </div>
+                                    </Card>
+                                </Col>
+                            );
+                        })}
+                    </Row>
+
+                    {hasMore && (
+                        <div style={{ textAlign: "center", marginTop: 40, marginBottom: 40 }}>
+                            <Button
+                                size="large"
+                                onClick={() => fetchProducts(true)}
+                                loading={isLoadingMore}
+                                style={{ borderRadius: 10, minWidth: 200, fontWeight: 600 }}
+                            >
+                                Load More Products
+                            </Button>
+                        </div>
+                    )}
+                </>
             )}
-            {filteredProducts.length === 0 && !isLoading && <div style={{ textAlign: "center", padding: 48 }}><Text type="secondary" style={{ fontSize: 18 }}>No products found</Text></div>}
+            {products.length === 0 && !isLoading && <div style={{ textAlign: "center", padding: 48 }}><Text type="secondary" style={{ fontSize: 18 }}>No products found</Text></div>}
         </ShopLayout>
     );
 };

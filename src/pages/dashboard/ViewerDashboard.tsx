@@ -4,14 +4,14 @@ import { Row, Col, Card, Statistic, Table, Tag, Typography, List, Skeleton, Spac
 import {
     ShoppingOutlined,
     OrderedListOutlined,
-    DollarOutlined,
     ClockCircleOutlined,
     RiseOutlined,
     FallOutlined,
 } from "@ant-design/icons";
 import {
-    LineChart, Line, BarChart, Bar, PieChart, Pie, Cell,
-    XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
+    BarChart, Bar,
+    XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+    PieChart, Pie, Cell, Legend,
 } from "recharts";
 import { IOrder, IProduct } from "../../interfaces";
 
@@ -29,29 +29,32 @@ const STATUS_COLORS: Record<string, string> = {
 
 export const ViewerDashboard: React.FC = () => {
     // Fetch all orders
-    const { data: ordersData, isLoading: ordersLoading } = useList<IOrder>({
+    const { query: ordersQuery } = useList<IOrder>({
         resource: "orders",
         pagination: { pageSize: 100 },
         sorters: [{ field: "createdAt", order: "desc" }],
     });
 
     // Fetch all products
-    const { data: productsData, isLoading: productsLoading } = useList<IProduct>({
+    const { query: productsQuery } = useList<IProduct>({
         resource: "products",
         pagination: { pageSize: 100 },
     });
 
-    const orders = ordersData?.data || [];
-    const products = productsData?.data || [];
+    const ordersLoading = ordersQuery.isLoading;
+    const productsLoading = productsQuery.isLoading;
+
+    const orders = ordersQuery.data?.data || [];
+    const products = productsQuery.data?.data || [];
 
     // Calculate stats
     const totalRevenue = orders
-        .filter((o) => o.orderStatus !== "CANCELLED")
-        .reduce((sum, o) => sum + o.total, 0);
+        .filter((o: IOrder) => o.orderStatus !== "CANCELLED")
+        .reduce((sum: number, o: IOrder) => sum + o.total, 0);
 
     const totalOrders = orders.length;
-    const pendingOrders = orders.filter((o) => o.orderStatus === "PENDING").length;
-    const activeProducts = products.filter((p) => p.isAvailable && p.stockQuantity > 0).length;
+    const pendingOrders = orders.filter((o: IOrder) => o.orderStatus === "PENDING").length;
+    const activeProducts = products.filter((p: IProduct) => p.isAvailable && p.stockQuantity > 0).length;
 
     // Revenue data for chart (last 7 days)
     const last7Days = Array.from({ length: 7 }, (_, i) => {
@@ -62,11 +65,11 @@ export const ViewerDashboard: React.FC = () => {
 
     const revenueData = last7Days.map((date) => {
         const dayOrders = orders.filter(
-            (o) => new Date(o.createdAt).toISOString().split("T")[0] === date && o.orderStatus !== "CANCELLED"
+            (o: IOrder) => new Date(o.createdAt).toISOString().split("T")[0] === date && o.orderStatus !== "CANCELLED"
         );
         return {
             date: new Date(date).toLocaleDateString("en-US", { month: "short", day: "numeric" }),
-            revenue: dayOrders.reduce((sum, o) => sum + o.total, 0),
+            revenue: dayOrders.reduce((sum: number, o: IOrder) => sum + o.total, 0),
             orders: dayOrders.length,
         };
     });
@@ -75,15 +78,15 @@ export const ViewerDashboard: React.FC = () => {
     const statusData = ["PENDING", "PROCESSING", "SHIPPING", "DELIVERED", "CANCELLED"].map(
         (status) => ({
             name: status,
-            value: orders.filter((o) => o.orderStatus === status).length,
+            value: orders.filter((o: IOrder) => o.orderStatus === status).length,
             color: STATUS_COLORS[status],
         })
     ).filter((s) => s.value > 0);
 
     // Top products by order count
     const productSales: Record<string, { name: string; count: number; revenue: number }> = {};
-    orders.forEach((order) => {
-        order.items?.forEach((item) => {
+    orders.forEach((order: IOrder) => {
+        order.items?.forEach((item: any) => {
             if (!productSales[item.productId]) {
                 productSales[item.productId] = {
                     name: item.productName,
@@ -102,7 +105,7 @@ export const ViewerDashboard: React.FC = () => {
 
     // Low stock products
     const lowStockProducts = products
-        .filter((p) => p.isAvailable && p.stockQuantity > 0 && p.stockQuantity <= 10)
+        .filter((p: IProduct) => p.isAvailable && p.stockQuantity > 0 && p.stockQuantity <= 10)
         .sort((a, b) => a.stockQuantity - b.stockQuantity)
         .slice(0, 5);
 
@@ -179,7 +182,7 @@ export const ViewerDashboard: React.FC = () => {
                                 <CartesianGrid strokeDasharray="3 3" />
                                 <XAxis dataKey="date" />
                                 <YAxis />
-                                <Tooltip formatter={(value: number) => [`$${value.toFixed(2)}`, "Revenue"]} />
+                                <Tooltip formatter={(value: any) => [`$${Number(value).toFixed(2)}`, "Revenue"]} />
                                 <Bar dataKey="revenue" fill="#FF006E" radius={[8, 8, 0, 0]} />
                             </BarChart>
                         </ResponsiveContainer>
@@ -220,7 +223,7 @@ export const ViewerDashboard: React.FC = () => {
                         <List
                             dataSource={topProducts}
                             locale={{ emptyText: "No sales data yet" }}
-                            renderItem={(item, index) => (
+                            renderItem={(item: any, index: number) => (
                                 <List.Item>
                                     <List.Item.Meta
                                         avatar={
@@ -248,7 +251,7 @@ export const ViewerDashboard: React.FC = () => {
                         <List
                             dataSource={lowStockProducts}
                             locale={{ emptyText: "All products well stocked ✅" }}
-                            renderItem={(item) => (
+                            renderItem={(item: any) => (
                                 <List.Item>
                                     <List.Item.Meta
                                         title={item.name}

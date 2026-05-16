@@ -49,7 +49,7 @@ export const dataProvider = (): DataProvider => ({
             : resource;
         const colRef = collection(db, collectionPath);
 
-        const currentPage = pagination?.current ?? 1;
+        const currentPage = (pagination as any)?.current ?? 1;
         const pageSize   = pagination?.pageSize ?? 10;
 
         const filterConstraints: QueryConstraint[] = [];

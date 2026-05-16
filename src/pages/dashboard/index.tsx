@@ -30,27 +30,30 @@ const STATUS_COLORS: Record<string, string> = {
 // ============================================================
 
 const ViewerDashboard: React.FC = () => {
-    const { data: ordersData, isLoading: ordersLoading } = useList<IOrder>({
+    const { query: ordersQuery } = useList<IOrder>({
         resource: "orders",
         pagination: { pageSize: 100 },
         sorters: [{ field: "createdAt", order: "desc" }],
     });
 
-    const { data: productsData, isLoading: productsLoading } = useList<IProduct>({
+    const { query: productsQuery } = useList<IProduct>({
         resource: "products",
         pagination: { pageSize: 100 },
     });
 
-    const orders = ordersData?.data || [];
-    const products = productsData?.data || [];
+    const ordersLoading = ordersQuery.isLoading;
+    const productsLoading = productsQuery.isLoading;
+
+    const orders = ordersQuery.data?.data || [];
+    const products = productsQuery.data?.data || [];
 
     const totalRevenue = orders
-        .filter((o) => o.orderStatus !== "CANCELLED")
-        .reduce((sum, o) => sum + o.total, 0);
+        .filter((o: IOrder) => o.orderStatus !== "CANCELLED")
+        .reduce((sum: number, o: IOrder) => sum + o.total, 0);
 
     const totalOrders = orders.length;
-    const pendingOrders = orders.filter((o) => o.orderStatus === "PENDING").length;
-    const activeProducts = products.filter((p) => p.isAvailable && p.stockQuantity > 0).length;
+    const pendingOrders = orders.filter((o: IOrder) => o.orderStatus === "PENDING").length;
+    const activeProducts = products.filter((p: IProduct) => p.isAvailable && p.stockQuantity > 0).length;
 
     // Revenue data for chart (last 7 days)
     const last7Days = Array.from({ length: 7 }, (_, i) => {
@@ -61,13 +64,13 @@ const ViewerDashboard: React.FC = () => {
 
     const revenueData = last7Days.map((date) => {
         const dayOrders = orders.filter(
-            (o) =>
+            (o: IOrder) =>
                 new Date(o.createdAt).toISOString().split("T")[0] === date &&
                 o.orderStatus !== "CANCELLED"
         );
         return {
             date: new Date(date).toLocaleDateString("en-US", { month: "short", day: "numeric" }),
-            revenue: dayOrders.reduce((sum, o) => sum + o.total, 0),
+            revenue: dayOrders.reduce((sum: number, o: IOrder) => sum + o.total, 0),
             orders: dayOrders.length,
         };
     });
@@ -76,15 +79,15 @@ const ViewerDashboard: React.FC = () => {
     const statusData = ["PENDING", "PROCESSING", "SHIPPING", "DELIVERED", "CANCELLED"]
         .map((status) => ({
             name: status,
-            value: orders.filter((o) => o.orderStatus === status).length,
+            value: orders.filter((o: IOrder) => o.orderStatus === status).length,
             color: STATUS_COLORS[status],
         }))
         .filter((s) => s.value > 0);
 
     // Top products by order count
     const productSales: Record<string, { name: string; count: number; revenue: number }> = {};
-    orders.forEach((order) => {
-        order.items?.forEach((item) => {
+    orders.forEach((order: IOrder) => {
+        order.items?.forEach((item: any) => {
             if (!productSales[item.productId]) {
                 productSales[item.productId] = { name: item.productName, count: 0, revenue: 0 };
             }
@@ -99,7 +102,7 @@ const ViewerDashboard: React.FC = () => {
 
     // Low stock products
     const lowStockProducts = products
-        .filter((p) => p.isAvailable && p.stockQuantity > 0 && p.stockQuantity <= 10)
+        .filter((p: IProduct) => p.isAvailable && p.stockQuantity > 0 && p.stockQuantity <= 10)
         .sort((a, b) => a.stockQuantity - b.stockQuantity)
         .slice(0, 5);
 
@@ -174,7 +177,7 @@ const ViewerDashboard: React.FC = () => {
                                 <CartesianGrid strokeDasharray="3 3" />
                                 <XAxis dataKey="date" />
                                 <YAxis />
-                                <Tooltip formatter={(value: number) => [`$${value.toFixed(2)}`, "Revenue"]} />
+                                <Tooltip formatter={(value: any) => [`$${Number(value).toFixed(2)}`, "Revenue"]} />
                                 <Bar dataKey="revenue" fill="#FF006E" radius={[8, 8, 0, 0]} />
                             </BarChart>
                         </ResponsiveContainer>
@@ -240,7 +243,7 @@ const ViewerDashboard: React.FC = () => {
                         <List
                             dataSource={lowStockProducts}
                             locale={{ emptyText: "All products well stocked ✅" }}
-                            renderItem={(item) => (
+                            renderItem={(item: any) => (
                                 <List.Item>
                                     <List.Item.Meta
                                         title={item.name}
@@ -325,37 +328,35 @@ const FullAdminDashboard: React.FC = () => {
         pagination: { pageSize: 5 },
         sorters: [{ field: "createdAt", order: "desc" }],
     });
-    const ordersData = ordersQuery.data;
-    const ordersLoading = ordersQuery.isLoading;
 
     const { query: productsQuery } = useList<IProduct>({
         resource: "products",
         pagination: { pageSize: 1 },
     });
-    const productsData = productsQuery.data;
-    const productsLoading = productsQuery.isLoading;
 
     const { query: usersQuery } = useList<IUser>({
         resource: "users",
         pagination: { pageSize: 1 },
     });
-    const usersData = usersQuery.data;
-    const usersLoading = usersQuery.isLoading;
 
     const { query: ticketsQuery } = useList<ISupportTicket>({
         resource: "support_tickets",
         filters: [{ field: "status", operator: "eq", value: "OPEN" }],
         pagination: { pageSize: 1 },
     });
-    const ticketsData = ticketsQuery.data;
-    const ticketsLoading = ticketsQuery.isLoading;
 
     const { query: allOrdersQuery } = useList<IOrder>({
         resource: "orders",
         pagination: { pageSize: 100 },
     });
+
+    const ordersLoading = ordersQuery.isLoading;
+    const productsLoading = productsQuery.isLoading;
+    const usersLoading = usersQuery.isLoading;
+    const ticketsLoading = ticketsQuery.isLoading;
+
     const allOrders = allOrdersQuery.data?.data || [];
-    const statusCounts = allOrders.reduce((acc: any, order) => {
+    const statusCounts = allOrders.reduce((acc: any, order: IOrder) => {
         acc[order.orderStatus] = (acc[order.orderStatus] || 0) + 1;
         return acc;
     }, {});
@@ -369,25 +370,25 @@ const FullAdminDashboard: React.FC = () => {
     const stats = [
         {
             title: "Total Orders",
-            value: ordersData?.total ?? 0,
+            value: ordersQuery.data?.total ?? 0,
             icon: <OrderedListOutlined style={{ color: "#3f8600" }} />,
             loading: ordersLoading,
         },
         {
             title: "Active Products",
-            value: productsData?.total ?? 0,
+            value: productsQuery.data?.total ?? 0,
             icon: <ShoppingOutlined style={{ color: "#cf1322" }} />,
             loading: productsLoading,
         },
         {
             title: "Total Users",
-            value: usersData?.total ?? 0,
+            value: usersQuery.data?.total ?? 0,
             icon: <UserOutlined style={{ color: "#1890ff" }} />,
             loading: usersLoading,
         },
         {
             title: "Open Tickets",
-            value: ticketsData?.total ?? 0,
+            value: ticketsQuery.data?.total ?? 0,
             icon: <CustomerServiceOutlined style={{ color: "#faad14" }} />,
             loading: ticketsLoading,
         },
@@ -414,7 +415,7 @@ const FullAdminDashboard: React.FC = () => {
                     <Card title="Recent Orders" bordered={false}>
                         <List
                             loading={ordersLoading}
-                            dataSource={ordersData?.data}
+                            dataSource={ordersQuery.data?.data}
                             renderItem={(item: IOrder) => (
                                 <List.Item
                                     actions={[<Text key="total" strong>${item.total.toFixed(2)}</Text>]}
@@ -442,7 +443,7 @@ const FullAdminDashboard: React.FC = () => {
                     </Card>
                     <Card title="Categories" bordered={false} style={{ marginBottom: "16px" }}>
                         <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
-                            {categoriesData.map((cat) => (
+                            {categoriesData.map((cat: ICategory) => (
                                 <Tag key={cat.id} color="blue">{cat.name}</Tag>
                             ))}
                         </div>
