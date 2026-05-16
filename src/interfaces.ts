@@ -8,6 +8,7 @@ export interface IPromotionBanner {
     backgroundColor: string;
     actionUrl: string;
     isActive: boolean;
+    createdAt?: number;
 }
 
 export interface ICategory {
