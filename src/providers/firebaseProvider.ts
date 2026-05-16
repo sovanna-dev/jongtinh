@@ -11,8 +11,10 @@ import {
     where,
     orderBy,
     limit,
+    startAfter,
     getCountFromServer,
     DocumentData,
+    DocumentSnapshot,
     WithFieldValue,
     QueryConstraint
 } from "firebase/firestore";
@@ -23,15 +25,46 @@ import {
 } from "firebase/auth";
 import { db, auth } from "../firebase";
 
+// Cursor cache for Firestore pagination.
+// Key format: "resource::page::pageSize::sorters::filters"
+// Stores the last DocumentSnapshot of each fetched page so the next
+// page can use startAfter() — Firestore's native cursor approach.
+const cursorCache = new Map<string, DocumentSnapshot>();
+
+const buildCacheKey = (
+    resource: string,
+    page: number,
+    pageSize: number,
+    sorters: any,
+    filters: any
+) =>
+    `${resource}::${page}::${pageSize}::${JSON.stringify(sorters ?? [])}::${JSON.stringify(filters ?? [])}`;
+
 export const dataProvider = (): DataProvider => ({
-    getList: async ({ resource, pagination, sorters, filters }) => {
-        const colRef = collection(db, resource);
+    getList: async ({ resource, pagination, sorters, filters, meta }) => {
+        // Support Firestore subcollections via meta.subCollection
+        // e.g. meta: { subCollection: "{ticketId}/replies" }
+        const collectionPath = meta?.subCollection
+            ? `${resource}/${meta.subCollection}`
+            : resource;
+        const colRef = collection(db, collectionPath);
+
+        const currentPage = pagination?.current ?? 1;
+        const pageSize   = pagination?.pageSize ?? 10;
 
         const filterConstraints: QueryConstraint[] = [];
         if (filters) {
             filters.forEach((filter) => {
-                if ("field" in filter && filter.operator === "eq") {
+                if (!("field" in filter)) return;
+                if (filter.operator === "eq") {
                     filterConstraints.push(where(filter.field, "==", filter.value));
+                } else if (
+                    filter.operator === "in" &&
+                    Array.isArray(filter.value) &&
+                    filter.value.length > 0
+                ) {
+                    // Firestore "in" supports max 30 values
+                    filterConstraints.push(where(filter.field, "in", filter.value.slice(0, 30)));
                 }
             });
         }
@@ -44,12 +77,27 @@ export const dataProvider = (): DataProvider => ({
             });
         }
 
-        if (pagination && pagination.pageSize) {
-            dataConstraints.push(limit(pagination.pageSize));
+        // Cursor-based pagination: if we have the last doc of the
+        // previous page cached, start after it. Otherwise start fresh
+        // (page 1, or any page whose predecessor was never fetched).
+        if (currentPage > 1) {
+            const prevKey = buildCacheKey(resource, currentPage - 1, pageSize, sorters, filters);
+            const cursor  = cursorCache.get(prevKey);
+            if (cursor) {
+                dataConstraints.push(startAfter(cursor));
+            }
         }
+
+        dataConstraints.push(limit(pageSize));
 
         const q = query(colRef, ...dataConstraints);
         const snapshot = await getDocs(q);
+
+        // Cache the last document of this page so the next page can use it
+        if (snapshot.docs.length > 0) {
+            const pageKey = buildCacheKey(resource, currentPage, pageSize, sorters, filters);
+            cursorCache.set(pageKey, snapshot.docs[snapshot.docs.length - 1]);
+        }
 
         const countSnapshot = await getCountFromServer(query(colRef, ...filterConstraints));
         const total = countSnapshot.data().count;
@@ -79,8 +127,12 @@ export const dataProvider = (): DataProvider => ({
         };
     },
 
-    create: async ({ resource, variables }) => {
-        const colRef = collection(db, resource);
+    create: async ({ resource, variables, meta }) => {
+        // Support Firestore subcollections via meta.subCollection
+        const collectionPath = meta?.subCollection
+            ? `${resource}/${meta.subCollection}`
+            : resource;
+        const colRef = collection(db, collectionPath);
         const docRef = await addDoc(colRef, variables as WithFieldValue<DocumentData>);
 
         // Update the document to set the id field to match the document ID
@@ -88,9 +140,8 @@ export const dataProvider = (): DataProvider => ({
 
         return {
             data: {
-                id: docRef.id,
                 ...variables,
-                id: docRef.id,  // Ensure id is set
+                id: docRef.id,
             } as any,
         };
     },
@@ -179,7 +230,11 @@ export const authProvider: AuthProvider = {
     },
     check: async () => {
         return new Promise((resolve) => {
-            onAuthStateChanged(auth, async (user) => {
+            // onAuthStateChanged returns an unsubscribe function.
+            // We call it immediately after the first event fires so the
+            // listener does not accumulate on every Refine route check.
+            const unsubscribe = onAuthStateChanged(auth, async (user) => {
+                unsubscribe();
                 if (user) {
                     const userDoc = await getDoc(doc(db, "users", user.uid));
                     if (userDoc.exists() && userDoc.data().isAdmin === true) {

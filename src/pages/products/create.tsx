@@ -2,6 +2,7 @@ import { Create, useForm, useSelect } from "@refinedev/antd";
 import { Form, Input, InputNumber, Switch, Select, Space, Button, Divider } from "antd";
 import { MinusCircleOutlined, PlusOutlined } from "@ant-design/icons";
 import { IProduct, ICategory } from "../../interfaces";
+import { ProductImageList } from "../../components/ProductImageList";
 
 export const ProductCreate = () => {
     const { formProps, saveButtonProps, onFinish } = useForm<IProduct>();
@@ -73,6 +74,16 @@ export const ProductCreate = () => {
                     <Form.Item
                         label="Discount Price ($)"
                         name="discountPrice"
+                        rules={[{
+                            validator(_, value) {
+                                if (value == null || value === "") return Promise.resolve();
+                                const price = formProps?.form?.getFieldValue("price");
+                                if (price != null && value >= price) {
+                                    return Promise.reject(new Error("Discount price must be less than the original price"));
+                                }
+                                return Promise.resolve();
+                            },
+                        }]}
                     >
                         <InputNumber min={0} step={0.01} precision={2} style={{ width: 150 }} />
                     </Form.Item>
@@ -110,30 +121,8 @@ export const ProductCreate = () => {
 
                 <Divider orientation="left">Media</Divider>
 
-                <Form.Item label="Image URLs">
-                    <Form.List name="images">
-                        {(fields, { add, remove }) => (
-                            <>
-                                {fields.map(({ key, name, ...restField }) => (
-                                    <Space key={key} style={{ display: "flex", marginBottom: 8 }} align="baseline">
-                                        <Form.Item
-                                            {...restField}
-                                            name={[name]}
-                                            rules={[{ required: true, type: "url", message: "Please enter a valid image URL" }]}
-                                        >
-                                            <Input placeholder="https://example.com/image.png" style={{ width: 400 }} />
-                                        </Form.Item>
-                                        <MinusCircleOutlined onClick={() => remove(name)} />
-                                    </Space>
-                                ))}
-                                <Form.Item>
-                                    <Button type="dashed" onClick={() => add()} block icon={<PlusOutlined />}>
-                                        Add Image URL
-                                    </Button>
-                                </Form.Item>
-                            </>
-                        )}
-                    </Form.List>
+                <Form.Item label="Product Images">
+                    <ProductImageList />
                 </Form.Item>
 
                 <Divider orientation="left">Attributes</Divider>

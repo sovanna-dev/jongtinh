@@ -1,9 +1,10 @@
 import { Create, useForm } from "@refinedev/antd";
-import { Form, Input, InputNumber } from "antd";
+import { Form, Input, InputNumber, Divider, Image, Space } from "antd";
 import { ICategory } from "../../interfaces";
+import { CloudinaryUpload } from "../../components/CloudinaryUpload";
 
 export const CategoryCreate = () => {
-    const { formProps, saveButtonProps, onFinish } = useForm<ICategory>();
+    const { formProps, saveButtonProps, onFinish, form } = useForm<ICategory>();
 
     const handleOnFinish = (values: any) => {
         onFinish({
@@ -30,8 +31,21 @@ export const CategoryCreate = () => {
                     <Input placeholder="e.g. Electronics" />
                 </Form.Item>
 
+                <Divider orientation="left">Category Icon</Divider>
+
+                {/* Cloudinary Upload */}
+                <Form.Item label="Upload Icon Image">
+                    <CloudinaryUpload
+                        onUploadComplete={(url) => {
+                            form.setFieldValue("icon", url);
+                            form.validateFields(["icon"]);
+                        }}
+                    />
+                </Form.Item>
+
+                {/* Manual URL Input */}
                 <Form.Item
-                    label="Icon URL"
+                    label="Or Paste Icon URL"
                     name="icon"
                     rules={[{ required: true, type: "url", message: "Please enter a valid image URL" }]}
                 >

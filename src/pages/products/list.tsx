@@ -3,17 +3,16 @@ import {
     useTable,
     EditButton,
     DeleteButton,
-    ShowButton,
-    getDefaultFilter,
 } from "@refinedev/antd";
-import { Table, Space, Tag, Image, Typography, Select } from "antd";
-import { useMany, useSelect } from "@refinedev/core";
+import { Table, Space, Tag, Image, Typography, Select, Button } from "antd";
+import { useMany } from "@refinedev/core";
+import { useSelect } from "@refinedev/antd";
 import { IProduct, ICategory } from "../../interfaces";
 
 const { Text } = Typography;
 
 export const ProductList = () => {
-    const { tableProps, filters } = useTable<IProduct>({
+    const { tableProps } = useTable<IProduct>({
         syncWithLocation: true,
         resource: "products",
     });
@@ -29,7 +28,7 @@ export const ProductList = () => {
     const { selectProps: categorySelectProps } = useSelect<ICategory>({
         resource: "categories",
         optionLabel: "name",
-    }) as any;
+    });
 
     const categoriesData = categoriesQuery?.data;
     const categoriesLoading = categoriesQuery?.isLoading;
@@ -49,7 +48,7 @@ export const ProductList = () => {
                         />
                     )}
                 />
-                <Table.Column dataIndex="name" title="Name" filterIcon />
+                <Table.Column dataIndex="name" title="Name" />
                 <Table.Column
                     dataIndex="category"
                     title="Category"
@@ -58,14 +57,29 @@ export const ProductList = () => {
                         const category = categoriesData?.data.find((item: any) => item.id === value);
                         return <Tag color="blue">{category?.name || "No Category"}</Tag>;
                     }}
-                    filterDropdown={(props) => (
+                    filterDropdown={({ setSelectedKeys, selectedKeys, confirm, clearFilters }) => (
                         <div style={{ padding: 8 }}>
                             <Select
                                 {...categorySelectProps}
-                                style={{ width: 200 }}
+                                style={{ width: 200, display: "block", marginBottom: 8 }}
                                 placeholder="Select Category"
-                                {...props}
+                                allowClear
+                                value={selectedKeys[0] as string | undefined}
+                                onChange={(value) => {
+                                    setSelectedKeys(value ? [value] : []);
+                                    confirm();
+                                }}
                             />
+                            <Button
+                                size="small"
+                                onClick={() => {
+                                    clearFilters?.();
+                                    confirm();
+                                }}
+                                style={{ width: "100%" }}
+                            >
+                                Reset
+                            </Button>
                         </div>
                     )}
                 />

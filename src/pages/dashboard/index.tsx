@@ -1,6 +1,6 @@
-import React from "react";
-import { useApiUrl, useCustom } from "@refinedev/core";
-import { Row, Col, Card, Statistic, List, Avatar, Typography, Skeleton, Progress, Tag } from "antd";
+import React, { useEffect, useState } from "react";
+import { Link } from "react-router";
+import { Row, Col, Card, Statistic, List, Typography, Skeleton, Progress, Tag } from "antd";
 import {
     ShoppingOutlined,
     UserOutlined,
@@ -8,9 +8,47 @@ import {
     CustomerServiceOutlined
 } from "@ant-design/icons";
 import { useList } from "@refinedev/core";
+import {
+    collection,
+    query,
+    where,
+    getCountFromServer
+} from "firebase/firestore";
+import { db } from "../../firebase";
 import { IOrder, IProduct, IUser, ISupportTicket, ICategory } from "../../interfaces";
 
 const { Title, Text } = Typography;
+
+interface StatusCounts {
+    PENDING: number;
+    PROCESSING: number;
+    SHIPPING: number;
+    DELIVERED: number;
+    CANCELLED: number;
+    total: number;
+}
+
+// Fetches accurate per-status counts using Firestore count queries.
+// getCountFromServer does NOT read documents — it only returns a count,
+// so this is cheap regardless of how many orders exist.
+const fetchStatusCounts = async (): Promise<StatusCounts> => {
+    const statuses = ["PENDING", "PROCESSING", "SHIPPING", "DELIVERED", "CANCELLED"] as const;
+    const colRef = collection(db, "orders");
+
+    const results = await Promise.all(
+        statuses.map((status) =>
+            getCountFromServer(query(colRef, where("orderStatus", "==", status)))
+        )
+    );
+
+    const counts = Object.fromEntries(
+        statuses.map((status, i) => [status, results[i].data().count])
+    ) as Omit<StatusCounts, "total">;
+
+    const total = Object.values(counts).reduce((sum, n) => sum + n, 0);
+
+    return { ...counts, total };
+};
 
 export const DashboardPage: React.FC = () => {
     const { query: ordersQuery } = useList<IOrder>({
@@ -43,16 +81,16 @@ export const DashboardPage: React.FC = () => {
     const ticketsData = ticketsQuery.data;
     const ticketsLoading = ticketsQuery.isLoading;
 
-    // Fetch orders for status breakdown
-    const { query: allOrdersQuery } = useList<IOrder>({
-        resource: "orders",
-        pagination: { pageSize: 100 }, // Fetch recent to approximate distribution
-    });
-    const allOrders = allOrdersQuery.data?.data || [];
-    const statusCounts = allOrders.reduce((acc: any, order) => {
-        acc[order.orderStatus] = (acc[order.orderStatus] || 0) + 1;
-        return acc;
-    }, {});
+    // Accurate order status distribution via Firestore count queries
+    const [statusCounts, setStatusCounts] = useState<StatusCounts | null>(null);
+    const [statusLoading, setStatusLoading] = useState(true);
+
+    useEffect(() => {
+        setStatusLoading(true);
+        fetchStatusCounts()
+            .then(setStatusCounts)
+            .finally(() => setStatusLoading(false));
+    }, []);
 
     // Fetch categories
     const { query: categoriesQuery } = useList<ICategory>({
@@ -88,6 +126,9 @@ export const DashboardPage: React.FC = () => {
         },
     ];
 
+    const pct = (n: number) =>
+        statusCounts?.total ? Math.round((n / statusCounts.total) * 100) : 0;
+
     return (
         <div style={{ padding: "24px" }}>
             <Title level={2}>Dashboard Overview</Title>
@@ -116,11 +157,11 @@ export const DashboardPage: React.FC = () => {
                             dataSource={ordersData?.data}
                             renderItem={(item: IOrder) => (
                                 <List.Item
-                                    actions={[<Text key="total" strong>${item.total.toFixed(2)}</Text>]}
+                                    actions={[<Text key="total" strong>${item.total?.toFixed(2) ?? "—"}</Text>]}
                                 >
                                     <List.Item.Meta
-                                        title={`Order #${item.orderId.substring(0, 8)}`}
-                                        description={`${item.shippingAddress.fullName} - ${new Date(item.createdAt).toLocaleDateString()}`}
+                                        title={`Order #${item.orderId?.substring(0, 8) ?? item.id?.substring(0, 8) ?? "—"}`}
+                                        description={`${item.shippingAddress?.fullName ?? "Unknown"} - ${item.createdAt ? new Date(item.createdAt).toLocaleDateString() : "—"}`}
                                     />
                                     <Text type="secondary">{item.orderStatus}</Text>
                                 </List.Item>
@@ -130,14 +171,28 @@ export const DashboardPage: React.FC = () => {
                 </Col>
                 <Col xs={24} lg={8}>
                     <Card title="Order Status Distribution" bordered={false} style={{ marginBottom: "16px" }}>
-                        <div style={{ padding: "8px 0" }}>
-                            <Text>Pending</Text>
-                            <Progress percent={Math.round((statusCounts["PENDING"] || 0) / (allOrders.length || 1) * 100)} status="active" strokeColor="#faad14" />
-                            <Text>Processing/Shipping</Text>
-                            <Progress percent={Math.round(((statusCounts["PROCESSING"] || 0) + (statusCounts["SHIPPING"] || 0)) / (allOrders.length || 1) * 100)} status="active" strokeColor="#1890ff" />
-                            <Text>Delivered</Text>
-                            <Progress percent={Math.round((statusCounts["DELIVERED"] || 0) / (allOrders.length || 1) * 100)} status="active" strokeColor="#52c41a" />
-                        </div>
+                        <Skeleton loading={statusLoading} active paragraph={{ rows: 3 }}>
+                            <div style={{ padding: "8px 0" }}>
+                                <Text>Pending</Text>
+                                <Progress
+                                    percent={pct(statusCounts?.PENDING ?? 0)}
+                                    status="active"
+                                    strokeColor="#faad14"
+                                />
+                                <Text>Processing / Shipping</Text>
+                                <Progress
+                                    percent={pct((statusCounts?.PROCESSING ?? 0) + (statusCounts?.SHIPPING ?? 0))}
+                                    status="active"
+                                    strokeColor="#1890ff"
+                                />
+                                <Text>Delivered</Text>
+                                <Progress
+                                    percent={pct(statusCounts?.DELIVERED ?? 0)}
+                                    status="active"
+                                    strokeColor="#52c41a"
+                                />
+                            </div>
+                        </Skeleton>
                     </Card>
                     <Card title="Categories" bordered={false} style={{ marginBottom: "16px" }}>
                         <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
@@ -158,7 +213,7 @@ export const DashboardPage: React.FC = () => {
                             ]}
                             renderItem={(item) => (
                                 <List.Item>
-                                    <a href={item.link}>{item.title}</a>
+                                    <Link to={item.link}>{item.title}</Link>
                                 </List.Item>
                             )}
                         />

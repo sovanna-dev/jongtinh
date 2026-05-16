@@ -1,7 +1,9 @@
 import { Edit, useForm, useSelect } from "@refinedev/antd";
 import { Form, Input, InputNumber, Switch, Select, Space, Button, Divider } from "antd";
 import { MinusCircleOutlined, PlusOutlined } from "@ant-design/icons";
+import { useMemo } from "react";
 import { IProduct, ICategory } from "../../interfaces";
+import { ProductImageList } from "../../components/ProductImageList";
 
 export const ProductEdit = () => {
     const { formProps, saveButtonProps, onFinish, query } = useForm<IProduct>();
@@ -11,17 +13,21 @@ export const ProductEdit = () => {
         optionLabel: "name",
     });
 
-    // Convert specifications from object to array for form
-    const initialData = query?.data?.data;
-    if (initialData?.specifications) {
-        formProps.initialValues = {
+    // Convert specifications from Firestore object { key: value } to
+    // Form.List array [{ key, value }] — only recomputed when data changes
+    const initialValues = useMemo(() => {
+        const data = query?.data?.data;
+        if (!data) return formProps.initialValues;
+
+        const specifications = data.specifications
+            ? Object.entries(data.specifications).map(([key, value]) => ({ key, value }))
+            : [];
+
+        return {
             ...formProps.initialValues,
-            specifications: Object.entries(initialData.specifications).map(([key, value]) => ({
-                key,
-                value,
-            })),
+            specifications,
         };
-    }
+    }, [query?.data?.data]);
 
     const handleOnFinish = (values: any) => {
         onFinish({
@@ -45,6 +51,7 @@ export const ProductEdit = () => {
         <Edit saveButtonProps={saveButtonProps}>
             <Form
                 {...formProps}
+                initialValues={initialValues}
                 layout="vertical"
                 onFinish={handleOnFinish}
             >
@@ -76,6 +83,16 @@ export const ProductEdit = () => {
                     <Form.Item
                         label="Discount Price ($)"
                         name="discountPrice"
+                        rules={[{
+                            validator(_, value) {
+                                if (value == null || value === "") return Promise.resolve();
+                                const price = formProps?.form?.getFieldValue("price");
+                                if (price != null && value >= price) {
+                                    return Promise.reject(new Error("Discount price must be less than the original price"));
+                                }
+                                return Promise.resolve();
+                            },
+                        }]}
                     >
                         <InputNumber min={0} step={0.01} precision={2} style={{ width: 150 }} />
                     </Form.Item>
@@ -113,30 +130,8 @@ export const ProductEdit = () => {
 
                 <Divider orientation="left">Media</Divider>
 
-                <Form.Item label="Image URLs">
-                    <Form.List name="images">
-                        {(fields, { add, remove }) => (
-                            <>
-                                {fields.map(({ key, name, ...restField }) => (
-                                    <Space key={key} style={{ display: "flex", marginBottom: 8 }} align="baseline">
-                                        <Form.Item
-                                            {...restField}
-                                            name={[name]}
-                                            rules={[{ required: true, type: "url", message: "Please enter a valid image URL" }]}
-                                        >
-                                            <Input placeholder="https://example.com/image.png" style={{ width: 400 }} />
-                                        </Form.Item>
-                                        <MinusCircleOutlined onClick={() => remove(name)} />
-                                    </Space>
-                                ))}
-                                <Form.Item>
-                                    <Button type="dashed" onClick={() => add()} block icon={<PlusOutlined />}>
-                                        Add Image URL
-                                    </Button>
-                                </Form.Item>
-                            </>
-                        )}
-                    </Form.List>
+                <Form.Item label="Product Images">
+                    <ProductImageList />
                 </Form.Item>
 
                 <Divider orientation="left">Attributes</Divider>
