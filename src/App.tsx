@@ -22,8 +22,11 @@ import { ColorModeContextProvider } from "./contexts/color-mode";
 import { RoleProvider, useRole } from "./contexts/RoleContext";
 import { useState } from "react";
 import { IProduct } from "./interfaces";
+import { CartProvider } from "./contexts/CartContext";
 
-// Admin Pages
+// ═══════════════════════════════════════════════════
+// ADMIN PAGES
+// ═══════════════════════════════════════════════════
 import { BannerList } from "./pages/promotion-banners/list";
 import { BannerCreate } from "./pages/promotion-banners/create";
 import { BannerEdit } from "./pages/promotion-banners/edit";
@@ -46,7 +49,9 @@ import { FaqList } from "./pages/faqs/list";
 import { FaqCreate } from "./pages/faqs/create";
 import { FaqEdit } from "./pages/faqs/edit";
 
-// Shop Pages
+// ═══════════════════════════════════════════════════
+// SHOP PAGES
+// ═══════════════════════════════════════════════════
 import { ShopHomePage } from "./pages/shop/HomePage";
 import { ProductDetail } from "./pages/shop/ProductDetail";
 import { CartPage } from "./pages/shop/CartPage";
@@ -60,66 +65,72 @@ interface CartItem {
     quantity: number;
 }
 
+// ═══════════════════════════════════════════════════
+// SHOP ROUTES (Public — No Login Required)
+// ═══════════════════════════════════════════════════
 function ShopRoutes() {
     const [cart, setCart] = useState<CartItem[]>([]);
-    const [searchQuery, setSearchQuery] = useState("");
 
     return (
-        <Routes>
-            <Route path="/shop" element={<ShopHomePage />} />
-            <Route path="/shop/product/:id" element={<ProductDetail cart={cart} setCart={setCart} />} />
-            <Route path="/shop/cart" element={<CartPage cart={cart} setCart={setCart} />} />
-            <Route path="/shop/checkout" element={<CheckoutPage cart={cart} setCart={setCart} />} />
-            <Route path="/shop/order/:id" element={<OrderTracking cart={cart} setCart={setCart} />} />
-
-            <Route path="/shop/orders" element={<OrdersPage cart={cart} setCart={setCart} />} />
-            <Route path="/shop/profile" element={<ProfilePage cart={cart} setCart={setCart} />} />
-
-        </Routes>
+        <CartProvider>
+                    <Routes>
+                        <Route path="/" element={<Navigate to="/shop" replace />} />
+                        <Route path="/shop" element={<ShopHomePage />} />
+                        <Route path="/shop/product/:id" element={<ProductDetail />} />
+                        <Route path="/shop/cart" element={<CartPage />} />
+                        <Route path="/shop/checkout" element={<CheckoutPage />} />
+                        <Route path="/shop/order/:id" element={<OrderTracking />} />
+                        <Route path="/shop/orders" element={<OrdersPage />} />
+                        <Route path="/shop/profile" element={<ProfilePage />} />
+                    </Routes>
+        </CartProvider>
     );
 }
 
+// ═══════════════════════════════════════════════════
+// ADMIN ROUTES (Login Required)
+// ═══════════════════════════════════════════════════
 function AppContent() {
     const { hasAccess, roleConfig } = useRole();
 
     const allResources = [
-        { name: "dashboard", list: "/", meta: { label: "Dashboard" } },
+        { name: "dashboard", list: "/admin", meta: { label: "Dashboard" } },
         {
-            name: "promotion_banners", list: "/promotion-banners",
-            create: "/promotion-banners/create", edit: "/promotion-banners/edit/:id",
+            name: "promotion_banners", list: "/admin/promotion-banners",
+            create: "/admin/promotion-banners/create", edit: "/admin/promotion-banners/edit/:id",
             meta: { canDelete: roleConfig.canDelete, label: "Promotion Banners" },
         },
         {
-            name: "categories", list: "/categories",
-            create: "/categories/create", edit: "/categories/edit/:id",
+            name: "categories", list: "/admin/categories",
+            create: "/admin/categories/create", edit: "/admin/categories/edit/:id",
             meta: { canDelete: roleConfig.canDelete, label: "Categories" },
         },
         {
-            name: "products", list: "/products",
-            create: "/products/create", edit: "/products/edit/:id",
+            name: "products", list: "/admin/products",
+            create: "/admin/products/create", edit: "/admin/products/edit/:id",
             meta: { canDelete: roleConfig.canDelete, label: "Products" },
         },
         {
-            name: "orders", list: "/orders", edit: "/orders/edit/:id",
+            name: "orders", list: "/admin/orders", edit: "/admin/orders/edit/:id",
             meta: { canDelete: roleConfig.canDelete, label: "Orders" },
         },
         {
-            name: "users", list: "/users", edit: "/users/edit/:id",
+            name: "users", list: "/admin/users", edit: "/admin/users/edit/:id",
             meta: { label: "Users" },
         },
         {
-            name: "support_tickets", list: "/support-tickets",
-            show: "/support-tickets/show/:id",
+            name: "support_tickets", list: "/admin/support-tickets",
+            show: "/admin/support-tickets/show/:id",
             meta: { label: "Support Tickets" },
         },
         {
-            name: "notifications", list: "/notifications",
-            create: "/notifications/create",
+            name: "notifications", list: "/admin/notifications",
+            create: "/admin/notifications/create",
             meta: { label: "Notifications" },
         },
         {
-            name: "faqs", list: "/faqs",
-            create: "/faqs/create", edit: "/faqs/edit/:id",
+            name: "faqs", list: "/admin/faqs",
+            create: "/admin/faqs/create", edit: "/admin/faqs/edit/:id",
             meta: { canDelete: roleConfig.canDelete, label: "FAQs" },
         },
     ];
@@ -136,13 +147,14 @@ function AppContent() {
             options={{ syncWithLocation: true, warnWhenUnsavedChanges: true }}
         >
             <Routes>
+                {/* Admin Authenticated Routes */}
                 <Route
                     element={
                         <Authenticated key="authenticated-inner" fallback={<CatchAllNavigate to="/login" />}>
                             <ThemedLayout
                                 Header={() => <Header sticky />}
                                 Title={({ collapsed }) => (
-                                    <ThemedTitle collapsed={collapsed} text="SmartShop Admin" />
+                                    <ThemedTitle collapsed={collapsed} text="JongTinh Admin" />
                                 )}
                             >
                                 <Outlet />
@@ -150,66 +162,87 @@ function AppContent() {
                         </Authenticated>
                     }
                 >
-                    <Route index element={<DashboardPage />} />
+                    {/* Admin Dashboard */}
+                    <Route path="/admin" element={<DashboardPage />} />
+
+                    {/* Promotion Banners */}
                     {hasAccess("promotion_banners") && (
-                        <Route path="/promotion-banners">
+                        <Route path="/admin/promotion-banners">
                             <Route index element={<BannerList />} />
                             {roleConfig.canCreate && <Route path="create" element={<BannerCreate />} />}
                             {roleConfig.canEdit && <Route path="edit/:id" element={<BannerEdit />} />}
                         </Route>
                     )}
+
+                    {/* Categories */}
                     {hasAccess("categories") && (
-                        <Route path="/categories">
+                        <Route path="/admin/categories">
                             <Route index element={<CategoryList />} />
                             {roleConfig.canCreate && <Route path="create" element={<CategoryCreate />} />}
                             {roleConfig.canEdit && <Route path="edit/:id" element={<CategoryEdit />} />}
                         </Route>
                     )}
+
+                    {/* Products */}
                     {hasAccess("products") && (
-                        <Route path="/products">
+                        <Route path="/admin/products">
                             <Route index element={<ProductList />} />
                             {roleConfig.canCreate && <Route path="create" element={<ProductCreate />} />}
                             {roleConfig.canEdit && <Route path="edit/:id" element={<ProductEdit />} />}
                         </Route>
                     )}
+
+                    {/* Orders */}
                     {hasAccess("orders") && (
-                        <Route path="/orders">
+                        <Route path="/admin/orders">
                             <Route index element={<OrderList />} />
                             {roleConfig.canEdit && <Route path="edit/:id" element={<OrderEdit />} />}
                         </Route>
                     )}
+
+                    {/* Users */}
                     {hasAccess("users") && (
-                        <Route path="/users">
+                        <Route path="/admin/users">
                             <Route index element={<UserList />} />
                             <Route path="edit/:id" element={<UserEdit />} />
                         </Route>
                     )}
+
+                    {/* Support Tickets */}
                     {hasAccess("support_tickets") && (
-                        <Route path="/support-tickets">
+                        <Route path="/admin/support-tickets">
                             <Route index element={<TicketList />} />
                             <Route path="show/:id" element={<TicketShow />} />
                         </Route>
                     )}
+
+                    {/* FAQs */}
                     {hasAccess("faqs") && (
-                        <Route path="/faqs">
+                        <Route path="/admin/faqs">
                             <Route index element={<FaqList />} />
                             {roleConfig.canCreate && <Route path="create" element={<FaqCreate />} />}
                             {roleConfig.canEdit && <Route path="edit/:id" element={<FaqEdit />} />}
                         </Route>
                     )}
+
+                    {/* Notifications */}
                     {hasAccess("notifications") && (
-                        <Route path="/notifications">
+                        <Route path="/admin/notifications">
                             <Route index element={<NotificationList />} />
                             {roleConfig.canCreate && <Route path="create" element={<NotificationCreate />} />}
                         </Route>
                     )}
                 </Route>
-                <Route element={<Authenticated key="authenticated-outer" fallback={<Outlet />}><Navigate to="/" /></Authenticated>}>
+
+                {/* Login Routes */}
+                <Route element={<Authenticated key="authenticated-outer" fallback={<Outlet />}><Navigate to="/admin" /></Authenticated>}>
                     <Route path="/login" element={<AuthPage type="login" />} />
                     <Route path="/register" element={<AuthPage type="register" />} />
                     <Route path="/forgot-password" element={<AuthPage type="forgotPassword" />} />
                 </Route>
-                <Route element={<Authenticated key="authenticated-auth"><ThemedLayout Header={() => <Header sticky />} Title={({ collapsed }) => (<ThemedTitle collapsed={collapsed} text="SmartShop Admin" />)}><Outlet /></ThemedLayout></Authenticated>}>
+
+                {/* Error Route */}
+                <Route element={<Authenticated key="authenticated-auth"><ThemedLayout Header={() => <Header sticky />} Title={({ collapsed }) => (<ThemedTitle collapsed={collapsed} text="JongTinh Admin" />)}><Outlet /></ThemedLayout></Authenticated>}>
                     <Route path="*" element={<ErrorComponent />} />
                 </Route>
             </Routes>
@@ -220,6 +253,9 @@ function AppContent() {
     );
 }
 
+// ═══════════════════════════════════════════════════
+// MAIN APP
+// ═══════════════════════════════════════════════════
 function App() {
     return (
         <HashRouter>
@@ -228,8 +264,9 @@ function App() {
                     <AntdApp>
                         <DevtoolsProvider>
                             <RoleProvider>
-                                {/* Shop routes OUTSIDE Refine — public, no auth needed */}
+                                {/* Shop routes FIRST — public, no auth needed */}
                                 <ShopRoutes />
+                                {/* Admin routes — wrapped in Refine */}
                                 <AppContent />
                             </RoleProvider>
                             <DevtoolsPanel />

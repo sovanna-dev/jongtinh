@@ -194,12 +194,11 @@ export const authProvider: AuthProvider = {
        try {
            const userCredential = await signInWithEmailAndPassword(auth, email, password);
            const user = userCredential.user;
-
            const userDoc = await getDoc(doc(db, "users", user.uid));
            if (userDoc.exists() && userDoc.data().isAdmin === true) {
                return {
                    success: true,
-                   redirectTo: "/",
+                   redirectTo: "/admin",  // ← Changed from "/"
                };
            } else {
                await signOut(auth);
@@ -214,10 +213,7 @@ export const authProvider: AuthProvider = {
        } catch (error: any) {
            return {
                success: false,
-               error: {
-                   name: "Login Error",
-                   message: error.message,
-               },
+               error: { name: "Login Error", message: error.message },
            };
        }
    },
@@ -230,9 +226,6 @@ export const authProvider: AuthProvider = {
     },
     check: async () => {
         return new Promise((resolve) => {
-            // onAuthStateChanged returns an unsubscribe function.
-            // We call it immediately after the first event fires so the
-            // listener does not accumulate on every Refine route check.
             const unsubscribe = onAuthStateChanged(auth, async (user) => {
                 unsubscribe();
                 if (user) {
