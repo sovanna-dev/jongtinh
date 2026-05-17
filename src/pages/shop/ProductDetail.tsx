@@ -69,7 +69,7 @@ export const ProductDetail: React.FC = () => {
                                 border: "none",
                                 boxShadow: "0 8px 32px rgba(0,0,0,0.08)"
                             }}
-                            bodyStyle={{ padding: 0 }}
+                            styles={{ body: { padding: 0 } }}
                         >
                             <Image
                                 src={product.images?.[selectedImage] || "https://via.placeholder.com/600"}

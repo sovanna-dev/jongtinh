@@ -58,7 +58,7 @@ export const CartPage: React.FC = () => {
                                     <Card
                                         key={item.product.id}
                                         style={{ borderRadius: 20, border: "none", boxShadow: "0 4px 12px rgba(0,0,0,0.05)" }}
-                                        bodyStyle={{ padding: 16 }}
+                                        styles={{ body: { padding: 16 } }}
                                     >
                                         <Row gutter={16} align="middle">
                                             <Col xs={8} sm={4}>

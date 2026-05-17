@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router";
 import { Typography, Form, Input, Button, Radio, Space, Divider, message, Steps, Card, Result, Row, Col, Badge, Empty } from "antd";
 import { CreditCardOutlined, BankOutlined, DollarOutlined, ShoppingOutlined, ArrowLeftOutlined, SafetyCertificateOutlined } from "@ant-design/icons";
-import { doc, setDoc } from "firebase/firestore";
+import { collection, doc, setDoc, addDoc } from "firebase/firestore";
 import { db, auth } from "../../firebase";
 import { ShopLayout } from "./ShopLayout";
 import { useCart } from "../../contexts/CartContext";
@@ -20,17 +20,26 @@ export const CheckoutPage: React.FC = () => {
     const [addressValues, setAddressValues] = useState({ fullName: "", phoneNumber: "", streetAddress: "", city: "", province: "", postalCode: "" });
     const { cart, clearCart, cartTotal } = useCart();
 
-    const shipping = cart.length > 0 ? 5.00 : 0;
-    const total = cartTotal + shipping;
+    const shippingCost = cart.length > 0 ? 5.00 : 0;
+    const subtotal = cartTotal;
+    const total = subtotal + shippingCost;
 
     const handlePlaceOrder = async () => {
         if (isCreating) return;
         const user = auth.currentUser;
         if (!user) { message.error("Please login first."); return; }
+        if (!addressValues.fullName || !addressValues.phoneNumber || !addressValues.streetAddress || !addressValues.city || !addressValues.province) {
+            message.error("Fill all required fields."); setCurrentStep("address"); return;
+        }
 
         setIsCreating(true);
         try {
             const newOrderId = `ORD-${Date.now()}-${Math.random().toString(36).substring(2, 8)}`;
+            const subtotal = cartTotal;  // ✅ Define subtotal
+            const shippingCost = 0;
+            const orderTotal = subtotal + shippingCost;  // ✅ Use subtotal
+
+            // Save order
             await setDoc(doc(db, "orders", newOrderId), {
                 id: newOrderId,
                 orderId: newOrderId,
@@ -44,36 +53,54 @@ export const CheckoutPage: React.FC = () => {
                         price: p,
                         quantity: item.quantity,
                         userId: user.uid,
-                        totalPrice: p * item.quantity
+                        totalPrice: p * item.quantity,
                     };
                 }),
                 shippingAddress: addressValues,
                 paymentMethod,
-                subtotal: cartTotal,
-                shippingCost: shipping,
-                total,
-                orderStatus: "PROCESSING",
+                subtotal: subtotal,        // ✅ Now defined
+                shippingCost: shippingCost,
+                total: orderTotal,          // ✅ Now defined
+                orderStatus: paymentMethod === "cod" ? "PROCESSING" : "PENDING",
                 createdAt: Date.now(),
                 updatedAt: Date.now(),
                 trackingSteps: [
-                    { id: "pending", title: "Order Placed", description: "Waiting for confirmation", completedAt: Date.now() },
-                    { id: "processing", title: "Processing", description: "Preparing your items" },
-                    { id: "shipping", title: "Shipping", description: "On the way" },
-                    { id: "delivered", title: "Delivered", description: "Completed" }
+                    { id: "pending", title: "Order Pending", description: "Waiting for confirmation" },
+                    { id: "processing", title: "Processing", description: "Preparing your order" },
+                    { id: "shipping", title: "Shipping", description: "On the way to you" },
+                    { id: "delivered", title: "Delivered", description: "Order completed" },
                 ],
             });
+
+            // Create notification
+            try {
+                await addDoc(collection(db, "notifications"), {
+                    userId: user.uid,
+                    title: "Order Placed Successfully!",
+                    message: `Your order #${newOrderId.substring(0, 8).toUpperCase()} has been placed and is being processed.`,
+                    timestamp: Date.now(),
+                    type: "order",
+                    isRead: false,
+                    destination: "order",
+                    destinationId: newOrderId,
+                });
+            } catch (notifError) {
+                console.error("Notification creation failed:", notifError);
+                // Don't fail the whole order if notification fails
+            }
+
             setOrderId(newOrderId);
             setCurrentStep("success");
             clearCart();
-            message.success("Order placed successfully!");
+            message.success("Order placed!");
         } catch (e: any) {
-            message.error(e.message);
-        } finally {
-            setIsCreating(false);
+            console.error("Order error:", e);
+            message.error("Failed: " + (e.message || "Unknown error"));
         }
+        setIsCreating(false);
     };
 
-    const handleAddressSubmit = (values: any) => {
+    const handleAddressSubmit = (values: { fullName: string; phoneNumber: string; streetAddress: string; city: string; province: string; postalCode: string }) => {
         setAddressValues(values);
         paymentMethod === "cod" ? handlePlaceOrder() : setCurrentStep("payment");
     };
@@ -240,7 +267,7 @@ export const CheckoutPage: React.FC = () => {
                             <Card
                                 title={<Title level={4} style={{ margin: 0 }}>Shipping Information</Title>}
                                 style={{ borderRadius: 24, border: "none", boxShadow: "0 4px 20px rgba(0,0,0,0.05)", marginBottom: 32 }}
-                                bodyStyle={{ padding: 24 }}
+                                styles={{ body: { padding: 24 } }}
                             >
                                 <Row gutter={16}>
                                     <Col span={24}>
@@ -274,7 +301,7 @@ export const CheckoutPage: React.FC = () => {
                             <Card
                                 title={<Title level={4} style={{ margin: 0 }}>Payment Method</Title>}
                                 style={{ borderRadius: 24, border: "none", boxShadow: "0 4px 20px rgba(0,0,0,0.05)" }}
-                                bodyStyle={{ padding: 24 }}
+                                styles={{ body: { padding: 24 } }}
                             >
                                 <Radio.Group
                                     value={paymentMethod}

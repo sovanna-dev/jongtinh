@@ -105,7 +105,7 @@ export const SearchResultsPage: React.FC = () => {
                                         display: "flex",
                                         flexDirection: "column"
                                     }}
-                                    bodyStyle={{ padding: 16, flex: 1, display: "flex", flexDirection: "column" }}
+                                    styles={{ body: { padding: 16, flex: 1, display: "flex", flexDirection: "column" } }}
                                     cover={
                                         <div style={{ position: "relative", height: 220, overflow: "hidden" }}>
                                             <Image

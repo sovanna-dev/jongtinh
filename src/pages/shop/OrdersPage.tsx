@@ -74,7 +74,7 @@ export const OrdersPage: React.FC = () => {
                                 hoverable
                                 onClick={() => navigate(`/shop/order/${order.id}`)}
                                 style={{ borderRadius: 20, border: "none", boxShadow: "0 4px 12px rgba(0,0,0,0.05)" }}
-                                bodyStyle={{ padding: 24 }}
+                                styles={{ body: { padding: 24 } }}
                             >
                                 <Row gutter={24} align="middle">
                                     <Col xs={24} sm={16}>

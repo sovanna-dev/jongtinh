@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { Typography, Card, Descriptions, Button, Avatar, Space, message, Spin, Tag, Modal, Form, Input, Upload } from "antd";
-import { UserOutlined, EditOutlined, MailOutlined, PhoneOutlined, CalendarOutlined, CameraOutlined } from "@ant-design/icons";
-import { doc, getDoc, updateDoc } from "firebase/firestore";
+import { UserOutlined, EditOutlined, MailOutlined, PhoneOutlined, CalendarOutlined, CameraOutlined, DeleteOutlined } from "@ant-design/icons";
+import { doc, getDoc, updateDoc, collection, query, where, orderBy, onSnapshot, deleteDoc } from "firebase/firestore";
 import { db, auth } from "../../firebase";
 import { ShopLayout } from "./ShopLayout";
 import { useCart } from "../../contexts/CartContext";
+import { INotification } from "../../interfaces";
 
 const { Title, Text } = Typography;
 
@@ -13,6 +14,7 @@ interface UserProfile { displayName: string; email: string; phoneNumber: string;
 export const ProfilePage: React.FC = () => {
     const [searchQuery, setSearchQuery] = useState("");
     const [profile, setProfile] = useState<UserProfile | null>(null);
+    const [notifications, setNotifications] = useState<INotification[]>([]);
     const [loading, setLoading] = useState(true);
     const [editModalOpen, setEditModalOpen] = useState(false);
     const [saving, setSaving] = useState(false);
@@ -32,13 +34,65 @@ export const ProfilePage: React.FC = () => {
         })();
     }, [user]);
 
+    useEffect(() => {
+        if (!user) {
+            setNotifications([]);
+            return;
+        }
+
+        const q = query(
+            collection(db, "notifications"),
+            where("userId", "==", user.uid),
+            orderBy("timestamp", "desc")
+        );
+
+        const unsubscribe = onSnapshot(q, (snapshot) => {
+            const data = snapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data()
+            } as INotification));
+            setNotifications(data);
+        });
+
+        return () => unsubscribe();
+    }, [user]);
+
+    const markAsRead = async (id: string) => {
+        try {
+            await updateDoc(doc(db, "notifications", id), { isRead: true });
+        } catch (error) {
+            message.error("Failed to mark as read");
+        }
+    };
+
+    const deleteNotification = async (id: string) => {
+        try {
+            await deleteDoc(doc(db, "notifications", id));
+            message.success("Notification deleted");
+        } catch (error) {
+            message.error("Failed to delete notification");
+        }
+    };
+
     const handleEdit = () => { form.setFieldsValue({ displayName: profile?.displayName, phoneNumber: profile?.phoneNumber }); setEditModalOpen(true); };
 
-    const handleSave = async (values: any) => {
+    const handleSave = async (values: { displayName: string; phoneNumber?: string }) => {
         if (!user) return;
         setSaving(true);
-        try { await updateDoc(doc(db, "users", user.uid), { displayName: values.displayName, phoneNumber: values.phoneNumber || "", updatedAt: Date.now() }); setProfile((p) => p ? { ...p, displayName: values.displayName, phoneNumber: values.phoneNumber } : null); message.success("Profile updated!"); setEditModalOpen(false); }
-        catch (e: any) { message.error(e.message); }
+        try {
+            await updateDoc(doc(db, "users", user.uid), {
+                displayName: values.displayName,
+                phoneNumber: values.phoneNumber || "",
+                updatedAt: Date.now()
+            });
+            setProfile((p) => p ? { ...p, displayName: values.displayName, phoneNumber: values.phoneNumber || "" } : null);
+            message.success("Profile updated!");
+            setEditModalOpen(false);
+        }
+        catch (e: unknown) {
+            const error = e as Error;
+            message.error(error.message);
+        }
         setSaving(false);
     };
 
@@ -74,6 +128,60 @@ export const ProfilePage: React.FC = () => {
                         <Descriptions.Item label={<><CalendarOutlined /> Member Since</>}>{profile?.createdAt ? new Date(profile.createdAt).toLocaleDateString() : "Unknown"}</Descriptions.Item>
                     </Descriptions>
                     <Button type="primary" icon={<EditOutlined />} style={{ marginTop: 24, background: "#FF006E", border: "none", borderRadius: 8, height: 40 }} onClick={handleEdit}>Edit Profile</Button>
+                </Card>
+
+                <Title level={3} style={{ marginTop: 40 }}>Notifications</Title>
+                <Card style={{ borderRadius: 16 }}>
+                    <Space direction="vertical" style={{ width: "100%" }} size={16}>
+                        {notifications.length === 0 ? (
+                            <div style={{ textAlign: "center", padding: "20px 0" }}>
+                                <Text type="secondary">No notifications yet</Text>
+                            </div>
+                        ) : (
+                            notifications.map(n => (
+                                <div
+                                    key={n.id}
+                                    style={{
+                                        padding: 16,
+                                        borderRadius: 12,
+                                        background: n.isRead ? "#f9f9f9" : "rgba(255, 0, 110, 0.05)",
+                                        border: `1px solid ${n.isRead ? "#eee" : "rgba(255, 0, 110, 0.1)"}`,
+                                        display: "flex",
+                                        justifyContent: "space-between",
+                                        alignItems: "flex-start"
+                                    }}
+                                >
+                                    <div style={{ flex: 1 }}>
+                                        <Space align="center">
+                                            <Text strong={!n.isRead}>{n.title}</Text>
+                                            {!n.isRead && <Tag color="#FF006E">New</Tag>}
+                                            <Tag color={n.type === "ORDER" ? "blue" : n.type === "PROMO" ? "green" : "default"}>{n.type}</Tag>
+                                        </Space>
+                                        <div style={{ marginTop: 4 }}>
+                                            <Text type="secondary">{n.message}</Text>
+                                        </div>
+                                        <div style={{ marginTop: 8 }}>
+                                            <Text style={{ fontSize: 12, color: "#999" }}>
+                                                {new Date(n.createdAt).toLocaleString()}
+                                            </Text>
+                                        </div>
+                                    </div>
+                                    <Space>
+                                        {!n.isRead && (
+                                            <Button size="small" onClick={() => markAsRead(n.id)}>Mark as read</Button>
+                                        )}
+                                        <Button
+                                            size="small"
+                                            danger
+                                            type="text"
+                                            icon={<DeleteOutlined />}
+                                            onClick={() => deleteNotification(n.id)}
+                                        />
+                                    </Space>
+                                </div>
+                            ))
+                        )}
+                    </Space>
                 </Card>
             </div>
             <Modal title="Edit Profile" open={editModalOpen} onCancel={() => setEditModalOpen(false)} footer={null} width={500}>

@@ -122,7 +122,11 @@ export interface INotification {
     userId: string;
     title: string;
     message: string;
-    type: "INFO" | "ORDER" | "PROMO";
+    timestamp: number;         // Changed from 'createdAt' to match Android
+    type: string;              // "order", "promo", "general" (match Android)
     isRead: boolean;
-    createdAt: number;
+    destination?: string;      // Added
+    destinationId?: string;    // Added
+    imageUrl?: string;         // Added
+    targetEmail?: string;      // Added
 }

@@ -1,15 +1,20 @@
 import React, { useState } from "react";
-import { Layout, Input, Badge, Space, Typography, Button, Drawer, List, Image, message, Dropdown, Avatar } from "antd";
+import {
+    Layout, Input, Badge, Space, Typography, Button, Drawer, List, Image, message,
+    Dropdown, Avatar, Popover, List as AntdList
+} from "antd";
 import {
     ShoppingCartOutlined, SearchOutlined, ShoppingOutlined, DeleteOutlined,
     UserOutlined, LogoutOutlined, OrderedListOutlined, DashboardOutlined,
-    ProfileOutlined, SunOutlined, MoonOutlined
+    ProfileOutlined, SunOutlined, MoonOutlined, BellOutlined
 } from "@ant-design/icons";
 import { useNavigate } from "react-router";
-import { auth } from "../../firebase";
+import { auth, db } from "../../firebase";
 import { signOut, onAuthStateChanged, User } from "firebase/auth";
+import { collection, query, where, orderBy, limit, onSnapshot, doc, updateDoc, writeBatch, deleteDoc } from "firebase/firestore";
 import { useCart } from "../../contexts/CartContext";
 import { ColorModeContext } from "../../contexts/color-mode";
+import { INotification } from "../../interfaces";
 import logo from "../../images/logo.webp";
 
 const { Header, Content, Footer } = Layout;
@@ -27,6 +32,7 @@ export const ShopLayout: React.FC<ShopLayoutProps> = ({ children, searchQuery, s
     const { mode, setMode } = React.useContext(ColorModeContext);
     const [cartOpen, setCartOpen] = useState(false);
     const [user, setUser] = useState<User | null>(auth.currentUser);
+    const [notifications, setNotifications] = useState<INotification[]>([]);
     const { cart, removeFromCart, updateQuantity, cartCount, cartTotal } = useCart();
 
     React.useEffect(() => {
@@ -36,7 +42,70 @@ export const ShopLayout: React.FC<ShopLayoutProps> = ({ children, searchQuery, s
         return () => unsubscribe();
     }, []);
 
+    // Fetch Notifications
+    React.useEffect(() => {
+        if (!user) {
+            setNotifications([]);
+            return;
+        }
+
+        // In ShopLayout.tsx, find the notification query:
+        const q = query(
+            collection(db, "notifications"),
+            where("userId", "==", user.uid),
+            orderBy("timestamp", "desc"),  // Changed from 'createdAt'
+            limit(10)
+        );
+
+        const unsubscribe = onSnapshot(q, (snapshot) => {
+            const data = snapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data()
+            } as INotification));
+            setNotifications(data);
+        }, (error) => {
+            console.error("Notifications fetch error:", error);
+        });
+
+        return () => unsubscribe();
+    }, [user]);
+
     const isDark = mode === "dark";
+    const unreadCount = notifications.filter(n => !n.isRead).length;
+
+    const markAsRead = async (notificationId: string) => {
+        try {
+            const notificationRef = doc(db, "notifications", notificationId);
+            await updateDoc(notificationRef, { isRead: true });
+        } catch (error) {
+            console.error("Error marking notification as read:", error);
+        }
+    };
+
+    const markAllAsRead = async () => {
+        if (!user) return;
+        try {
+            const batch = writeBatch(db);
+            notifications.forEach(n => {
+                if (!n.isRead) {
+                    const ref = doc(db, "notifications", n.id);
+                    batch.update(ref, { isRead: true });
+                }
+            });
+            await batch.commit();
+        } catch (error) {
+            console.error("Error marking all notifications as read:", error);
+        }
+    };
+
+    const deleteNotification = async (e: React.MouseEvent, notificationId: string) => {
+        e.stopPropagation();
+        try {
+            await deleteDoc(doc(db, "notifications", notificationId));
+        } catch (error) {
+            console.error("Error deleting notification:", error);
+        }
+    };
 
     const handleLogout = async () => {
         await signOut(auth);
@@ -81,7 +150,7 @@ export const ShopLayout: React.FC<ShopLayoutProps> = ({ children, searchQuery, s
         }}>
             <Header style={{
                 background: isDark ? "rgba(20, 20, 20, 0.9)" : "rgba(255, 255, 255, 0.9)",
-                padding: "0 40px",
+                padding: window.innerWidth > 768 ? "0 40px" : "0 16px",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "space-between",
@@ -90,19 +159,19 @@ export const ShopLayout: React.FC<ShopLayoutProps> = ({ children, searchQuery, s
                 position: "sticky",
                 top: 0,
                 zIndex: 100,
-                height: 80,
+                height: window.innerWidth > 768 ? 80 : 70,
                 borderBottom: isDark ? "1px solid #333" : "1px solid #eee",
                 transition: "all 0.3s ease"
             }}>
                 <Space
                     style={{ cursor: "pointer" }}
                     onClick={() => navigate("/shop")}
-                    size={16}
+                    size={window.innerWidth > 768 ? 16 : 8}
                 >
                     <div style={{
-                        width: 52,
-                        height: 52,
-                        borderRadius: 16,
+                        width: window.innerWidth > 768 ? 52 : 40,
+                        height: window.innerWidth > 768 ? 52 : 40,
+                        borderRadius: window.innerWidth > 768 ? 16 : 12,
                         background: "linear-gradient(135deg, #FF006E 0%, #8338EC 100%)",
                         display: "flex",
                         alignItems: "center",
@@ -116,47 +185,56 @@ export const ShopLayout: React.FC<ShopLayoutProps> = ({ children, searchQuery, s
                             style={{
                                 width: "100%",
                                 height: "100%",
-                                borderRadius: 14,
+                                borderRadius: window.innerWidth > 768 ? 14 : 10,
                                 objectFit: "contain",
                                 background: "#fff"
                             }}
                         />
                     </div>
-                    <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
-                        <Title level={3} style={{
-                            margin: 0,
-                            color: "#FF006E",
-                            fontWeight: 900,
-                            letterSpacing: -1.2,
-                            fontSize: 26,
-                            lineHeight: 1
-                        }}>
-                            JONGTINH
-                        </Title>
-                        <Text style={{
-                            fontSize: 11,
-                            color: isDark ? "#999" : "#666",
-                            letterSpacing: 4.5,
-                            fontWeight: 800,
-                            textTransform: "uppercase",
-                            marginTop: 2
-                        }}>
-                            ចង់ទិញ
-                        </Text>
-                    </div>
+                    {window.innerWidth > 480 && (
+                        <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
+                            <Title level={3} style={{
+                                margin: 0,
+                                color: "#FF006E",
+                                fontWeight: 900,
+                                letterSpacing: -1.2,
+                                fontSize: window.innerWidth > 768 ? 26 : 20,
+                                lineHeight: 1
+                            }}>
+                                JONGTINH
+                            </Title>
+                            {window.innerWidth > 768 && (
+                                <Text style={{
+                                    fontSize: 11,
+                                    color: isDark ? "#999" : "#666",
+                                    letterSpacing: 4.5,
+                                    fontWeight: 800,
+                                    textTransform: "uppercase",
+                                    marginTop: 2
+                                }}>
+                                    ចង់ទិញ
+                                </Text>
+                            )}
+                        </div>
+                    )}
                 </Space>
 
-                <div style={{ flex: 1, display: "flex", justifyContent: "center", padding: "0 60px" }}>
+                <div style={{
+                    flex: 1,
+                    display: window.innerWidth > 640 ? "flex" : "none",
+                    justifyContent: "center",
+                    padding: window.innerWidth > 1024 ? "0 60px" : "0 20px"
+                }}>
                     <div style={{ position: "relative", width: "100%", maxWidth: 600 }}>
                         <Input
-                            placeholder="Search for items, brands and more..."
+                            placeholder="Search..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             onPressEnter={onSearch}
                             prefix={<SearchOutlined style={{ color: "#FF006E", fontSize: 20, marginRight: 8 }} />}
                             style={{
                                 borderRadius: 16,
-                                height: 50,
+                                height: 44,
                                 background: isDark ? "#2a2a2a" : "#f5f5f7",
                                 border: "none",
                                 fontSize: 16,
@@ -167,7 +245,15 @@ export const ShopLayout: React.FC<ShopLayoutProps> = ({ children, searchQuery, s
                     </div>
                 </div>
 
-                <Space size={28}>
+                <Space size={window.innerWidth > 768 ? 28 : 12}>
+                    {window.innerWidth <= 640 && (
+                        <Button
+                            type="text"
+                            shape="circle"
+                            icon={<SearchOutlined style={{ fontSize: 22, color: isDark ? "#fff" : "#333" }} />}
+                            onClick={() => navigate("/shop/search")}
+                        />
+                    )}
                     <Button
                         type="text"
                         shape="circle"
@@ -182,6 +268,84 @@ export const ShopLayout: React.FC<ShopLayoutProps> = ({ children, searchQuery, s
                             onClick={() => setCartOpen(true)}
                         />
                     </Badge>
+
+                    {user && (
+                        <Popover
+                            placement="bottomRight"
+                            title={
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '4px 0' }}>
+                                    <Text strong>Recent Notifications</Text>
+                                    {unreadCount > 0 && (
+                                        <Button type="link" size="small" onClick={markAllAsRead} style={{ fontSize: 12, padding: 0 }}>
+                                            Mark all as read
+                                        </Button>
+                                    )}
+                                </div>
+                            }
+                            trigger="click"
+                            content={
+                                <div style={{ width: 320 }}>
+                                    <AntdList
+                                        itemLayout="horizontal"
+                                        dataSource={notifications.slice(0, 5)}
+                                        renderItem={item => (
+                                            <AntdList.Item
+                                                style={{
+                                                    cursor: 'pointer',
+                                                    padding: '12px',
+                                                    transition: 'all 0.3s',
+                                                    background: item.isRead ? 'transparent' : (isDark ? 'rgba(255, 0, 110, 0.05)' : 'rgba(255, 0, 110, 0.02)')
+                                                }}
+                                                onClick={() => {
+                                                    if (!item.isRead) markAsRead(item.id);
+                                                    navigate('/shop/profile');
+                                                }}
+                                                actions={[
+                                                    <Button
+                                                        type="text"
+                                                        size="small"
+                                                        danger
+                                                        icon={<DeleteOutlined style={{ fontSize: 14 }} />}
+                                                        onClick={(e) => deleteNotification(e, item.id)}
+                                                    />
+                                                ]}
+                                            >
+                                                <AntdList.Item.Meta
+                                                    avatar={
+                                                        <div style={{
+                                                            width: 36, height: 36, borderRadius: '50%',
+                                                            background: item.isRead ? (isDark ? '#333' : '#f5f5f5') : '#fff0f6',
+                                                            display: 'flex', alignItems: 'center', justifyContent: 'center'
+                                                        }}>
+                                                            <BellOutlined style={{ color: item.isRead ? '#999' : '#FF006E' }} />
+                                                        </div>
+                                                    }
+                                                    title={<Text strong={!item.isRead} style={{ fontSize: 14 }}>{item.title}</Text>}
+                                                    description={
+                                                        <Text type="secondary" style={{ fontSize: 12 }} ellipsis>
+                                                            {item.message}
+                                                        </Text>
+                                                    }
+                                                />
+                                            </AntdList.Item>
+                                        )}
+                                    />
+                                    <Button
+                                        type="link"
+                                        block
+                                        onClick={() => navigate('/shop/orders')}
+                                        style={{ marginTop: 8, borderTop: '1px solid #f0f0f0', borderRadius: 0 }}
+                                    >
+                                        View All Notifications
+                                    </Button>
+                                </div>
+                            }
+                        >
+                            <Badge count={unreadCount} overflowCount={9} color="#FF006E">
+                                <BellOutlined style={{ fontSize: 24, cursor: "pointer", color: isDark ? "#fff" : "#333" }} />
+                            </Badge>
+                        </Popover>
+                    )}
 
                     {user ? (
                         <Dropdown menu={{ items: profileMenuItems }} placement="bottomRight" trigger={["click"]} arrow>

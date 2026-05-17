@@ -16,7 +16,7 @@ export const NotificationCreate = () => {
             ...rest,
             userId: targetType === "all" ? "all" : values.userId,
             isRead: false,
-            createdAt: Date.now(),
+            timestamp: Date.now(),
         });
     };
 

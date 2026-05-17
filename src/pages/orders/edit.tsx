@@ -1,18 +1,49 @@
 import { Edit, useForm } from "@refinedev/antd";
+import { collection, addDoc } from "firebase/firestore";
+import { db } from "../../firebase";
 import { Form, Select, Descriptions, Table, Typography, Card, Divider, Tag, Space } from "antd";
 import { IOrder, ICartItem, OrderStatus } from "../../interfaces";
 import dayjs from "dayjs";
+
 
 const { Text, Title } = Typography;
 
 export const OrderEdit = () => {
     const { formProps, saveButtonProps, query: queryResult, onFinish } = useForm<IOrder>();
 
-    const handleOnFinish = (values: any) => {
-        onFinish({
+    // In handleOnFinish:
+    const handleOnFinish = async (values: any) => {
+        await onFinish({
             ...values,
             updatedAt: Date.now(),
         });
+
+        // 🆕 Send notification to customer about status update
+        const orderData = queryResult?.data?.data;
+        if (orderData && values.orderStatus !== orderData.orderStatus) {
+            await addDoc(collection(db, "notifications"), {
+                userId: orderData.userId,
+                title: "Order Status Updated",
+                message: getStatusMessage(values.orderStatus, orderData.orderId),
+                timestamp: Date.now(),
+                type: "order",
+                isRead: false,
+                destination: "order",
+                destinationId: orderData.orderId,
+            });
+        }
+    };
+
+    // Helper function
+    const getStatusMessage = (status: string, orderId: string): string => {
+        const shortId = orderId?.substring(0, 8)?.toUpperCase() || orderId;
+        switch (status) {
+            case "PROCESSING": return `Your order #${shortId} is now being processed.`;
+            case "SHIPPING": return `Your order #${shortId} has been shipped!`;
+            case "DELIVERED": return `Your order #${shortId} has been delivered. Enjoy!`;
+            case "CANCELLED": return `Your order #${shortId} has been cancelled.`;
+            default: return `Your order #${shortId} status is now ${status}.`;
+        }
     };
 
     const orderData = queryResult?.data?.data;
