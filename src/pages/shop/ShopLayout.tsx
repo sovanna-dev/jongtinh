@@ -11,13 +11,14 @@ import {
 import { useNavigate } from "react-router";
 import { auth, db } from "../../firebase";
 import { signOut, onAuthStateChanged, User } from "firebase/auth";
-import { collection, query, where, orderBy, limit, onSnapshot, doc, updateDoc, writeBatch, deleteDoc } from "firebase/firestore";
+import { doc, getDoc, collection, query, where, orderBy, limit, onSnapshot, updateDoc, writeBatch, deleteDoc } from "firebase/firestore";
+import { useCustomerAuth } from "../../contexts/CustomerAuthContext";
 import { useCart } from "../../contexts/CartContext";
 import { ColorModeContext } from "../../contexts/color-mode";
 import { INotification } from "../../interfaces";
 import logo from "../../images/logo.webp";
 import { AuthModal } from "../../components/shop/AuthModal";
-import { useCustomerAuth } from "../../contexts/CustomerAuthContext";
+
 
 const { Header, Content, Footer } = Layout;
 const { Title, Text } = Typography;
@@ -38,7 +39,29 @@ export const ShopLayout: React.FC<ShopLayoutProps> = ({ children, searchQuery, s
     const { cart, removeFromCart, updateQuantity, cartCount, cartTotal } = useCart();
     const [authModalOpen, setAuthModalOpen] = useState(false);
     const { user: customerUser, logout: customerLogout } = useCustomerAuth();
+    const [isAdmin, setIsAdmin] = useState(false);
 
+    // Check if user is admin
+    React.useEffect(() => {
+        const checkAdminStatus = async () => {
+            const currentUser = user || customerUser;
+            if (!currentUser) {
+                setIsAdmin(false);
+                return;
+            }
+            try {
+                const userDoc = await getDoc(doc(db, "users", currentUser.uid));
+                if (userDoc.exists()) {
+                    setIsAdmin(userDoc.data()?.isAdmin === true);
+                } else {
+                    setIsAdmin(false);
+                }
+            } catch {
+                setIsAdmin(false);
+            }
+        };
+        checkAdminStatus();
+    }, [user, customerUser]);
     React.useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
             setUser(currentUser);
@@ -118,14 +141,15 @@ export const ShopLayout: React.FC<ShopLayoutProps> = ({ children, searchQuery, s
     };
 
     const profileMenuItems = [
-        {
+        // Only show Dashboard for admin users
+        ...(isAdmin ? [{
             key: "dashboard",
             icon: <DashboardOutlined />,
             label: "Dashboard",
             onClick: () => {
                 window.location.hash = "#/admin";
             },
-        },
+        }] : []),
         {
             key: "orders",
             icon: <OrderedListOutlined />,

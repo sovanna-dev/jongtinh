@@ -25,8 +25,8 @@ export const CheckoutPage: React.FC = () => {
     const { user: customerUser } = useCustomerAuth();
     const user = auth.currentUser || customerUser;
 
-    const shippingCost = cart.length > 0 ? 5.00 : 0;
-    const subtotal = cartTotal;
+    const shippingCost = 0; // Free shipping
+    const total = cartTotal + shippingCost;
     const total = subtotal + shippingCost;
 
     const handlePlaceOrder = async () => {
@@ -431,7 +431,7 @@ export const CheckoutPage: React.FC = () => {
                             </div>
                             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 12 }}>
                                 <Text type="secondary">Shipping Fee</Text>
-                                <Text strong>${shippingCost.toFixed(2)}</Text>
+                                <Text strong style={{ color: "#52c41a" }}>FREE</Text>
                             </div>
 
                             <Divider style={{ margin: "16px 0" }} />
