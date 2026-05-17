@@ -25,8 +25,8 @@ export const CheckoutPage: React.FC = () => {
     const { user: customerUser } = useCustomerAuth();
     const user = auth.currentUser || customerUser;
 
+    const subtotal = cartTotal;
     const shippingCost = 0; // Free shipping
-    const total = cartTotal + shippingCost;
     const total = subtotal + shippingCost;
 
     const handlePlaceOrder = async () => {
@@ -53,7 +53,7 @@ export const CheckoutPage: React.FC = () => {
                     return { productId: item.product.id, productName: item.product.name, productImage: item.product.images?.[0] || "", price: p, quantity: item.quantity, userId: user.uid, totalPrice: p * item.quantity };
                 }),
                 shippingAddress: addressValues, paymentMethod,
-                subtotal: subtotal, shippingCost: 0, total: subtotal,
+                subtotal: subtotal, shippingCost: shippingCost, total: total,
                 orderStatus: paymentMethod === "cod" ? "PROCESSING" : "PENDING",
                 createdAt: Date.now(), updatedAt: Date.now(),
                 trackingSteps: [
