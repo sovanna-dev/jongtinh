@@ -162,7 +162,7 @@ export const ProfilePage: React.FC = () => {
                                         </div>
                                         <div style={{ marginTop: 8 }}>
                                             <Text style={{ fontSize: 12, color: "#999" }}>
-                                                {new Date(n.createdAt).toLocaleString()}
+                                                {new Date(n.timestamp).toLocaleString()}
                                             </Text>
                                         </div>
                                     </div>

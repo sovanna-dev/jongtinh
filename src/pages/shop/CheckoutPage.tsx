@@ -433,7 +433,7 @@ export const CheckoutPage: React.FC = () => {
                             </div>
                             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 12 }}>
                                 <Text type="secondary">Shipping Fee</Text>
-                                <Text strong>${shipping.toFixed(2)}</Text>
+                                <Text strong>${shippingCost.toFixed(2)}</Text>
                             </div>
 
                             <Divider style={{ margin: "16px 0" }} />
