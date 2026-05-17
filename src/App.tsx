@@ -1,4 +1,4 @@
-import { Refine, Authenticated } from "@refinedev/core";
+import { RefineComponentProps, Refine, Authenticated } from "@refinedev/core";
 import { DevtoolsPanel, DevtoolsProvider } from "@refinedev/devtools";
 import { RefineKbar, RefineKbarProvider } from "@refinedev/kbar";
 import { useNotificationProvider, ErrorComponent, ThemedLayout, ThemedTitle, AuthPage } from "@refinedev/antd";
@@ -181,7 +181,15 @@ function AppContent() {
             </Routes>
             <RefineKbar />
             <UnsavedChangesNotifier />
-            <DocumentTitleHandler />
+            <DocumentTitleHandler
+                 handler={({ action, resource }) => {
+                        const siteName = "JongTinh";
+                        if (resource?.meta?.label) {
+                            return `${resource.meta.label} | ${siteName}`;
+                        }
+                        return `${siteName} — Online Shopping Cambodia`;
+                }}
+            />
         </Refine>
     );
 }
