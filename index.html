@@ -15,10 +15,17 @@
 
   <!-- ═══════ PRIMARY SEO ═══════ -->
   <title>JongTinh (ចង់ទិញ) — Online Shopping Cambodia</title>
+
+  <!-- Keep browser tab title as JongTinh -->
   <script>
     document.title = "JongTinh (ចង់ទិញ) — Online Shopping Cambodia";
+    new MutationObserver(() => {
+        if (!document.title.includes("JongTinh")) {
+            document.title = "JongTinh (ចង់ទិញ) — Online Shopping Cambodia";
+        }
+    }).observe(document.querySelector("title") || document.head, { childList: true, subtree: true, characterData: true });
   </script>
-  
+
   <meta name="description" content="Shop online at JongTinh (ចង់ទិញ). Discover quality products at the best prices in Cambodia. Electronics, fashion, food, beauty & more. Free delivery nationwide. ABA Pay, ACLEDA & Wing accepted." />
   <meta name="keywords" content="online shopping Cambodia, buy electronics Phnom Penh, Cambodian e-commerce, ទិញទំនិញអនឡាញ, JongTinh, ចង់ទិញ, ABA Pay, ACLEDA, Wing, cash on delivery" />
   <meta name="author" content="JongTinh" />
