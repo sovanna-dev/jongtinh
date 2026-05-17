@@ -123,7 +123,7 @@ export const ShopLayout: React.FC<ShopLayoutProps> = ({ children, searchQuery, s
             icon: <DashboardOutlined />,
             label: "Dashboard",
             onClick: () => {
-                    window.location.href = "/#/admin";
+                window.location.hash = "#/admin";
             },
         },
         {
