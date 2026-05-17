@@ -6,6 +6,8 @@ import { collection, doc, setDoc, addDoc } from "firebase/firestore";
 import { db, auth } from "../../firebase";
 import { ShopLayout } from "./ShopLayout";
 import { useCart } from "../../contexts/CartContext";
+import { useCustomerAuth } from "../../contexts/CustomerAuthContext";
+import { AuthModal } from "../../components/shop/AuthModal";
 
 const { Title, Text } = Typography;
 
@@ -17,8 +19,11 @@ export const CheckoutPage: React.FC = () => {
     const [currentStep, setCurrentStep] = useState<"address" | "payment" | "success">("address");
     const [orderId, setOrderId] = useState("");
     const [isCreating, setIsCreating] = useState(false);
+    const [authModalOpen, setAuthModalOpen] = useState(false);
     const [addressValues, setAddressValues] = useState({ fullName: "", phoneNumber: "", streetAddress: "", city: "", province: "", postalCode: "" });
     const { cart, clearCart, cartTotal } = useCart();
+    const { user: customerUser } = useCustomerAuth();
+    const user = auth.currentUser || customerUser;
 
     const shippingCost = cart.length > 0 ? 5.00 : 0;
     const subtotal = cartTotal;
@@ -26,8 +31,13 @@ export const CheckoutPage: React.FC = () => {
 
     const handlePlaceOrder = async () => {
         if (isCreating) return;
-        const user = auth.currentUser;
-        if (!user) { message.error("Please login first."); return; }
+
+        // 🔥 Check if user is logged in
+        if (!user) {
+            setAuthModalOpen(true);
+            return;
+        }
+
         if (!addressValues.fullName || !addressValues.phoneNumber || !addressValues.streetAddress || !addressValues.city || !addressValues.province) {
             message.error("Fill all required fields."); setCurrentStep("address"); return;
         }
@@ -35,35 +45,17 @@ export const CheckoutPage: React.FC = () => {
         setIsCreating(true);
         try {
             const newOrderId = `ORD-${Date.now()}-${Math.random().toString(36).substring(2, 8)}`;
-            const subtotal = cartTotal;  // ✅ Define subtotal
-            const shippingCost = 0;
-            const orderTotal = subtotal + shippingCost;  // ✅ Use subtotal
 
-            // Save order
             await setDoc(doc(db, "orders", newOrderId), {
-                id: newOrderId,
-                orderId: newOrderId,
-                userId: user.uid,
+                id: newOrderId, orderId: newOrderId, userId: user.uid,
                 items: cart.map((item) => {
                     const p = item.product.discountPrice ?? item.product.price;
-                    return {
-                        productId: item.product.id,
-                        productName: item.product.name,
-                        productImage: item.product.images?.[0] || "",
-                        price: p,
-                        quantity: item.quantity,
-                        userId: user.uid,
-                        totalPrice: p * item.quantity,
-                    };
+                    return { productId: item.product.id, productName: item.product.name, productImage: item.product.images?.[0] || "", price: p, quantity: item.quantity, userId: user.uid, totalPrice: p * item.quantity };
                 }),
-                shippingAddress: addressValues,
-                paymentMethod,
-                subtotal: subtotal,        // ✅ Now defined
-                shippingCost: shippingCost,
-                total: orderTotal,          // ✅ Now defined
+                shippingAddress: addressValues, paymentMethod,
+                subtotal: subtotal, shippingCost: 0, total: subtotal,
                 orderStatus: paymentMethod === "cod" ? "PROCESSING" : "PENDING",
-                createdAt: Date.now(),
-                updatedAt: Date.now(),
+                createdAt: Date.now(), updatedAt: Date.now(),
                 trackingSteps: [
                     { id: "pending", title: "Order Pending", description: "Waiting for confirmation" },
                     { id: "processing", title: "Processing", description: "Preparing your order" },
@@ -72,21 +64,16 @@ export const CheckoutPage: React.FC = () => {
                 ],
             });
 
-            // Create notification
             try {
                 await addDoc(collection(db, "notifications"), {
                     userId: user.uid,
                     title: "Order Placed Successfully!",
                     message: `Your order #${newOrderId.substring(0, 8).toUpperCase()} has been placed and is being processed.`,
-                    timestamp: Date.now(),
-                    type: "order",
-                    isRead: false,
-                    destination: "order",
-                    destinationId: newOrderId,
+                    timestamp: Date.now(), type: "order", isRead: false,
+                    destination: "order", destinationId: newOrderId,
                 });
             } catch (notifError) {
                 console.error("Notification creation failed:", notifError);
-                // Don't fail the whole order if notification fails
             }
 
             setOrderId(newOrderId);
@@ -102,8 +89,13 @@ export const CheckoutPage: React.FC = () => {
 
     const handleAddressSubmit = (values: { fullName: string; phoneNumber: string; streetAddress: string; city: string; province: string; postalCode: string }) => {
         setAddressValues(values);
+        if (!user) {
+            setAuthModalOpen(true);
+            return;
+        }
         paymentMethod === "cod" ? handlePlaceOrder() : setCurrentStep("payment");
     };
+
 
     if (cart.length === 0 && currentStep !== "success") {
         return (
@@ -120,7 +112,9 @@ export const CheckoutPage: React.FC = () => {
                         </Empty>
                     </Card>
                 </div>
+                <AuthModal open={authModalOpen} onClose={() => setAuthModalOpen(false)} />
             </ShopLayout>
+
         );
     }
 
@@ -161,7 +155,9 @@ export const CheckoutPage: React.FC = () => {
                         />
                     </Card>
                 </div>
+                <AuthModal open={authModalOpen} onClose={() => setAuthModalOpen(false)} />
             </ShopLayout>
+
         );
     }
 
@@ -246,7 +242,9 @@ export const CheckoutPage: React.FC = () => {
                         </Space>
                     </Card>
                 </div>
+                <AuthModal open={authModalOpen} onClose={() => setAuthModalOpen(false)} />
             </ShopLayout>
+
         );
     }
 
@@ -451,6 +449,8 @@ export const CheckoutPage: React.FC = () => {
                     </Col>
                 </Row>
             </div>
+            <AuthModal open={authModalOpen} onClose={() => setAuthModalOpen(false)} />
         </ShopLayout>
+
     );
 };

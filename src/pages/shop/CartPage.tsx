@@ -2,18 +2,32 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router";
 import { Typography, Button, List, Image, Space, Empty, Row, Col, Card, Divider } from "antd";
 import { DeleteOutlined, ShoppingOutlined, ArrowLeftOutlined } from "@ant-design/icons";
+import { auth } from "../../firebase";
 import { ShopLayout } from "./ShopLayout";
 import { useCart } from "../../contexts/CartContext";
+import { useCustomerAuth } from "../../contexts/CustomerAuthContext";
+import { AuthModal } from "../../components/shop/AuthModal";
 
 const { Title, Text } = Typography;
 
 export const CartPage: React.FC = () => {
     const navigate = useNavigate();
     const [searchQuery, setSearchQuery] = useState("");
+    const [authModalOpen, setAuthModalOpen] = useState(false);
     const { cart, removeFromCart, updateQuantity, cartTotal } = useCart();
+    const { user: customerUser } = useCustomerAuth();
+    const user = auth.currentUser || customerUser;
 
-    const shipping = cart.length > 0 ? 5.00 : 0; // Flat shipping for demo
+    const shipping = cart.length > 0 ? 5.00 : 0;
     const finalTotal = cartTotal + shipping;
+
+    const handleCheckout = () => {
+        if (!user) {
+            setAuthModalOpen(true);
+            return;
+        }
+        navigate("/shop/checkout");
+    };
 
     return (
         <ShopLayout searchQuery={searchQuery} setSearchQuery={setSearchQuery} onSearch={() => {}}>
@@ -71,23 +85,14 @@ export const CartPage: React.FC = () => {
                                                 />
                                             </Col>
                                             <Col xs={16} sm={10}>
-                                                <Text
-                                                    strong
-                                                    style={{ fontSize: 16, cursor: "pointer", display: "block" }}
-                                                    onClick={() => navigate(`/shop/product/${item.product.id}`)}
-                                                >
+                                                <Text strong style={{ fontSize: 16, cursor: "pointer", display: "block" }}
+                                                    onClick={() => navigate(`/shop/product/${item.product.id}`)}>
                                                     {item.product.name}
                                                 </Text>
                                                 <Text type="secondary" style={{ fontSize: 12 }}>Unit Price: ${price.toFixed(2)}</Text>
                                             </Col>
                                             <Col xs={14} sm={6} style={{ textAlign: "center" }}>
-                                                <div style={{
-                                                    display: "inline-flex",
-                                                    alignItems: "center",
-                                                    border: "1px solid #f0f0f0",
-                                                    borderRadius: 10,
-                                                    padding: "2px 8px"
-                                                }}>
+                                                <div style={{ display: "inline-flex", alignItems: "center", border: "1px solid #f0f0f0", borderRadius: 10, padding: "2px 8px" }}>
                                                     <Button type="text" size="small" onClick={() => updateQuantity(item.product.id, item.quantity - 1)}><b>-</b></Button>
                                                     <Text strong style={{ margin: "0 12px", minWidth: 20 }}>{item.quantity}</Text>
                                                     <Button type="text" size="small" onClick={() => updateQuantity(item.product.id, item.quantity + 1)} disabled={item.quantity >= (item.product.stockQuantity || 99)}><b>+</b></Button>
@@ -97,12 +102,7 @@ export const CartPage: React.FC = () => {
                                                 <Text strong style={{ fontSize: 16 }}>${(price * item.quantity).toFixed(2)}</Text>
                                             </Col>
                                             <Col xs={4} sm={1} style={{ textAlign: "right" }}>
-                                                <Button
-                                                    type="text"
-                                                    danger
-                                                    icon={<DeleteOutlined />}
-                                                    onClick={() => removeFromCart(item.product.id)}
-                                                />
+                                                <Button type="text" danger icon={<DeleteOutlined />} onClick={() => removeFromCart(item.product.id)} />
                                             </Col>
                                         </Row>
                                     </Card>
@@ -113,13 +113,7 @@ export const CartPage: React.FC = () => {
 
                     <Col xs={24} lg={8}>
                         <Card
-                            style={{
-                                borderRadius: 24,
-                                border: "none",
-                                boxShadow: "0 8px 24px rgba(0,0,0,0.08)",
-                                position: "sticky",
-                                top: 100
-                            }}
+                            style={{ borderRadius: 24, border: "none", boxShadow: "0 8px 24px rgba(0,0,0,0.08)", position: "sticky", top: 100 }}
                             title={<Title level={4} style={{ margin: 0 }}>Order Summary</Title>}
                         >
                             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 12 }}>
@@ -140,29 +134,22 @@ export const CartPage: React.FC = () => {
                                 type="primary"
                                 size="large"
                                 block
-                                onClick={() => navigate("/shop/checkout")}
-                                style={{
-                                    background: "#FF006E",
-                                    height: 56,
-                                    borderRadius: 16,
-                                    fontSize: 18,
-                                    fontWeight: 700,
-                                    border: "none",
-                                    boxShadow: "0 8px 20px rgba(255, 0, 110, 0.2)"
-                                }}
+                                onClick={handleCheckout}
+                                style={{ background: "#FF006E", height: 56, borderRadius: 16, fontSize: 18, fontWeight: 700, border: "none", boxShadow: "0 8px 20px rgba(255, 0, 110, 0.2)" }}
                             >
                                 Checkout Now
                             </Button>
 
                             <div style={{ marginTop: 20, textAlign: "center" }}>
-                                <Text type="secondary" style={{ fontSize: 12 }}>
-                                    Secure payment powered by SmartShop Pay
-                                </Text>
+                                <Text type="secondary" style={{ fontSize: 12 }}>Secure payment powered by SmartShop Pay</Text>
                             </div>
                         </Card>
                     </Col>
                 </Row>
             )}
+
+            {/* Auth Modal for non-logged-in users */}
+            <AuthModal open={authModalOpen} onClose={() => setAuthModalOpen(false)} />
         </ShopLayout>
     );
 };
