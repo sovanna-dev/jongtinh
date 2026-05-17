@@ -16,6 +16,8 @@ import { useCart } from "../../contexts/CartContext";
 import { ColorModeContext } from "../../contexts/color-mode";
 import { INotification } from "../../interfaces";
 import logo from "../../images/logo.webp";
+import { AuthModal } from "../../components/shop/AuthModal";
+import { useCustomerAuth } from "../../contexts/CustomerAuthContext";
 
 const { Header, Content, Footer } = Layout;
 const { Title, Text } = Typography;
@@ -34,6 +36,8 @@ export const ShopLayout: React.FC<ShopLayoutProps> = ({ children, searchQuery, s
     const [user, setUser] = useState<User | null>(auth.currentUser);
     const [notifications, setNotifications] = useState<INotification[]>([]);
     const { cart, removeFromCart, updateQuantity, cartCount, cartTotal } = useCart();
+    const [authModalOpen, setAuthModalOpen] = useState(false);
+    const { user: customerUser, logout: customerLogout } = useCustomerAuth();
 
     React.useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -118,7 +122,9 @@ export const ShopLayout: React.FC<ShopLayoutProps> = ({ children, searchQuery, s
             key: "dashboard",
             icon: <DashboardOutlined />,
             label: "Dashboard",
-            onClick: () => navigate("/admin"),
+            onClick: () => {
+                    window.location.href = "/#/admin";
+            },
         },
         {
             key: "orders",
@@ -347,17 +353,18 @@ export const ShopLayout: React.FC<ShopLayoutProps> = ({ children, searchQuery, s
                         </Popover>
                     )}
 
-                    {user ? (
+                    {/* Replace the existing user/login section in the header */}
+                    {user || customerUser ? (
                         <Dropdown menu={{ items: profileMenuItems }} placement="bottomRight" trigger={["click"]} arrow>
                             <Space style={{ cursor: "pointer" }}>
                                 <Avatar
-                                    src={user.photoURL}
+                                    src={user?.photoURL || customerUser?.photoURL}
                                     size={44}
                                     icon={<UserOutlined />}
                                     style={{
                                         background: "linear-gradient(135deg, #FF006E, #8338EC)",
                                         border: `2px solid ${isDark ? "#444" : "#fff"}`,
-                                        boxShadow: "0 4px 12px rgba(0,0,0,0.1)"
+                                        boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
                                     }}
                                 />
                             </Space>
@@ -365,22 +372,22 @@ export const ShopLayout: React.FC<ShopLayoutProps> = ({ children, searchQuery, s
                     ) : (
                         <Button
                             type="primary"
-                            onClick={() => navigate("/login")}
+                            onClick={() => setAuthModalOpen(true)}
                             size="large"
                             style={{
                                 background: "linear-gradient(135deg, #FF006E, #8338EC)",
-                                border: "none",
-                                borderRadius: 14,
-                                height: 46,
-                                fontWeight: 700,
-                                padding: "0 28px",
-                                boxShadow: "0 6px 15px rgba(255, 0, 110, 0.3)"
+                                border: "none", borderRadius: 14, height: 46, fontWeight: 700,
+                                padding: "0 28px", boxShadow: "0 6px 15px rgba(255, 0, 110, 0.3)",
                             }}
                             icon={<UserOutlined />}
                         >
                             Login
                         </Button>
                     )}
+
+                    {/* Auth Modal */}
+                    <AuthModal open={authModalOpen} onClose={() => setAuthModalOpen(false)} />
+
                 </Space>
             </Header>
 
