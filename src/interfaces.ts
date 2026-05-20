@@ -35,6 +35,7 @@ export interface IProduct {
     colors: string[];
     createdAt: number;
     specifications: Record<string, string>;
+    attributes: Record<string, string>;
 }
 
 export type OrderStatus = "PENDING" | "PROCESSING" | "SHIPPING" | "DELIVERED" | "CANCELLED";

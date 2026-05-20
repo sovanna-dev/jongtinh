@@ -111,6 +111,27 @@ export const ProductList = () => {
                     )}
                 />
                 <Table.Column
+                    dataIndex="attributes"
+                    title="Attributes"
+                    render={(value: Record<string, string>) => {
+                        if (!value || Object.keys(value).length === 0) return "-";
+                        return (
+                            <Space size={4} wrap>
+                                {Object.entries(value).slice(0, 2).map(([key, val]) => (
+                                    <Tag key={key} color="purple" style={{ fontSize: 11 }}>
+                                        {key}: {val}
+                                    </Tag>
+                                ))}
+                                {Object.keys(value).length > 2 && (
+                                    <Tag color="default" style={{ fontSize: 11 }}>
+                                        +{Object.keys(value).length - 2} more
+                                    </Tag>
+                                )}
+                            </Space>
+                        );
+                    }}
+                />
+                <Table.Column
                     title="Actions"
                     dataIndex="actions"
                     render={(_, record: IProduct) => (

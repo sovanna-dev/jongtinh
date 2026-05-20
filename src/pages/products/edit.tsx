@@ -23,9 +23,14 @@ export const ProductEdit = () => {
             ? Object.entries(data.specifications).map(([key, value]) => ({ key, value }))
             : [];
 
+        const attributes = data.attributes
+            ? Object.entries(data.attributes).map(([key, value]) => ({ key, value }))
+            : [];
+
         return {
             ...formProps.initialValues,
             specifications,
+            attributes,
         };
     }, [query?.data?.data]);
 
@@ -38,6 +43,14 @@ export const ProductEdit = () => {
             colors: values.colors || [],
             specifications: values.specifications
                 ? values.specifications.reduce((acc: any, item: any) => {
+                      if (item.key && item.value) {
+                          acc[item.key] = item.value;
+                      }
+                      return acc;
+                  }, {})
+                : {},
+            attributes: values.attributes
+                ? values.attributes.reduce((acc: any, item: any) => {
                       if (item.key && item.value) {
                           acc[item.key] = item.value;
                       }
@@ -190,6 +203,41 @@ export const ProductEdit = () => {
                                 <Form.Item>
                                     <Button type="dashed" onClick={() => add()} block icon={<PlusOutlined />}>
                                         Add Specification
+                                    </Button>
+                                </Form.Item>
+                            </>
+                        )}
+                    </Form.List>
+                </Form.Item>
+
+                <Divider orientation="left">Attributes (Size, Fit, Material...)</Divider>
+
+                <Form.Item label="Attributes">
+                    <Form.List name="attributes">
+                        {(fields, { add, remove }) => (
+                            <>
+                                {fields.map(({ key, name, ...restField }) => (
+                                    <Space key={key} style={{ display: "flex", marginBottom: 8 }} align="baseline">
+                                        <Form.Item
+                                            {...restField}
+                                            name={[name, "key"]}
+                                            rules={[{ required: true, message: "Attribute name required" }]}
+                                        >
+                                            <Input placeholder="Size" style={{ width: 180 }} />
+                                        </Form.Item>
+                                        <Form.Item
+                                            {...restField}
+                                            name={[name, "value"]}
+                                            rules={[{ required: true, message: "Value required" }]}
+                                        >
+                                            <Input placeholder="S, M, L, XL" style={{ width: 220 }} />
+                                        </Form.Item>
+                                        <MinusCircleOutlined onClick={() => remove(name)} />
+                                    </Space>
+                                ))}
+                                <Form.Item>
+                                    <Button type="dashed" onClick={() => add()} block icon={<PlusOutlined />}>
+                                        Add Attribute
                                     </Button>
                                 </Form.Item>
                             </>

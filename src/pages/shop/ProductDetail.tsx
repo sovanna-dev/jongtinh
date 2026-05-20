@@ -225,6 +225,27 @@ export const ProductDetail: React.FC = () => {
                             </div>
                         )}
 
+                        {product.attributes && Object.keys(product.attributes).filter(k => k !== "size").length > 0 && (
+                            <div style={{ marginBottom: 32 }}>
+                                <Title level={4} style={{ fontWeight: 700 }}>Details</Title>
+                                <Descriptions
+                                    bordered
+                                    size="middle"
+                                    column={1}
+                                    labelStyle={{ fontWeight: 600, width: "30%", background: "#fafafa" }}
+                                    style={{ marginTop: 16, borderRadius: 12, overflow: "hidden" }}
+                                >
+                                    {Object.entries(product.attributes)
+                                        .filter(([key]) => key !== "size")
+                                        .map(([key, value]) => (
+                                            <Descriptions.Item label={key.replace("_", " ").replace(/\b\w/g, c => c.toUpperCase())} key={key}>
+                                                {value}
+                                            </Descriptions.Item>
+                                        ))}
+                                </Descriptions>
+                            </div>
+                        )}
+
                         {product.colors && product.colors.length > 0 && (
                             <div>
                                 <Title level={4} style={{ fontWeight: 700 }}>Available Colors</Title>
