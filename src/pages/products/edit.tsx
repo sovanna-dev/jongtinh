@@ -24,14 +24,16 @@ export const ProductEdit = () => {
     const selectedCategoryId = Form.useWatch("category", formProps.form);
 
     const currentCategory = useMemo(() => {
-        return categoryQuery?.data?.data.find((c: any) => c.id === selectedCategoryId);
+        if (!selectedCategoryId || !categoryQuery?.data?.data) return null;
+        return categoryQuery.data.data.find((c: any) => c.id === selectedCategoryId) || null;
     }, [categoryQuery?.data?.data, selectedCategoryId]);
 
     const subCategoryOptions = useMemo(() => {
-        return currentCategory?.subCategories?.map((sub: any) => ({
+        if (!currentCategory || !currentCategory.subCategories) return [];
+        return currentCategory.subCategories.map((sub: any) => ({
             label: sub.name,
             value: sub.id,
-        })) || [];
+        }));
     }, [currentCategory]);
 
     const handleAddSubCategory = async () => {
@@ -160,7 +162,13 @@ export const ProductEdit = () => {
                                     <Button
                                         type="text"
                                         icon={<PlusOutlined />}
-                                        onClick={() => setIsSubCategoryModalVisible(true)}
+                                        onClick={() => {
+                                            if (selectedCategoryId && currentCategory) {
+                                                setIsSubCategoryModalVisible(true);
+                                            } else {
+                                                message.warning("Please select a valid category first");
+                                            }
+                                        }}
                                         disabled={!selectedCategoryId}
                                     >
                                         Add new subcategory
