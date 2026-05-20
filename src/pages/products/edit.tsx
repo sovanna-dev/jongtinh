@@ -7,7 +7,7 @@ import { IProduct, ICategory } from "../../interfaces";
 import { ProductImageList } from "../../components/ProductImageList";
 
 export const ProductEdit = () => {
-    const { formProps, saveButtonProps, queryResult, onFinish } = useForm<IProduct>();
+    const { formProps, saveButtonProps, query: queryResult, onFinish } = useForm<IProduct>();
     const { mutate: updateCategory } = useUpdate();
 
     const [isSubCategoryModalVisible, setIsSubCategoryModalVisible] = useState(false);
@@ -16,7 +16,7 @@ export const ProductEdit = () => {
 
     const productData = queryResult?.data?.data;
 
-    const { selectProps: categorySelectProps, queryResult: categoryQuery } = useSelect<ICategory>({
+    const { selectProps: categorySelectProps, query: categoryQuery } = useSelect<ICategory>({
         resource: "categories",
         optionLabel: "name",
     });
@@ -154,7 +154,7 @@ export const ProductEdit = () => {
                         options={subCategoryOptions}
                         disabled={!selectedCategoryId}
                         allowClear
-                        dropdownRender={(menu) => (
+                        popupRender={(menu) => (
                             <>
                                 {menu}
                                 <Divider style={{ margin: "8px 0" }} />
@@ -268,7 +268,7 @@ export const ProductEdit = () => {
                 onCancel={() => setIsSubCategoryModalVisible(false)}
                 confirmLoading={isSubmittingSubCategory}
                 okText="Create"
-                destroyOnClose
+                destroyOnHidden
             >
                 <div style={{ marginBottom: 16 }}>
                     <p>Adding subcategory to: <b>{currentCategory?.name}</b></p>

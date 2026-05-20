@@ -14,7 +14,7 @@ export const ProductCreate = () => {
     const [newSubCategoryName, setNewSubCategoryName] = useState("");
     const [isSubmittingSubCategory, setIsSubmittingSubCategory] = useState(false);
 
-    const { selectProps: categorySelectProps, queryResult: categoryQuery } = useSelect<ICategory>({
+    const { selectProps: categorySelectProps, query: categoryQuery } = useSelect<ICategory>({
         resource: "categories",
         optionLabel: "name",
     });
@@ -185,7 +185,7 @@ export const ProductCreate = () => {
                         options={subCategoryOptions}
                         disabled={!selectedCategoryId}
                         allowClear
-                        dropdownRender={(menu) => (
+                        popupRender={(menu) => (
                             <>
                                 {menu}
                                 <Divider style={{ margin: "8px 0" }} />
@@ -193,7 +193,13 @@ export const ProductCreate = () => {
                                     <Button
                                         type="text"
                                         icon={<PlusOutlined />}
-                                        onClick={() => setIsSubCategoryModalVisible(true)}
+                                        onClick={() => {
+                                            if (selectedCategoryId && currentCategory) {
+                                                setIsSubCategoryModalVisible(true);
+                                            } else {
+                                                message.warning("Please select a valid category first");
+                                            }
+                                        }}
                                         disabled={!selectedCategoryId}
                                     >
                                         Add new subcategory
@@ -338,7 +344,7 @@ export const ProductCreate = () => {
                 onCancel={() => setIsSubCategoryModalVisible(false)}
                 confirmLoading={isSubmittingSubCategory}
                 okText="Create"
-                destroyOnClose
+                destroyOnHidden
             >
                 <div style={{ marginBottom: 16 }}>
                     <p>Adding subcategory to: <b>{currentCategory?.name}</b></p>
