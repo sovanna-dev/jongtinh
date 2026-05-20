@@ -1,10 +1,5 @@
-import {
-    List,
-    useTable,
-    EditButton,
-    DeleteButton,
-} from "@refinedev/antd";
-import { Table, Space, Avatar } from "antd";
+import { List, useTable, EditButton, DeleteButton } from "@refinedev/antd";
+import { Table, Space, Avatar, Tag } from "antd";
 import { ICategory } from "../../interfaces";
 
 export const CategoryList = () => {
@@ -20,11 +15,25 @@ export const CategoryList = () => {
                 <Table.Column
                     dataIndex="icon"
                     title="Icon"
-                    render={(value) => (
-                        <Avatar src={value} shape="square" />
-                    )}
+                    render={(value) => <Avatar src={value} shape="square" />}
                 />
                 <Table.Column dataIndex="name" title="Name" />
+                <Table.Column
+                    dataIndex="subCategories"
+                    title="Subcategories"
+                    render={(value: { id: string; name: string }[]) => {
+                        if (!value || value.length === 0) return "-";
+                        return (
+                            <Space size={4} wrap>
+                                {value.map((sub) => (
+                                    <Tag key={sub.id} color="#FF006E" style={{ borderRadius: 12 }}>
+                                        {sub.name}
+                                    </Tag>
+                                ))}
+                            </Space>
+                        );
+                    }}
+                />
                 <Table.Column dataIndex="productCount" title="Product Count" />
                 <Table.Column
                     title="Actions"

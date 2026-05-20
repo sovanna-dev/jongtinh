@@ -11,11 +11,17 @@ export interface IPromotionBanner {
     createdAt?: number;
 }
 
+export interface ISubCategory {
+    id: string;
+    name: string;
+}
+
 export interface ICategory {
     id: string;
     name: string;
     icon: string;
     productCount: number;
+    subCategories: ISubCategory[];
 }
 
 export interface IProduct {
@@ -27,6 +33,7 @@ export interface IProduct {
     discountPrice?: number;
     images: string[];
     category: string;
+    subCategory?: string;
     barcode: string;
     rating: number;
     reviewCount: number;

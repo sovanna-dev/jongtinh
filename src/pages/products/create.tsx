@@ -1,17 +1,79 @@
 import { Create, useForm, useSelect } from "@refinedev/antd";
-import { Form, Input, InputNumber, Switch, Select, Space, Button, Divider } from "antd";
+import { useUpdate } from "@refinedev/core";
+import { Form, Input, InputNumber, Switch, Select, Space, Button, Divider, Modal, message } from "antd";
 import { MinusCircleOutlined, PlusOutlined } from "@ant-design/icons";
+import { useMemo, useState } from "react";
 import { IProduct, ICategory } from "../../interfaces";
 import { ProductImageList } from "../../components/ProductImageList";
-import { PlusOutlined, MinusCircleOutlined } from "@ant-design/icons";
 
 export const ProductCreate = () => {
     const { formProps, saveButtonProps, onFinish } = useForm<IProduct>();
+    const { mutate: updateCategory } = useUpdate();
 
-    const { selectProps: categorySelectProps } = useSelect<ICategory>({
+    const [isSubCategoryModalVisible, setIsSubCategoryModalVisible] = useState(false);
+    const [newSubCategoryName, setNewSubCategoryName] = useState("");
+    const [isSubmittingSubCategory, setIsSubmittingSubCategory] = useState(false);
+
+    const { selectProps: categorySelectProps, queryResult: categoryQuery } = useSelect<ICategory>({
         resource: "categories",
         optionLabel: "name",
     });
+
+    const selectedCategoryId = Form.useWatch("category", formProps.form);
+
+    const currentCategory = useMemo(() => {
+        return categoryQuery?.data?.data.find((c: any) => c.id === selectedCategoryId);
+    }, [categoryQuery?.data?.data, selectedCategoryId]);
+
+    const subCategoryOptions = useMemo(() => {
+        return currentCategory?.subCategories?.map((sub: any) => ({
+            label: sub.name,
+            value: sub.id,
+        })) || [];
+    }, [currentCategory]);
+
+    const handleAddSubCategory = async () => {
+        if (!newSubCategoryName.trim() || !selectedCategoryId || !currentCategory) return;
+
+        setIsSubmittingSubCategory(true);
+        const subCategoryId = newSubCategoryName.toLowerCase().trim().replace(/\s+/g, "_");
+
+        // Check if subcategory already exists
+        if (currentCategory.subCategories?.some((sub: any) => sub.id === subCategoryId)) {
+            message.error("Subcategory already exists");
+            setIsSubmittingSubCategory(false);
+            return;
+        }
+
+        const updatedSubCategories = [
+            ...(currentCategory.subCategories || []),
+            { id: subCategoryId, name: newSubCategoryName.trim() }
+        ];
+
+        updateCategory({
+            resource: "categories",
+            id: selectedCategoryId,
+            values: {
+                subCategories: updatedSubCategories
+            },
+            successNotification: {
+                message: "Subcategory created successfully",
+                type: "success"
+            }
+        }, {
+            onSuccess: () => {
+                setIsSubmittingSubCategory(false);
+                setIsSubCategoryModalVisible(false);
+                setNewSubCategoryName("");
+                // Automatically select the new subcategory
+                formProps.form?.setFieldValue("subCategory", subCategoryId);
+            },
+            onError: () => {
+                setIsSubmittingSubCategory(false);
+                message.error("Failed to create subcategory");
+            }
+        });
+    };
 
     const handleOnFinish = (values: any) => {
         onFinish({
@@ -112,6 +174,34 @@ export const ProductCreate = () => {
                     rules={[{ required: true }]}
                 >
                     <Select {...categorySelectProps} />
+                </Form.Item>
+
+                <Form.Item
+                    label="Subcategory"
+                    name="subCategory"
+                >
+                    <Select
+                        placeholder="Select Subcategory"
+                        options={subCategoryOptions}
+                        disabled={!selectedCategoryId}
+                        allowClear
+                        dropdownRender={(menu) => (
+                            <>
+                                {menu}
+                                <Divider style={{ margin: "8px 0" }} />
+                                <Space style={{ padding: "0 8px 4px" }}>
+                                    <Button
+                                        type="text"
+                                        icon={<PlusOutlined />}
+                                        onClick={() => setIsSubCategoryModalVisible(true)}
+                                        disabled={!selectedCategoryId}
+                                    >
+                                        Add new subcategory
+                                    </Button>
+                                </Space>
+                            </>
+                        )}
+                    />
                 </Form.Item>
 
                 <Form.Item label="Barcode" name="barcode">
@@ -240,6 +330,27 @@ export const ProductCreate = () => {
                     <Switch />
                 </Form.Item>
             </Form>
+
+            <Modal
+                title="Add New Subcategory"
+                open={isSubCategoryModalVisible}
+                onOk={handleAddSubCategory}
+                onCancel={() => setIsSubCategoryModalVisible(false)}
+                confirmLoading={isSubmittingSubCategory}
+                okText="Create"
+                destroyOnClose
+            >
+                <div style={{ marginBottom: 16 }}>
+                    <p>Adding subcategory to: <b>{currentCategory?.name}</b></p>
+                </div>
+                <Input
+                    placeholder="Enter subcategory name (e.g. T-Shirts)"
+                    value={newSubCategoryName}
+                    onChange={(e) => setNewSubCategoryName(e.target.value)}
+                    onPressEnter={handleAddSubCategory}
+                    autoFocus
+                />
+            </Modal>
         </Create>
     );
 };
