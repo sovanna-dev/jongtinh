@@ -4,7 +4,7 @@ import {
     EditButton,
     DeleteButton,
 } from "@refinedev/antd";
-import { Table, Space, Tag, Image, Typography, Select, Button } from "antd";
+import { Table, Space, Tag, Image, Typography, Select, Button, Tooltip } from "antd";
 import { useMany } from "@refinedev/core";
 import { useSelect } from "@refinedev/antd";
 import { IProduct, ICategory } from "../../interfaces";
@@ -111,20 +111,42 @@ export const ProductList = () => {
                     )}
                 />
                 <Table.Column
-                    dataIndex="attributes"
                     title="Attributes"
-                    render={(value: Record<string, string>) => {
-                        if (!value || Object.keys(value).length === 0) return "-";
+                    render={(_, record: IProduct) => {
+                        const attributes = record.attributes || {};
+                        const specifications = record.specifications || {};
+                        const colors = record.colors || [];
+
+                        const allEntries = [
+                            ...Object.entries(attributes),
+                            ...Object.entries(specifications)
+                        ];
+
+                        if (allEntries.length === 0 && colors.length === 0) return "-";
+
                         return (
                             <Space size={4} wrap>
-                                {Object.entries(value).slice(0, 2).map(([key, val]) => (
-                                    <Tag key={key} color="purple" style={{ fontSize: 11 }}>
+                                {colors.map((color) => (
+                                    <Tooltip title={color} key={color}>
+                                        <div
+                                            style={{
+                                                width: 12,
+                                                height: 12,
+                                                borderRadius: "50%",
+                                                backgroundColor: color,
+                                                border: "1px solid #d9d9d9",
+                                            }}
+                                        />
+                                    </Tooltip>
+                                ))}
+                                {allEntries.slice(0, 3).map(([key, val]) => (
+                                    <Tag key={key} color="purple" style={{ fontSize: 10, margin: 0 }}>
                                         {key}: {val}
                                     </Tag>
                                 ))}
-                                {Object.keys(value).length > 2 && (
-                                    <Tag color="default" style={{ fontSize: 11 }}>
-                                        +{Object.keys(value).length - 2} more
+                                {allEntries.length > 3 && (
+                                    <Tag color="default" style={{ fontSize: 10, margin: 0 }}>
+                                        +{allEntries.length - 3}
                                     </Tag>
                                 )}
                             </Space>

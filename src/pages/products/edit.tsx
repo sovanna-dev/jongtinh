@@ -1,5 +1,5 @@
 import { Edit, useForm, useSelect } from "@refinedev/antd";
-import { useUpdate } from "@refinedev/core";
+import { useUpdate, useOne } from "@refinedev/core";
 import { Form, Input, InputNumber, Switch, Select, Space, Button, Divider, Modal, message } from "antd";
 import { MinusCircleOutlined, PlusOutlined } from "@ant-design/icons";
 import { useEffect, useMemo, useState } from "react";
@@ -16,24 +16,28 @@ export const ProductEdit = () => {
 
     const productData = queryResult?.data?.data;
 
-    const { selectProps: categorySelectProps, query: categoryQuery } = useSelect<ICategory>({
+    const { selectProps: categorySelectProps } = useSelect<ICategory>({
         resource: "categories",
         optionLabel: "name",
     });
 
     const selectedCategoryId = Form.useWatch("category", formProps.form);
 
-    const currentCategory = useMemo(() => {
-        if (!selectedCategoryId || !categoryQuery?.data?.data) return null;
-        return categoryQuery.data.data.find((c: any) => c.id === selectedCategoryId) || null;
-    }, [categoryQuery?.data?.data, selectedCategoryId]);
+    const { data: categoryDetails } = useOne<ICategory>({
+        resource: "categories",
+        id: selectedCategoryId,
+        queryOptions: {
+            enabled: !!selectedCategoryId,
+        },
+    });
+
+    const currentCategory = categoryDetails?.data;
 
     const subCategoryOptions = useMemo(() => {
-        if (!currentCategory || !currentCategory.subCategories) return [];
-        return currentCategory.subCategories.map((sub: any) => ({
+        return currentCategory?.subCategories?.map((sub: any) => ({
             label: sub.name,
             value: sub.id,
-        }));
+        })) || [];
     }, [currentCategory]);
 
     const handleAddSubCategory = async () => {

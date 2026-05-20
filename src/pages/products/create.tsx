@@ -1,5 +1,5 @@
 import { Create, useForm, useSelect } from "@refinedev/antd";
-import { useUpdate } from "@refinedev/core";
+import { useUpdate, useOne } from "@refinedev/core";
 import { Form, Input, InputNumber, Switch, Select, Space, Button, Divider, Modal, message } from "antd";
 import { MinusCircleOutlined, PlusOutlined } from "@ant-design/icons";
 import { useMemo, useState } from "react";
@@ -14,16 +14,22 @@ export const ProductCreate = () => {
     const [newSubCategoryName, setNewSubCategoryName] = useState("");
     const [isSubmittingSubCategory, setIsSubmittingSubCategory] = useState(false);
 
-    const { selectProps: categorySelectProps, query: categoryQuery } = useSelect<ICategory>({
+    const { selectProps: categorySelectProps } = useSelect<ICategory>({
         resource: "categories",
         optionLabel: "name",
     });
 
     const selectedCategoryId = Form.useWatch("category", formProps.form);
 
-    const currentCategory = useMemo(() => {
-        return categoryQuery?.data?.data.find((c: any) => c.id === selectedCategoryId);
-    }, [categoryQuery?.data?.data, selectedCategoryId]);
+    const { data: categoryDetails } = useOne<ICategory>({
+        resource: "categories",
+        id: selectedCategoryId,
+        queryOptions: {
+            enabled: !!selectedCategoryId,
+        },
+    });
+
+    const currentCategory = categoryDetails?.data;
 
     const subCategoryOptions = useMemo(() => {
         return currentCategory?.subCategories?.map((sub: any) => ({
