@@ -1,12 +1,12 @@
 import React, { useState } from "react";
 import {
     Layout, Input, Badge, Space, Typography, Button, Drawer, List, Image, message,
-    Dropdown, Avatar, Popover, List as AntdList
+    Dropdown, Avatar, Popover, List as AntdList, Tooltip
 } from "antd";
 import {
     ShoppingCartOutlined, SearchOutlined, ShoppingOutlined, DeleteOutlined,
     UserOutlined, LogoutOutlined, OrderedListOutlined, DashboardOutlined,
-    ProfileOutlined, SunOutlined, MoonOutlined, BellOutlined
+    ProfileOutlined, SunOutlined, MoonOutlined, BellOutlined, AreaChartOutlined
 } from "@ant-design/icons";
 import { useNavigate } from "react-router";
 import { auth, db } from "../../firebase";
@@ -18,6 +18,8 @@ import { ColorModeContext } from "../../contexts/color-mode";
 import { INotification } from "../../interfaces";
 import logo from "../../images/logo.webp";
 import { AuthModal } from "../../components/shop/AuthModal";
+import { LiveChat } from "../../components/shop/LiveChat";
+import { LiveChartPopup } from "../../components/shop/LiveChartPopup";
 
 
 const { Header, Content, Footer } = Layout;
@@ -40,6 +42,7 @@ export const ShopLayout: React.FC<ShopLayoutProps> = ({ children, searchQuery, s
     const [authModalOpen, setAuthModalOpen] = useState(false);
     const { user: customerUser, logout: customerLogout } = useCustomerAuth();
     const [isAdmin, setIsAdmin] = useState(false);
+    const [chartVisible, setChartVisible] = useState(false);
 
     // Check if user is admin
     React.useEffect(() => {
@@ -291,6 +294,18 @@ export const ShopLayout: React.FC<ShopLayoutProps> = ({ children, searchQuery, s
                         onClick={() => setMode(isDark ? "light" : "dark")}
                         style={{ height: 44, width: 44 }}
                     />
+
+                    {isAdmin && (
+                        <Tooltip title="Website State / Live Charts">
+                            <Button
+                                type="text"
+                                shape="circle"
+                                icon={<AreaChartOutlined style={{ color: "#FF006E", fontSize: 24 }} />}
+                                onClick={() => setChartVisible(true)}
+                                style={{ height: 44, width: 44 }}
+                            />
+                        </Tooltip>
+                    )}
 
                     <Badge count={cartCount} showZero offset={[-2, 2]} color="#FF006E">
                         <ShoppingCartOutlined
@@ -827,6 +842,13 @@ export const ShopLayout: React.FC<ShopLayoutProps> = ({ children, searchQuery, s
                     </>
                 )}
             </Drawer>
+
+            <LiveChat isDark={isDark} />
+            <LiveChartPopup
+                visible={chartVisible}
+                onClose={() => setChartVisible(false)}
+                isDark={isDark}
+            />
         </Layout>
     );
 };

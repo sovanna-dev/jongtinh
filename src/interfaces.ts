@@ -24,6 +24,15 @@ export interface ICategory {
     subCategories: ISubCategory[];
 }
 
+export interface IProductVariant {
+    id: string;
+    name: string; // e.g., "iPhone 15 - Blue - 256GB"
+    attributes: Record<string, string>;
+    price: number;
+    stockQuantity: number;
+    images: string[];
+}
+
 export interface IProduct {
     id: string;
     name: string;
@@ -43,6 +52,8 @@ export interface IProduct {
     createdAt: number;
     specifications: Record<string, string>;
     attributes: Record<string, string>;
+    variants?: IProductVariant[];
+    brand?: string;
 }
 
 export type OrderStatus = "PENDING" | "PROCESSING" | "SHIPPING" | "DELIVERED" | "CANCELLED";
