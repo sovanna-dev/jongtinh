@@ -21,7 +21,7 @@ export const ProductCreate = () => {
 
     const selectedCategoryId = Form.useWatch("category", formProps.form);
 
-    const { data: categoryDetails } = useOne<ICategory>({
+    const { query: categoryQuery } = useOne<ICategory>({
         resource: "categories",
         id: selectedCategoryId,
         queryOptions: {
@@ -29,7 +29,7 @@ export const ProductCreate = () => {
         },
     });
 
-    const currentCategory = categoryDetails?.data;
+    const currentCategory = categoryQuery.data?.data;
 
     const subCategoryOptions = useMemo(() => {
         return currentCategory?.subCategories?.map((sub: any) => ({
