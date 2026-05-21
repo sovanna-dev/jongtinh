@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "../../firebase";
-import { Row, Col, Typography, Image, Tag, Button, Space, Descriptions, Divider, Spin, message, Card } from "antd";
+import { Row, Col, Typography, Image, Tag, Button, Space, Descriptions, Divider, Spin, message, Card, Tooltip } from "antd";
 import { ShoppingCartOutlined, ArrowLeftOutlined } from "@ant-design/icons";
 import { IProduct } from "../../interfaces";
 import { ShopLayout } from "./ShopLayout";
@@ -230,7 +230,7 @@ export const ProductDetail: React.FC = () => {
                             </div>
                         )}
 
-                        {product.attributes && Object.keys(product.attributes).filter(k => k !== "size").length > 0 && (
+                        {product.attributes && (Array.isArray(product.attributes) ? product.attributes.length > 0 : Object.keys(product.attributes).length > 0) && (
                             <div style={{ marginBottom: 32 }}>
                                 <Title level={4} style={{ fontWeight: 700 }}>Details</Title>
                                 <Descriptions
@@ -240,13 +240,20 @@ export const ProductDetail: React.FC = () => {
                                     labelStyle={{ fontWeight: 600, width: "30%", background: "#fafafa" }}
                                     style={{ marginTop: 16, borderRadius: 12, overflow: "hidden" }}
                                 >
-                                    {Object.entries(product.attributes)
-                                        .filter(([key]) => key !== "size")
-                                        .map(([key, value]) => (
-                                            <Descriptions.Item label={key.replace("_", " ").replace(/\b\w/g, c => c.toUpperCase())} key={key}>
-                                                {value}
+                                    {Array.isArray(product.attributes)
+                                        ? product.attributes.map((attr) => (
+                                            <Descriptions.Item label={attr.label || attr.key} key={attr.key}>
+                                                {attr.value}
                                             </Descriptions.Item>
-                                        ))}
+                                        ))
+                                        : Object.entries(product.attributes)
+                                            .filter(([key]) => key !== "size")
+                                            .map(([key, value]) => (
+                                                <Descriptions.Item label={key.replace("_", " ").replace(/\b\w/g, c => c.toUpperCase())} key={key}>
+                                                    {String(value)}
+                                                </Descriptions.Item>
+                                            ))
+                                    }
                                 </Descriptions>
                             </div>
                         )}
@@ -255,18 +262,19 @@ export const ProductDetail: React.FC = () => {
                             <div>
                                 <Title level={4} style={{ fontWeight: 700 }}>Available Colors</Title>
                                 <Space size={16} style={{ marginTop: 12 }}>
-                                    {product.colors.map((c) => (
-                                        <div
-                                            key={c}
-                                            style={{
-                                                width: 40,
-                                                height: 40,
-                                                borderRadius: "50%",
-                                                backgroundColor: c,
-                                                border: "3px solid #fff",
-                                                boxShadow: "0 2px 8px rgba(0,0,0,0.15)"
-                                            }}
-                                        />
+                                    {product.colors.map((c, i) => (
+                                        <Tooltip title={c.name || c.hex} key={i}>
+                                            <div
+                                                style={{
+                                                    width: 40,
+                                                    height: 40,
+                                                    borderRadius: "50%",
+                                                    backgroundColor: c.hex,
+                                                    border: "3px solid #fff",
+                                                    boxShadow: "0 2px 8px rgba(0,0,0,0.15)"
+                                                }}
+                                            />
+                                        </Tooltip>
                                     ))}
                                 </Space>
                             </div>

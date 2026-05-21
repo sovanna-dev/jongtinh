@@ -38,7 +38,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, isDark }) => 
                 background: isDark ? "#1f1f1f" : "#fff",
                 transition: "transform 0.3s ease, box-shadow 0.3s ease",
             }}
-            bodyStyle={{ padding: 16, flex: 1, display: "flex", flexDirection: "column" }}
+            styles={{ body: { padding: 16, flex: 1, display: "flex", flexDirection: "column" } }}
             cover={
                 <div style={{ position: "relative", height: 240, overflow: "hidden" }}>
                     <Image
@@ -105,10 +105,10 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, isDark }) => 
                 {product.colors && product.colors.length > 0 && (
                     <Space size={4} style={{ marginBottom: 12 }}>
                         {product.colors.slice(0, 4).map((color, idx) => (
-                            <Tooltip title={color} key={idx}>
+                            <Tooltip title={color.name || color.hex} key={idx}>
                                 <div style={{
                                     width: 14, height: 14, borderRadius: "50%",
-                                    backgroundColor: color, border: "1px solid rgba(0,0,0,0.1)"
+                                    backgroundColor: color.hex, border: "1px solid rgba(0,0,0,0.1)"
                                 }} />
                             </Tooltip>
                         ))}
