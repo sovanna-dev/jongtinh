@@ -1,6 +1,8 @@
-import React from "react";
-import { Drawer, Space, Button, Checkbox, Divider, Slider, Typography, Tag } from "antd";
+import React, { useState, useEffect } from "react";
+import { Drawer, Space, Button, Checkbox, Divider, Slider, Typography, Tag, Skeleton } from "antd";
 import { FilterOutlined, ReloadOutlined } from "@ant-design/icons";
+import { collection, getDocs } from "firebase/firestore";
+import { db } from "../../firebase";
 
 const { Title, Text } = Typography;
 
@@ -16,6 +18,42 @@ interface FilterDrawerProps {
 export const FilterDrawer: React.FC<FilterDrawerProps> = ({
     visible, onClose, filters, onFilterChange, onReset, isDark
 }) => {
+    const [availableBrands, setAvailableBrands] = useState<string[]>([]);
+    const [loadingBrands, setLoadingBrands] = useState(false);
+
+    useEffect(() => {
+        const fetchBrands = async () => {
+            if (!visible) return; // Only fetch when drawer opens
+
+            setLoadingBrands(true);
+            try {
+                const querySnapshot = await getDocs(collection(db, "products"));
+                const brandsSet = new Set<string>();
+
+                querySnapshot.forEach((doc) => {
+                    const data = doc.data();
+                    if (data.brand) {
+                        brandsSet.add(data.brand);
+                    }
+                });
+
+                // Ensure "JongTinh" is included if it's our default
+                if (brandsSet.size === 0) {
+                    brandsSet.add("JongTinh");
+                }
+
+                const sortedBrands = Array.from(brandsSet).sort();
+                setAvailableBrands(sortedBrands);
+            } catch (error) {
+                console.error("Error fetching brands:", error);
+            } finally {
+                setLoadingBrands(false);
+            }
+        };
+
+        fetchBrands();
+    }, [visible]);
+
     return (
         <Drawer
             title={
@@ -60,11 +98,16 @@ export const FilterDrawer: React.FC<FilterDrawerProps> = ({
                 {/* Dynamic Attributes: Brands */}
                 <div>
                     <Title level={5}>Brands</Title>
-                    <Checkbox.Group
-                        options={["Apple", "Samsung", "Sony", "Dell", "LG"]}
-                        onChange={(val) => onFilterChange({ ...filters, brands: val })}
-                        style={{ display: "flex", flexDirection: "column", gap: 8 }}
-                    />
+                    {loadingBrands ? (
+                        <Skeleton active paragraph={{ rows: 3 }} title={false} />
+                    ) : (
+                        <Checkbox.Group
+                            options={availableBrands}
+                            value={filters.brands}
+                            onChange={(val) => onFilterChange({ ...filters, brands: val })}
+                            style={{ display: "flex", flexDirection: "column", gap: 8 }}
+                        />
+                    )}
                 </div>
 
                 {/* Availability */}

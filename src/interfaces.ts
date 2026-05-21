@@ -43,6 +43,7 @@ export interface IProduct {
     images: string[];
     category: string;
     subCategory?: string;
+    brand?: string;
     barcode: string;
     rating: number;
     reviewCount: number;
@@ -53,7 +54,6 @@ export interface IProduct {
     specifications: Record<string, string>;
     attributes: Record<string, string>;
     variants?: IProductVariant[];
-    brand?: string;
 }
 
 export type OrderStatus = "PENDING" | "PROCESSING" | "SHIPPING" | "DELIVERED" | "CANCELLED";

@@ -1,15 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import {
-    collection,
-    query,
-    where,
-    orderBy,
-    limit,
-    getDocs,
-    startAfter,
-    QueryConstraint,
-    DocumentData,
-    QueryDocumentSnapshot
+    collection, query, where, orderBy, limit, getDocs,
+    startAfter, QueryConstraint, DocumentData, QueryDocumentSnapshot
 } from "firebase/firestore";
 import { db } from "../firebase";
 import { IProduct } from "../interfaces";
@@ -42,7 +34,6 @@ export const useProducts = ({
     const [hasMore, setHasMore] = useState(true);
     const [lastDoc, setLastDoc] = useState<QueryDocumentSnapshot<DocumentData> | null>(null);
 
-    // Use a ref to track the current fetch ID to prevent race conditions
     const fetchIdRef = useRef(0);
 
     const fetchProducts = useCallback(async (isNextPage = false) => {
@@ -50,25 +41,49 @@ export const useProducts = ({
 
         try {
             if (isNextPage) setLoadingMore(true);
-            else {
-                setLoading(true);
-                // Reset lastDoc when parameters change
-            }
+            else setLoading(true);
 
             const constraints: QueryConstraint[] = [];
 
-            // 1. Basic Filters
+            // Category filter
             if (category) {
                 constraints.push(where("category", "==", category));
             }
+            // SubCategory filter
             if (subCategory) {
                 constraints.push(where("subCategory", "==", subCategory));
             }
 
-            // 2. Advanced Filters (Requires composite indexes)
+            // Search by name (prefix match via nameLowercase)
+            if (searchQuery && searchQuery.trim()) {
+                const queryLower = searchQuery.trim().toLowerCase();
+                constraints.push(where("nameLowercase", ">=", queryLower));
+                constraints.push(where("nameLowercase", "<=", queryLower + "\uf8ff"));
+                constraints.push(orderBy("nameLowercase", "asc"));
+            } else {
+                // Normal sorting when not searching
+                if (sortBy === "priceLowHigh") {
+                    constraints.push(orderBy("price", "asc"));
+                } else if (sortBy === "priceHighLow") {
+                    constraints.push(orderBy("price", "desc"));
+                } else if (sortBy === "rating") {
+                    constraints.push(orderBy("rating", "desc"));
+                } else {
+                    constraints.push(orderBy("createdAt", "desc"));
+                }
+            }
+
+            // Advanced Filters
             if (filters.brands && filters.brands.length > 0) {
                 constraints.push(where("brand", "in", filters.brands));
             }
+
+            if (filters.priceRange && filters.priceRange.length === 2) {
+                const [min, max] = filters.priceRange;
+                if (min > 0) constraints.push(where("price", ">=", min));
+                if (max < 5000) constraints.push(where("price", "<=", max));
+            }
+
             if (filters.inStock) {
                 constraints.push(where("isAvailable", "==", true));
             }
@@ -76,19 +91,7 @@ export const useProducts = ({
                 constraints.push(where("rating", ">=", filters.minRating));
             }
 
-            // 3. Sorting
-            // Note: If you have a 'where' on a field, you must 'orderBy' that field first in Firestore
-            if (sortBy === "priceLowHigh") {
-                constraints.push(orderBy("price", "asc"));
-            } else if (sortBy === "priceHighLow") {
-                constraints.push(orderBy("price", "desc"));
-            } else if (sortBy === "rating") {
-                constraints.push(orderBy("rating", "desc"));
-            } else {
-                constraints.push(orderBy("createdAt", "desc"));
-            }
-
-            // 4. Pagination
+            // Pagination
             if (isNextPage && lastDoc) {
                 constraints.push(startAfter(lastDoc));
             }
@@ -97,7 +100,6 @@ export const useProducts = ({
             const q = query(collection(db, "products"), ...constraints);
             const snapshot = await getDocs(q);
 
-            // Only update state if this is still the latest request
             if (currentFetchId !== fetchIdRef.current) return;
 
             const newProducts = snapshot.docs.map(doc => ({
@@ -125,13 +127,12 @@ export const useProducts = ({
                 setLoadingMore(false);
             }
         }
-    }, [category, subCategory, sortBy, pageSize, lastDoc, JSON.stringify(filters)]);
+    }, [category, subCategory, searchQuery, sortBy, pageSize, lastDoc, JSON.stringify(filters)]);
 
-    // Trigger refresh when primary filters change
     useEffect(() => {
         setLastDoc(null);
         fetchProducts(false);
-    }, [category, subCategory, sortBy, JSON.stringify(filters)]);
+    }, [category, subCategory, searchQuery, sortBy, JSON.stringify(filters)]);
 
     return {
         products,

@@ -82,15 +82,13 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, isDark }) => 
         >
             <div style={{ flex: 1 }}>
                 <Space style={{ marginBottom: 4 }}>
+                    <Text strong style={{ color: "#FF006E", fontSize: 11, textTransform: "uppercase", letterSpacing: 0.5 }}>
+                        {product.brand || "JongTinh"}
+                    </Text>
+                    <Text type="secondary" style={{ fontSize: 10 }}>•</Text>
                     <Text type="secondary" style={{ fontSize: 11, textTransform: "uppercase", fontWeight: 600, letterSpacing: 0.5 }}>
                         {product.category}
                     </Text>
-                    {product.subCategory && (
-                        <>
-                            <Text type="secondary" style={{ fontSize: 10 }}>•</Text>
-                            <Text type="secondary" style={{ fontSize: 11 }}>{product.subCategory}</Text>
-                        </>
-                    )}
                 </Space>
 
                 <Title level={5} style={{ marginTop: 0, marginBottom: 8, fontSize: 15, lineHeight: "1.4" }} ellipsis={{ rows: 2 }}>

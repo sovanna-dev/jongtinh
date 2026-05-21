@@ -50,6 +50,15 @@ export const ProductList = () => {
                 />
                 <Table.Column dataIndex="name" title="Name" />
                 <Table.Column
+                    dataIndex="brand"
+                    title="Brand"
+                    render={(value: string) => (
+                        <Tag color={value === "JongTinh" ? "#FF006E" : "blue"}>
+                            {value || "JongTinh"}
+                        </Tag>
+                    )}
+                />
+                <Table.Column
                     dataIndex="category"
                     title="Category"
                     render={(value) => {

@@ -85,6 +85,7 @@ export const ProductCreate = () => {
         onFinish({
             ...values,
             nameLowercase: values.name.toLowerCase(),
+            brand: values.brand || "JongTinh",
             createdAt: Date.now(),
             updatedAt: Date.now(),
             rating: values.rating || 0,
@@ -173,7 +174,13 @@ export const ProductCreate = () => {
                         <InputNumber min={0} style={{ width: 120 }} />
                     </Form.Item>
                 </Space>
-
+                <Form.Item
+                                    label="Brand"
+                                    name="brand"
+                                    initialValue="JongTinh"
+                                >
+                                    <Input placeholder="e.g. JongTinh, Nike, Adidas" />
+                                </Form.Item>
                 <Form.Item
                     label="Category"
                     name="category"

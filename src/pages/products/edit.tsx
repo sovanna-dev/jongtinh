@@ -103,6 +103,7 @@ export const ProductEdit = () => {
         onFinish({
             ...values,
             nameLowercase: values.name.toLowerCase(),
+            brand: values.brand || "JongTinh",
             updatedAt: Date.now(),
             specifications: values.specifications
                 ? values.specifications.reduce((acc: any, item: any) => {
@@ -147,6 +148,13 @@ export const ProductEdit = () => {
                         <InputNumber min={0} style={{ width: 120 }} />
                     </Form.Item>
                 </Space>
+
+                <Form.Item
+                    label="Brand"
+                    name="brand"
+                >
+                    <Input placeholder="e.g. JongTinh, Nike, Adidas" />
+                </Form.Item>
 
                 <Form.Item label="Category" name="category" rules={[{ required: true }]}>
                     <Select {...categorySelectProps} />

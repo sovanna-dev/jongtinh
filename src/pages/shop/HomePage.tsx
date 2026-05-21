@@ -51,6 +51,7 @@ export const ShopHomePage: React.FC = () => {
     } = useProducts({
         category: selectedCategory,
         subCategory: selectedSubCategory,
+        searchQuery: searchQuery,
         sortBy: sortBy,
         pageSize: 12,
         filters: activeFilters

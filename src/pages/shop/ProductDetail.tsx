@@ -115,7 +115,12 @@ export const ProductDetail: React.FC = () => {
                 <Col xs={24} md={12}>
                     <div style={{ padding: "0 8px" }}>
                         <Text type="secondary" style={{ fontSize: 14, textTransform: "uppercase", letterSpacing: 1.5, fontWeight: 600 }}>{product.category}</Text>
-                        <Title level={1} style={{ marginTop: 8, marginBottom: 16, fontSize: 32, fontWeight: 800 }}>{product.name}</Title>
+                        <Title level={1} style={{ marginTop: 8, marginBottom: 0, fontSize: 32, fontWeight: 800 }}>{product.name}</Title>
+                        {product.brand && (
+                            <Text type="secondary" style={{ fontSize: 14, display: "block", marginBottom: 16 }}>
+                                by <Text strong style={{ color: "#FF006E" }}>{product.brand}</Text>
+                            </Text>
+                        )}
 
                         <Space style={{ marginBottom: 24 }}>
                             <div style={{
