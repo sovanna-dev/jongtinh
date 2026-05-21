@@ -88,8 +88,9 @@ export const ProductEdit = () => {
                 ? Object.entries(productData.specifications).map(([key, value]) => ({ key, value }))
                 : [];
 
-            const attributes = productData.attributes
-                ? Object.entries(productData.attributes).map(([key, value]) => ({ key, value }))
+            // Attributes are already an array in the new model, but check for safety
+            const attributes = Array.isArray(productData.attributes)
+                ? productData.attributes
                 : [];
 
             formProps.form?.setFieldsValue({
@@ -100,10 +101,32 @@ export const ProductEdit = () => {
     }, [productData, formProps.form]);
 
     const handleOnFinish = (values: any) => {
+        const name = values.name || "";
+        const brand = values.brand || "JongTinh";
+
+        // Generate filter tags from attributes
+        const filterTags: string[] = [];
+        const attributes = (values.attributes || []).map((attr: any) => {
+            if (attr.key && attr.value) {
+                const vals = attr.value.split(",").map((v: string) => v.trim().toLowerCase()).filter((v: string) => v.length > 0);
+                vals.forEach((v: string) => {
+                    filterTags.push(`${attr.key.toLowerCase()}_${v}`);
+                });
+                return {
+                    key: attr.key.toLowerCase(),
+                    label: attr.key,
+                    value: attr.value,
+                    displayType: attr.displayType || "TEXT"
+                };
+            }
+            return null;
+        }).filter(Boolean);
+
         onFinish({
             ...values,
-            nameLowercase: values.name.toLowerCase(),
-            brand: values.brand || "JongTinh",
+            nameLowercase: name.toLowerCase(),
+            brandLowercase: brand.toLowerCase(),
+            brand: brand,
             updatedAt: Date.now(),
             specifications: values.specifications
                 ? values.specifications.reduce((acc: any, item: any) => {
@@ -111,12 +134,8 @@ export const ProductEdit = () => {
                       return acc;
                   }, {})
                 : {},
-            attributes: values.attributes
-                ? values.attributes.reduce((acc: any, item: any) => {
-                      if (item.key && item.value) acc[item.key] = item.value;
-                      return acc;
-                  }, {})
-                : {},
+            attributes: attributes,
+            filterTags: filterTags,
         });
     };
 
@@ -210,14 +229,25 @@ export const ProductEdit = () => {
                 </Form.Item>
 
                 <Divider orientation="left">Attributes</Divider>
-                <Form.Item label="Colors (Hex Codes)">
+                <Form.Item label="Colors">
                     <Form.List name="colors">
                         {(fields, { add, remove }) => (
                             <>
                                 {fields.map(({ key, name, ...restField }) => (
                                     <Space key={key} style={{ display: "flex", marginBottom: 8 }} align="baseline">
-                                        <Form.Item {...restField} name={[name]} rules={[{ required: true }]}>
-                                            <Input placeholder="#C62828" style={{ width: 200 }} />
+                                        <Form.Item
+                                            {...restField}
+                                            name={[name, "name"]}
+                                            rules={[{ required: true, message: "Missing color name" }]}
+                                        >
+                                            <Input placeholder="Color Name (e.g. Matte Red)" style={{ width: 180 }} />
+                                        </Form.Item>
+                                        <Form.Item
+                                            {...restField}
+                                            name={[name, "hex"]}
+                                            rules={[{ required: true, message: "Missing hex code" }]}
+                                        >
+                                            <Input placeholder="Hex Code (e.g. #C62828)" style={{ width: 150 }} />
                                         </Form.Item>
                                         <MinusCircleOutlined onClick={() => remove(name)} />
                                     </Space>
@@ -255,10 +285,22 @@ export const ProductEdit = () => {
                             {fields.map(({ key, name, ...restField }) => (
                                 <Space key={key} style={{ display: "flex", marginBottom: 8 }} align="baseline">
                                     <Form.Item {...restField} name={[name, "key"]} rules={[{ required: true }]}>
-                                        <Input placeholder="Key" />
+                                        <Input placeholder="Key" style={{ width: 140 }} />
                                     </Form.Item>
                                     <Form.Item {...restField} name={[name, "value"]} rules={[{ required: true }]}>
-                                        <Input placeholder="Value" />
+                                        <Input placeholder="Value" style={{ width: 180 }} />
+                                    </Form.Item>
+                                    <Form.Item
+                                        {...restField}
+                                        name={[name, "displayType"]}
+                                        initialValue="TEXT"
+                                    >
+                                        <Select style={{ width: 120 }}>
+                                            <Select.Option value="TEXT">Text</Select.Option>
+                                            <Select.Option value="CHIP">Chip</Select.Option>
+                                            <Select.Option value="COLOR">Color</Select.Option>
+                                            <Select.Option value="DROPDOWN">Dropdown</Select.Option>
+                                        </Select>
                                     </Form.Item>
                                     <MinusCircleOutlined onClick={() => remove(name)} />
                                 </Space>
@@ -269,6 +311,10 @@ export const ProductEdit = () => {
                 </Form.List>
 
                 <Form.Item label="Is Available" name="isAvailable" valuePropName="checked">
+                    <Switch />
+                </Form.Item>
+
+                <Form.Item label="Is Featured" name="isFeatured" valuePropName="checked">
                     <Switch />
                 </Form.Item>
             </Form>

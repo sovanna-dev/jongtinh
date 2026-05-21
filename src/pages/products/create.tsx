@@ -82,10 +82,32 @@ export const ProductCreate = () => {
     };
 
     const handleOnFinish = (values: any) => {
+        const name = values.name || "";
+        const brand = values.brand || "JongTinh";
+
+        // Generate filter tags from attributes
+        const filterTags: string[] = [];
+        const attributes = (values.attributes || []).map((attr: any) => {
+            if (attr.key && attr.value) {
+                const vals = attr.value.split(",").map((v: string) => v.trim().toLowerCase()).filter((v: string) => v.length > 0);
+                vals.forEach((v: string) => {
+                    filterTags.push(`${attr.key.toLowerCase()}_${v}`);
+                });
+                return {
+                    key: attr.key.toLowerCase(),
+                    label: attr.key,
+                    value: attr.value,
+                    displayType: attr.displayType || "TEXT"
+                };
+            }
+            return null;
+        }).filter(Boolean);
+
         onFinish({
             ...values,
-            nameLowercase: values.name.toLowerCase(),
-            brand: values.brand || "JongTinh",
+            nameLowercase: name.toLowerCase(),
+            brandLowercase: brand.toLowerCase(),
+            brand: brand,
             createdAt: Date.now(),
             updatedAt: Date.now(),
             rating: values.rating || 0,
@@ -100,14 +122,8 @@ export const ProductCreate = () => {
                       return acc;
                   }, {})
                 : {},
-            attributes: values.attributes
-                ? values.attributes.reduce((acc: any, item: any) => {
-                      if (item.key && item.value) {
-                          acc[item.key] = item.value;
-                      }
-                      return acc;
-                  }, {})
-                : {},
+            attributes: attributes,
+            filterTags: filterTags,
         });
     };
 
@@ -245,7 +261,7 @@ export const ProductCreate = () => {
 
                 <Divider orientation="left">Attributes</Divider>
 
-                <Form.Item label="Colors (Hex Codes)">
+                <Form.Item label="Colors">
                     <Form.List name="colors">
                         {(fields, { add, remove }) => (
                             <>
@@ -253,17 +269,24 @@ export const ProductCreate = () => {
                                     <Space key={key} style={{ display: "flex", marginBottom: 8 }} align="baseline">
                                         <Form.Item
                                             {...restField}
-                                            name={[name]}
+                                            name={[name, "name"]}
+                                            rules={[{ required: true, message: "Missing color name" }]}
+                                        >
+                                            <Input placeholder="Color Name (e.g. Matte Red)" style={{ width: 180 }} />
+                                        </Form.Item>
+                                        <Form.Item
+                                            {...restField}
+                                            name={[name, "hex"]}
                                             rules={[{ required: true, message: "Missing hex code" }]}
                                         >
-                                            <Input placeholder="#C62828" style={{ width: 200 }} />
+                                            <Input placeholder="Hex Code (e.g. #C62828)" style={{ width: 150 }} />
                                         </Form.Item>
                                         <MinusCircleOutlined onClick={() => remove(name)} />
                                     </Space>
                                 ))}
                                 <Form.Item>
                                     <Button type="dashed" onClick={() => add()} block icon={<PlusOutlined />}>
-                                        Add Color (Hex)
+                                        Add Color
                                     </Button>
                                 </Form.Item>
                             </>
@@ -319,14 +342,26 @@ export const ProductCreate = () => {
                                             name={[name, "key"]}
                                             rules={[{ required: true, message: "Attribute name required" }]}
                                         >
-                                            <Input placeholder="Size" style={{ width: 180 }} />
+                                            <Input placeholder="Size" style={{ width: 140 }} />
                                         </Form.Item>
                                         <Form.Item
                                             {...restField}
                                             name={[name, "value"]}
                                             rules={[{ required: true, message: "Value required" }]}
                                         >
-                                            <Input placeholder="S, M, L, XL" style={{ width: 220 }} />
+                                            <Input placeholder="S, M, L, XL" style={{ width: 180 }} />
+                                        </Form.Item>
+                                        <Form.Item
+                                            {...restField}
+                                            name={[name, "displayType"]}
+                                            initialValue="TEXT"
+                                        >
+                                            <Select style={{ width: 120 }}>
+                                                <Select.Option value="TEXT">Text</Select.Option>
+                                                <Select.Option value="CHIP">Chip</Select.Option>
+                                                <Select.Option value="COLOR">Color</Select.Option>
+                                                <Select.Option value="DROPDOWN">Dropdown</Select.Option>
+                                            </Select>
                                         </Form.Item>
                                         <MinusCircleOutlined onClick={() => remove(name)} />
                                     </Space>
@@ -344,6 +379,14 @@ export const ProductCreate = () => {
                 <Form.Item
                     label="Is Available"
                     name="isAvailable"
+                    valuePropName="checked"
+                >
+                    <Switch />
+                </Form.Item>
+
+                <Form.Item
+                    label="Is Featured"
+                    name="isFeatured"
                     valuePropName="checked"
                 >
                     <Switch />

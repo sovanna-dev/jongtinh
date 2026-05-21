@@ -120,41 +120,59 @@ export const ProductList = () => {
                     )}
                 />
                 <Table.Column
+                    dataIndex="isFeatured"
+                    title="Featured"
+                    render={(value) => (
+                        <Tag color={value ? "gold" : "default"}>
+                            {value ? "Featured" : "No"}
+                        </Tag>
+                    )}
+                />
+                <Table.Column
                     title="Attributes"
                     render={(_, record: IProduct) => {
-                        const attributes = record.attributes || {};
+                        // Handle potential legacy data where attributes/specifications might be objects
+                        const attributes = Array.isArray(record.attributes)
+                            ? record.attributes
+                            : Object.entries(record.attributes || {}).map(([key, value]) => ({
+                                key,
+                                label: key,
+                                value: String(value),
+                                displayType: "TEXT" as const
+                            }));
+
                         const specifications = record.specifications || {};
                         const colors = record.colors || [];
 
-                        const allEntries = [
-                            ...Object.entries(attributes),
-                            ...Object.entries(specifications)
-                        ];
+                        const attrEntries = attributes.map(attr => [attr.label || attr.key, attr.value]);
+                        const specEntries = Object.entries(specifications);
+
+                        const allEntries = [...attrEntries, ...specEntries];
 
                         if (allEntries.length === 0 && colors.length === 0) return "-";
 
                         return (
                             <Space size={4} wrap>
-                                {colors.map((color) => (
-                                    <Tooltip title={color} key={color}>
+                                {colors.map((color, index) => (
+                                    <Tooltip title={color.name || color.hex} key={`color-${index}`}>
                                         <div
                                             style={{
                                                 width: 12,
                                                 height: 12,
                                                 borderRadius: "50%",
-                                                backgroundColor: color,
+                                                backgroundColor: color.hex,
                                                 border: "1px solid #d9d9d9",
                                             }}
                                         />
                                     </Tooltip>
                                 ))}
-                                {allEntries.slice(0, 3).map(([key, val]) => (
-                                    <Tag key={key} color="purple" style={{ fontSize: 10, margin: 0 }}>
+                                {allEntries.slice(0, 3).map(([key, val], index) => (
+                                    <Tag key={`attr-${index}`} color="purple" style={{ fontSize: 10, margin: 0 }}>
                                         {key}: {val}
                                     </Tag>
                                 ))}
                                 {allEntries.length > 3 && (
-                                    <Tag color="default" style={{ fontSize: 10, margin: 0 }}>
+                                    <Tag key="attr-more" color="default" style={{ fontSize: 10, margin: 0 }}>
                                         +{allEntries.length - 3}
                                     </Tag>
                                 )}

@@ -33,10 +33,24 @@ export interface IProductVariant {
     images: string[];
 }
 
+export interface IProductAttribute {
+    key: string;
+    label: string;
+    value: string;
+    displayType: "TEXT" | "CHIP" | "COLOR" | "DROPDOWN";
+}
+
+export interface IProductColor {
+    name: string;
+    hex: string;
+    isSelected?: boolean;
+}
+
 export interface IProduct {
     id: string;
     name: string;
     nameLowercase: string;
+    brandLowercase: string;
     description: string;
     price: number;
     discountPrice?: number;
@@ -49,10 +63,13 @@ export interface IProduct {
     reviewCount: number;
     stockQuantity: number;
     isAvailable: boolean;
-    colors: string[];
+    colors: IProductColor[];
     createdAt: number;
+    updatedAt: number;
     specifications: Record<string, string>;
-    attributes: Record<string, string>;
+    attributes: IProductAttribute[];
+    filterTags: string[];
+    isFeatured: boolean;
     variants?: IProductVariant[];
 }
 
