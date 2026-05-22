@@ -4,7 +4,7 @@ import { IStyle } from "../../interfaces";
 import { CloudinaryUpload } from "../../components/CloudinaryUpload";
 
 export const StyleEdit = () => {
-    const { formProps, saveButtonProps, queryResult, form } = useForm<IStyle>();
+    const { formProps, saveButtonProps, form } = useForm<IStyle>();
 
     const imageUrl = Form.useWatch("image", form);
 
