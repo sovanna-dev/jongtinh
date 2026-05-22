@@ -166,3 +166,13 @@ export interface INotification {
     imageUrl?: string;         // Added
     targetEmail?: string;      // Added
 }
+
+export interface IStyle {
+    id: string;
+    name: string;
+    color: string;
+    image: string;
+    label: string;
+    isActive: boolean;
+    order?: number;
+}

@@ -35,9 +35,10 @@ import { DashboardPage } from "./pages/dashboard";
 import { FaqList } from "./pages/faqs/list";
 import { FaqCreate } from "./pages/faqs/create";
 import { FaqEdit } from "./pages/faqs/edit";
+import { StyleList, StyleCreate, StyleEdit } from "./pages/styles";
 
 // Shop Pages
-import { ShopHomePage } from "./pages/shop/HomePage";
+import { ShopHomePage } from "./pages/shop/ShopHomePage";
 import { ProductDetail } from "./pages/shop/ProductDetail";
 import { CartPage } from "./pages/shop/CartPage";
 import { CheckoutPage } from "./pages/shop/CheckoutPage";
@@ -45,6 +46,7 @@ import { OrderTracking } from "./pages/shop/OrderTracking";
 import { OrdersPage } from "./pages/shop/OrdersPage";
 import { ProfilePage } from "./pages/shop/ProfilePage";
 import { SearchResultsPage } from "./pages/shop/SearchResultsPage";
+import { FlashSalePage } from "./pages/shop/FlashSalePage";
 
 function AppContent() {
     const { hasAccess, roleConfig } = useRole();
@@ -59,6 +61,7 @@ function AppContent() {
         { name: "support_tickets", list: "/admin/support-tickets", show: "/admin/support-tickets/show/:id", meta: { label: "Support Tickets" } },
         { name: "notifications", list: "/admin/notifications", create: "/admin/notifications/create", meta: { label: "Notifications" } },
         { name: "faqs", list: "/admin/faqs", create: "/admin/faqs/create", edit: "/admin/faqs/edit/:id", meta: { canDelete: roleConfig.canDelete, label: "FAQs" } },
+        { name: "styles", list: "/admin/styles", create: "/admin/styles/create", edit: "/admin/styles/edit/:id", meta: { canDelete: roleConfig.canDelete, label: "Style Trends" } },
     ];
 
     const filteredResources = allResources.filter((r) => hasAccess(r.name));
@@ -85,6 +88,7 @@ function AppContent() {
                 <Route path="/shop/orders" element={<OrdersPage />} />
                 <Route path="/shop/profile" element={<ProfilePage />} />
                 <Route path="/shop/search" element={<SearchResultsPage />} />
+                <Route path="/shop/flash-sale" element={<FlashSalePage />} />
 
                 {/* 2. Admin Routes - Protected by Authenticated and wrapped in ThemedLayout */}
                 <Route
@@ -158,6 +162,13 @@ function AppContent() {
                         <Route path="/admin/notifications">
                             <Route index element={<NotificationList />} />
                             {roleConfig.canCreate && <Route path="create" element={<NotificationCreate />} />}
+                        </Route>
+                    )}
+                    {hasAccess("styles") && (
+                        <Route path="/admin/styles">
+                            <Route index element={<StyleList />} />
+                            {roleConfig.canCreate && <Route path="create" element={<StyleCreate />} />}
+                            {roleConfig.canEdit && <Route path="edit/:id" element={<StyleEdit />} />}
                         </Route>
                     )}
                 </Route>

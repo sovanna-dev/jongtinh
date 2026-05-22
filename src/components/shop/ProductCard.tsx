@@ -27,6 +27,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, isDark }) => 
         <Card
             hoverable
             onClick={() => navigate(`/shop/product/${product.id}`)}
+            className="product-card"
             style={{
                 borderRadius: 20,
                 overflow: "hidden",
@@ -38,9 +39,9 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, isDark }) => 
                 background: isDark ? "#1f1f1f" : "#fff",
                 transition: "transform 0.3s ease, box-shadow 0.3s ease",
             }}
-            styles={{ body: { padding: 16, flex: 1, display: "flex", flexDirection: "column" } }}
+            styles={{ body: { padding: "12px 10px", flex: 1, display: "flex", flexDirection: "column" } }}
             cover={
-                <div style={{ position: "relative", height: 240, overflow: "hidden" }}>
+                <div style={{ position: "relative", height: 180, overflow: "hidden" }}>
                     <Image
                         src={product.images?.[0] || "https://via.placeholder.com/300"}
                         alt={product.name}
@@ -91,14 +92,14 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, isDark }) => 
                     </Text>
                 </Space>
 
-                <Title level={5} style={{ marginTop: 0, marginBottom: 8, fontSize: 15, lineHeight: "1.4" }} ellipsis={{ rows: 2 }}>
+                <Title level={5} style={{ marginTop: 0, marginBottom: 4, fontSize: 14, lineHeight: "1.4" }} ellipsis={{ rows: 2 }}>
                     {product.name}
                 </Title>
 
-                <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 12 }}>
-                    <StarFilled style={{ color: "#faad14", fontSize: 13 }} />
-                    <Text strong style={{ fontSize: 13 }}>{product.rating}</Text>
-                    <Text type="secondary" style={{ fontSize: 12 }}>({product.reviewCount})</Text>
+                <div style={{ display: "flex", alignItems: "center", gap: 4, marginBottom: 8 }}>
+                    <StarFilled style={{ color: "#faad14", fontSize: 11 }} />
+                    <Text strong style={{ fontSize: 11 }}>{product.rating}</Text>
+                    <Text type="secondary" style={{ fontSize: 10 }}>({product.reviewCount})</Text>
                 </div>
 
                 {/* Display dynamic attributes preview (e.g., colors) */}
@@ -118,18 +119,18 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, isDark }) => 
             </div>
 
             <div style={{ marginTop: "auto" }}>
-                <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginBottom: 16 }}>
+                <div style={{ display: "flex", alignItems: "baseline", gap: 6, marginBottom: 12 }}>
                     {hasDiscount ? (
                         <>
-                            <Text strong style={{ color: "#FF006E", fontSize: 20 }}>
+                            <Text strong style={{ color: "#FF006E", fontSize: 16 }}>
                                 ${product.discountPrice?.toFixed(2)}
                             </Text>
-                            <Text delete type="secondary" style={{ fontSize: 13 }}>
+                            <Text delete type="secondary" style={{ fontSize: 11 }}>
                                 ${product.price.toFixed(2)}
                             </Text>
                         </>
                     ) : (
-                        <Text strong style={{ fontSize: 20 }}>
+                        <Text strong style={{ fontSize: 16 }}>
                             ${product.price.toFixed(2)}
                         </Text>
                     )}
@@ -145,16 +146,17 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, isDark }) => 
                     }}
                     disabled={!isInStock}
                     style={{
-                        height: 42,
-                        borderRadius: 12,
+                        height: 36,
+                        borderRadius: 10,
                         background: isInStock ? "#FF006E" : (isDark ? "#333" : "#f0f0f0"),
                         color: isInStock ? "#fff" : "#999",
                         border: "none",
                         fontWeight: 600,
+                        fontSize: 13,
                         boxShadow: isInStock ? "0 4px 12px rgba(255, 0, 110, 0.25)" : "none"
                     }}
                 >
-                    {isInStock ? "Add to Cart" : "Out of Stock"}
+                    {isInStock ? "Add" : "Out"}
                 </Button>
             </div>
         </Card>

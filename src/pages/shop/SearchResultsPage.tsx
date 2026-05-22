@@ -1,24 +1,26 @@
-import React, { useState, useEffect } from "react";
-import { Row, Col, Card, Typography, Tag, Image, Space, Button, message, Spin, Breadcrumb, Empty } from "antd";
-import { ShoppingCartOutlined, HomeOutlined, SearchOutlined } from "@ant-design/icons";
+import React, { useState, useEffect, useContext } from "react";
+import { Row, Col, Typography, Space, Button, message, Spin, Breadcrumb, Empty } from "antd";
+import { HomeOutlined, SearchOutlined } from "@ant-design/icons";
 import { useNavigate, useSearchParams } from "react-router";
-import { collection, getDocs, query, orderBy, where } from "firebase/firestore";
+import { collection, getDocs, query, orderBy } from "firebase/firestore";
 import { db } from "../../firebase";
 import { IProduct } from "../../interfaces";
 import { ShopLayout } from "./ShopLayout";
-import { useCart } from "../../contexts/CartContext";
+import { ProductCard } from "../../components/shop/ProductCard";
+import { ColorModeContext } from "../../contexts/color-mode";
 
 const { Title, Text } = Typography;
 
 export const SearchResultsPage: React.FC = () => {
     const navigate = useNavigate();
+    const { mode } = useContext(ColorModeContext);
+    const isDark = mode === "dark";
     const [searchParams] = useSearchParams();
     const queryTerm = searchParams.get("q") || "";
 
     const [searchQuery, setSearchQuery] = useState(queryTerm);
     const [products, setProducts] = useState<IProduct[]>([]);
     const [isLoading, setIsLoading] = useState(true);
-    const { addToCart } = useCart();
 
     useEffect(() => {
         setSearchQuery(queryTerm);
@@ -28,9 +30,7 @@ export const SearchResultsPage: React.FC = () => {
     const fetchSearchResults = async (term: string) => {
         setIsLoading(true);
         try {
-            // Firestore doesn't support full-text search well.
-            // For this demo, we'll fetch all products and filter client-side,
-            // or we could use a better approach if the dataset was huge.
+            // Fetch all products to perform sophisticated multi-field relevance scoring
             const q = query(collection(db, "products"), orderBy("createdAt", "desc"));
             const snapshot = await getDocs(q);
 
@@ -42,12 +42,40 @@ export const SearchResultsPage: React.FC = () => {
             if (!term) {
                 setProducts(allProducts);
             } else {
-                const filtered = allProducts.filter(p =>
-                    p.name.toLowerCase().includes(term.toLowerCase()) ||
-                    p.category?.toLowerCase().includes(term.toLowerCase()) ||
-                    p.description?.toLowerCase().includes(term.toLowerCase())
-                );
-                setProducts(filtered);
+                const lowerTerm = term.toLowerCase().trim();
+
+                // RELEVANCE SCORING ALGORITHM
+                const scoredProducts = allProducts.map(p => {
+                    let score = 0;
+                    const nameLower = p.name.toLowerCase();
+                    const catLower = p.category?.toLowerCase() || "";
+                    const brandLower = p.brand?.toLowerCase() || "";
+                    const descLower = p.description?.toLowerCase() || "";
+
+                    // 1. Tag Match (Highest Priority)
+                    if (p.filterTags?.some(tag => tag.toLowerCase() === lowerTerm)) score += 100;
+
+                    // 2. Exact Name Match
+                    if (nameLower === lowerTerm) score += 80;
+
+                    // 3. Name Starts With Term
+                    else if (nameLower.startsWith(lowerTerm)) score += 50;
+
+                    // 4. Name Contains Term
+                    else if (nameLower.includes(lowerTerm)) score += 30;
+
+                    // 5. Category or Brand Exact Match
+                    if (catLower === lowerTerm || brandLower === lowerTerm) score += 40;
+
+                    // 6. Description Match (Lowest Priority)
+                    if (descLower.includes(lowerTerm)) score += 10;
+
+                    return { product: p, score };
+                })
+                .filter(item => item.score > 0) // Remove non-matches
+                .sort((a, b) => b.score - a.score); // Sort by highest score
+
+                setProducts(scoredProducts.map(item => item.product));
             }
         } catch (error) {
             console.error("Failed to fetch search results:", error);
@@ -84,97 +112,15 @@ export const SearchResultsPage: React.FC = () => {
 
             {isLoading ? (
                 <div style={{ textAlign: "center", padding: "100px 0" }}>
-                    <Spin size="large" tip="Searching..." />
+                    <Spin size="large" tip="Searching our collection..." />
                 </div>
             ) : products.length > 0 ? (
-                <Row gutter={[24, 24]}>
-                    {products.map((product) => {
-                        const price = product.discountPrice ?? product.price;
-                        const isInStock = product.isAvailable && (product.stockQuantity || 0) > 0;
-                        return (
-                            <Col xs={24} sm={12} md={8} lg={6} key={product.id}>
-                                <Card
-                                    hoverable
-                                    onClick={() => navigate(`/shop/product/${product.id}`)}
-                                    style={{
-                                        borderRadius: 20,
-                                        overflow: "hidden",
-                                        border: "none",
-                                        boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
-                                        height: "100%",
-                                        display: "flex",
-                                        flexDirection: "column"
-                                    }}
-                                    styles={{ body: { padding: 16, flex: 1, display: "flex", flexDirection: "column" } }}
-                                    cover={
-                                        <div style={{ position: "relative", height: 220, overflow: "hidden" }}>
-                                            <Image
-                                                src={product.images?.[0] || "https://via.placeholder.com/300"}
-                                                alt={product.name}
-                                                height="100%"
-                                                width="100%"
-                                                style={{ objectFit: "cover" }}
-                                                fallback="https://via.placeholder.com/300?text=No+Image"
-                                                preview={false}
-                                            />
-                                            {!isInStock && (
-                                                <div style={{
-                                                    position: "absolute",
-                                                    top: 0,
-                                                    left: 0,
-                                                    right: 0,
-                                                    bottom: 0,
-                                                    background: "rgba(0,0,0,0.4)",
-                                                    display: "flex",
-                                                    alignItems: "center",
-                                                    justifyContent: "center",
-                                                    zIndex: 2
-                                                }}>
-                                                    <Tag color="default" style={{ padding: "4px 12px", borderRadius: 12, fontWeight: 700 }}>OUT OF STOCK</Tag>
-                                                </div>
-                                            )}
-                                        </div>
-                                    }
-                                >
-                                    <div style={{ flex: 1 }}>
-                                        <Text type="secondary" style={{ fontSize: 11, textTransform: "uppercase" }}>{product.category}</Text>
-                                        <Title level={5} style={{ marginTop: 4, marginBottom: 8, fontSize: 16 }} ellipsis={{ rows: 2 }}>{product.name}</Title>
-                                        <div style={{ marginBottom: 16 }}>
-                                            {product.discountPrice ? (
-                                                <Space>
-                                                    <Text strong style={{ color: "#FF006E", fontSize: 20 }}>${product.discountPrice.toFixed(2)}</Text>
-                                                    <Text delete type="secondary" style={{ fontSize: 14 }}>${product.price.toFixed(2)}</Text>
-                                                </Space>
-                                            ) : (
-                                                <Text strong style={{ fontSize: 20 }}>${product.price.toFixed(2)}</Text>
-                                            )}
-                                        </div>
-                                    </div>
-
-                                    <Button
-                                        block
-                                        type="primary"
-                                        icon={<ShoppingCartOutlined />}
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            addToCart(product);
-                                            message.success(`${product.name} added to cart!`);
-                                        }}
-                                        disabled={!isInStock}
-                                        style={{
-                                            height: 40,
-                                            borderRadius: 12,
-                                            background: isInStock ? "#FF006E" : "#d9d9d9",
-                                            border: "none",
-                                            fontWeight: 600
-                                        }}
-                                    >
-                                        {isInStock ? "Add to Cart" : "Out of Stock"}
-                                    </Button>
-                                </Card>
-                            </Col>
-                        );
-                    })}
+                <Row gutter={[12, 32]}>
+                    {products.map((product) => (
+                        <Col xs={12} sm={12} md={8} lg={6} key={product.id}>
+                            <ProductCard product={product} isDark={isDark} />
+                        </Col>
+                    ))}
                 </Row>
             ) : (
                 <div style={{ padding: "80px 0" }}>
