@@ -3,10 +3,13 @@ import { useParams, useNavigate } from "react-router";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "../../firebase";
 import { Row, Col, Typography, Image, Tag, Button, Space, Descriptions, Divider, Spin, message, Card, Tooltip } from "antd";
-import { ShoppingCartOutlined, ArrowLeftOutlined } from "@ant-design/icons";
+import { ShoppingCartOutlined, ArrowLeftOutlined, HeartOutlined, HeartFilled } from "@ant-design/icons";
 import { IProduct } from "../../interfaces";
 import { ShopLayout } from "./ShopLayout";
 import { useCart } from "../../contexts/CartContext";
+import { useWishlist } from "../../contexts/WishlistContext";
+import { auth } from "../../firebase";
+import { AuthModal } from "../../components/shop/AuthModal";
 
 const { Title, Text } = Typography;
 
@@ -19,8 +22,10 @@ export const ProductDetail: React.FC = () => {
     const [selectedImage, setSelectedImage] = useState(0);
     const [searchQuery, setSearchQuery] = useState("");
     const { addToCart } = useCart();
+    const { toggleFavorite, isFavorite } = useWishlist();
     const [selectedColor, setSelectedColor] = useState<string>("");
     const [selectedSize, setSelectedSize] = useState<string>("");
+    const [authModalOpen, setAuthModalOpen] = useState(false);
 
     useEffect(() => {
         if (!id) return;
@@ -294,37 +299,64 @@ export const ProductDetail: React.FC = () => {
                             </div>
                         )}
 
-                        <Button
-                            type="primary"
-                            size="large"
-                            block
-                            icon={<ShoppingCartOutlined style={{ fontSize: 20 }} />}
-                            onClick={() => {
-                                // Store selected size/color in the product before adding
-                                const productWithSelection = {
-                                    ...product,
-                                    selectedSize: selectedSize,
-                                    selectedColor: availableColors.find(
-                                        (c: any) => (typeof c === "string" ? c : c.hex) === selectedColor
-                                    ) || selectedColor,
-                                };
-                                addToCart(productWithSelection, quantity);
-                                message.success(`${product.name}${selectedSize ? ` (${selectedSize})` : ""} added to cart!`);
-                            }}
-                            disabled={!isInStock}
-                            style={{
-                                background: isInStock ? "#FF006E" : "#d9d9d9",
-                                border: "none",
-                                height: 60,
-                                borderRadius: 16,
-                                fontSize: 18,
-                                fontWeight: 700,
-                                boxShadow: isInStock ? "0 8px 24px rgba(255, 0, 110, 0.25)" : "none",
-                                marginBottom: 40
-                            }}
-                        >
-                            {isInStock ? "Add to Cart" : "Out of Stock"}
-                        </Button>
+                        <Space size={16} style={{ width: "100%", marginBottom: 40 }}>
+                            <Button
+                                type="primary"
+                                size="large"
+                                icon={<ShoppingCartOutlined style={{ fontSize: 20 }} />}
+                                onClick={() => {
+                                    // Store selected size/color in the product before adding
+                                    const productWithSelection = {
+                                        ...product,
+                                        selectedSize: selectedSize,
+                                        selectedColor: availableColors.find(
+                                            (c: any) => (typeof c === "string" ? c : c.hex) === selectedColor
+                                        ) || selectedColor,
+                                    };
+                                    addToCart(productWithSelection, quantity);
+                                    message.success(`${product.name}${selectedSize ? ` (${selectedSize})` : ""} added to cart!`);
+                                }}
+                                disabled={!isInStock}
+                                style={{
+                                    background: isInStock ? "#FF006E" : "#d9d9d9",
+                                    border: "none",
+                                    height: 60,
+                                    borderRadius: 16,
+                                    fontSize: 18,
+                                    fontWeight: 700,
+                                    boxShadow: isInStock ? "0 8px 24px rgba(255, 0, 110, 0.25)" : "none",
+                                    flex: 1
+                                }}
+                            >
+                                {isInStock ? "Add to Cart" : "Out of Stock"}
+                            </Button>
+
+                            <Button
+                                size="large"
+                                icon={isFavorite(product.id) ? <HeartFilled style={{ color: "#FF006E" }} /> : <HeartOutlined />}
+                                onClick={() => {
+                                    if (!auth.currentUser) {
+                                        setAuthModalOpen(true);
+                                    } else {
+                                        const wasFavorite = isFavorite(product.id);
+                                        toggleFavorite(product.id);
+                                        message.success(wasFavorite ? "Removed from wishlist" : "Added to wishlist");
+                                    }
+                                }}
+                                style={{
+                                    height: 60,
+                                    width: 60,
+                                    borderRadius: 16,
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                    fontSize: 24,
+                                    border: "2px solid #f0f0f0"
+                                }}
+                            />
+                        </Space>
+
+                        <AuthModal open={authModalOpen} onClose={() => setAuthModalOpen(false)} />
 
                         <Divider />
 

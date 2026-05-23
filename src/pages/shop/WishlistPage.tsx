@@ -84,7 +84,7 @@ export const WishlistPage: React.FC = () => {
                 <Row gutter={[16, 32]}>
                     {products.map((product) => (
                         <Col xs={12} sm={12} md={8} lg={6} key={product.id}>
-                            <ProductCard product={product} isDark={isDark} />
+                            <ProductCard product={product} isDark={isDark} showMoveToCart />
                         </Col>
                     ))}
                 </Row>

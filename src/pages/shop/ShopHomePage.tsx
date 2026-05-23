@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, useContext } from "react";
 import { Row, Col, Typography, Spin, Button, Space, Empty, Card, Tag, message, Badge, Dropdown, Input } from "antd";
 import { useNavigate } from "react-router";
-import { FilterOutlined, CopyOutlined, FireOutlined, ClockCircleOutlined, RocketOutlined } from "@ant-design/icons";
+
 import { collection, getDocs, query, where, orderBy, limit, onSnapshot, doc, updateDoc } from "firebase/firestore";
 import { db, auth } from "../../firebase";
 import { ICategory, IPromotionBanner, INotification, IProduct, IStyle } from "../../interfaces";
@@ -14,6 +14,7 @@ import { NotificationBanner } from "../../components/shop/NotificationBanner";
 import { ProductCard } from "../../components/shop/ProductCard";
 import { FilterDrawer } from "../../components/shop/FilterDrawer";
 import { useProducts } from "../../hooks/useProducts";
+import { FilterOutlined, CopyOutlined, FireOutlined, ClockCircleOutlined, LeftOutlined, RightOutlined } from "@ant-design/icons";
 
 const { Title, Text } = Typography;
 
@@ -219,25 +220,187 @@ export const ShopHomePage: React.FC = () => {
 
             {/* 5. CHOOSE YOUR STYLE */}
             <div style={{ marginBottom: 56 }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 20 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
                     <Title level={3} style={{ margin: 0, fontWeight: 800 }}>Choose Your Style</Title>
-                    <Text type="secondary" style={{ fontWeight: 600 }}>Explore Trends</Text>
+                    <Space size={12}>
+                        {/* Left Arrow */}
+                        <Button
+                            shape="circle"
+                            size="large"
+                            icon={<LeftOutlined />}
+                            onClick={() => {
+                                const container = document.getElementById("style-scroll");
+                                if (container) container.scrollBy({ left: -420, behavior: "smooth" });
+                            }}
+                            style={{
+                                border: "1px solid #e0e0e0",
+                                boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                zIndex: 10,
+                            }}
+                        />
+                        {/* Right Arrow */}
+                        <Button
+                            shape="circle"
+                            size="large"
+                            icon={<RightOutlined />}
+                            onClick={() => {
+                                const container = document.getElementById("style-scroll");
+                                if (container) container.scrollBy({ left: 420, behavior: "smooth" });
+                            }}
+                            style={{
+                                border: "1px solid #e0e0e0",
+                                boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                zIndex: 10,
+                            }}
+                        />
+                    </Space>
                 </div>
-                <div style={{ display: "flex", gap: 16, overflowX: "auto", paddingBottom: 16, paddingLeft: 4, scrollbarWidth: "none", msOverflowStyle: "none" }} className="style-carousel">
+
+                {/* Scrollable Container */}
+                <div
+                    id="style-scroll"
+                    style={{
+                        display: "flex",
+                        gap: 16,
+                        overflowX: "auto",
+                        overflowY: "hidden",
+                        paddingBottom: 16,
+                        paddingLeft: 4,
+                        paddingRight: 4,
+                        scrollBehavior: "smooth",
+                        cursor: "grab",
+                        scrollbarWidth: "thin",
+                        scrollbarColor: isDark ? "#444 #1f1f1f" : "#d9d9d9 #f5f5f5",
+                    }}
+                    onWheel={(e) => {
+                        // Enable mouse-wheel horizontal scrolling
+                        e.preventDefault();
+                        const container = e.currentTarget;
+                        container.scrollBy({
+                            left: e.deltaY > 0 ? 200 : -200,
+                            behavior: "smooth",
+                        });
+                    }}
+                    onMouseDown={(e) => {
+                        const container = e.currentTarget;
+                        container.style.cursor = "grabbing";
+                        container.style.userSelect = "none";
+                    }}
+                    onMouseUp={(e) => {
+                        const container = e.currentTarget;
+                        container.style.cursor = "grab";
+                        container.style.userSelect = "auto";
+                    }}
+                >
                     {dynamicStyles.map((style) => (
-                        <div key={style.id} onClick={() => navigate(`/shop/search?q=${encodeURIComponent(style.name)}`)}
-                            style={{ position: "relative", minWidth: 400, height: 600, borderRadius: 24, overflow: "hidden", cursor: "pointer", flexShrink: 0, boxShadow: "0 8px 24px rgba(0,0,0,0.12)", transition: "all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)" }}
-                            className="style-card-ad">
-                            <div style={{ width: "100%", height: "100%", backgroundImage: `url(${style.image})`, backgroundSize: "cover", backgroundPosition: "center", transition: "transform 0.6s ease" }} className="bg-image" />
-                            <div style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, background: "linear-gradient(to bottom, transparent 40%, rgba(0,0,0,0.8) 100%)", display: "flex", flexDirection: "column", justifyContent: "flex-end", padding: "20px 16px" }}>
-                                <Tag style={{ width: "fit-content", marginBottom: 8, background: style.color, color: "#fff", border: "none", borderRadius: 6, fontWeight: 700, fontSize: 10, padding: "0 8px" }}>TRENDING</Tag>
-                                <Title level={4} style={{ color: "#fff", margin: 0, fontWeight: 900, letterSpacing: -0.5 }}>{style.name}</Title>
-                                <Text style={{ color: "rgba(255,255,255,0.8)", fontSize: 12, fontWeight: 500 }}>{style.label}</Text>
+                        <div
+                            key={style.id}
+                            onClick={() => navigate(`/shop/style/${style.slug || style.id}`)}
+                            style={{
+                                position: "relative",
+                                minWidth: 380,
+                                maxWidth: 380,
+                                height: 520,
+                                borderRadius: 24,
+                                overflow: "hidden",
+                                cursor: "pointer",
+                                flexShrink: 0,
+                                boxShadow: "0 8px 24px rgba(0,0,0,0.12)",
+                                transition: "all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)",
+                            }}
+                            className="style-card"
+                        >
+                            {/* Background Image */}
+                            <div
+                                style={{
+                                    width: "100%",
+                                    height: "100%",
+                                    backgroundImage: `url(${style.image || style.bannerImage})`,
+                                    backgroundSize: "cover",
+                                    backgroundPosition: "center",
+                                    transition: "transform 0.6s ease",
+                                }}
+                                className="style-card-bg"
+                            />
+                            {/* Gradient Overlay */}
+                            <div style={{
+                                position: "absolute",
+                                top: 0, left: 0, right: 0, bottom: 0,
+                                background: "linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.1) 50%, transparent 100%)",
+                            }} />
+                            {/* Text Content */}
+                            <div style={{
+                                position: "absolute",
+                                bottom: 0, left: 0, right: 0,
+                                padding: "24px 20px",
+                            }}>
+                                <Tag style={{
+                                    width: "fit-content",
+                                    marginBottom: 12,
+                                    background: style.color || "#FF006E",
+                                    color: "#fff",
+                                    border: "none",
+                                    borderRadius: 6,
+                                    fontWeight: 700,
+                                    fontSize: 11,
+                                    padding: "2px 12px",
+                                    letterSpacing: 0.5,
+                                }}>
+                                    TRENDING
+                                </Tag>
+                                <Title level={3} style={{
+                                    color: "#fff",
+                                    margin: "0 0 4px 0",
+                                    fontWeight: 900,
+                                    letterSpacing: -0.5,
+                                    fontSize: 26,
+                                    lineHeight: 1.2,
+                                }}>
+                                    {style.name || style.title}
+                                </Title>
+                                <Text style={{
+                                    color: "rgba(255,255,255,0.8)",
+                                    fontSize: 14,
+                                    fontWeight: 500,
+                                    display: "block",
+                                }}>
+                                    {style.label || style.description?.substring(0, 60)}
+                                </Text>
                             </div>
                         </div>
                     ))}
                 </div>
-                <style>{`.style-card-ad:hover{transform:translateY(-8px);box-shadow:0 15px 35px rgba(0,0,0,0.2)}.style-card-ad:hover .bg-image{transform:scale(1.1)}.style-carousel::-webkit-scrollbar{display:none}`}</style>
+
+                {/* CSS for hover effects and scrollbar */}
+                <style>{`
+                    .style-card:hover {
+                        transform: translateY(-8px);
+                        box-shadow: 0 20px 40px rgba(0,0,0,0.25);
+                    }
+                    .style-card:hover .style-card-bg {
+                        transform: scale(1.08);
+                    }
+                    #style-scroll::-webkit-scrollbar {
+                        height: 6px;
+                    }
+                    #style-scroll::-webkit-scrollbar-track {
+                        background: transparent;
+                        border-radius: 3px;
+                    }
+                    #style-scroll::-webkit-scrollbar-thumb {
+                        background: ${isDark ? "#555" : "#d9d9d9"};
+                        border-radius: 3px;
+                    }
+                    #style-scroll::-webkit-scrollbar-thumb:hover {
+                        background: ${isDark ? "#777" : "#bbb"};
+                    }
+                `}</style>
             </div>
 
             {/* 6. NEW THIS WEEK */}

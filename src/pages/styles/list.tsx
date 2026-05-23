@@ -33,9 +33,22 @@ export const StyleList = () => {
                     render={(value) => (
                         <Image
                             src={value}
-                            width={80}
-                            height={110}
+                            width={50}
+                            height={70}
                             style={{ objectFit: "cover", borderRadius: 8 }}
+                        />
+                    )}
+                />
+                <Table.Column
+                    dataIndex="bannerImage"
+                    title="Banner"
+                    render={(value) => (
+                        <Image
+                            src={value}
+                            width={80}
+                            height={50}
+                            style={{ objectFit: "cover", borderRadius: 8 }}
+                            fallback="https://via.placeholder.com/80x50"
                         />
                     )}
                 />
@@ -47,6 +60,13 @@ export const StyleList = () => {
                             <Text strong style={{ color: record.color }}>{value}</Text>
                             <Text type="secondary" style={{ fontSize: 12 }}>{record.label}</Text>
                         </Space>
+                    )}
+                />
+                <Table.Column
+                    dataIndex="gallery"
+                    title="Gallery"
+                    render={(value: string[]) => (
+                        <Text>{value?.length || 0} images</Text>
                     )}
                 />
                 <Table.Column

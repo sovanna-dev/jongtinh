@@ -1,67 +1,98 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router";
-import { Row, Col, Typography, Spin, Button, Space, Empty, Divider } from "antd";
-import { ArrowLeftOutlined, FilterOutlined } from "@ant-design/icons";
-import { collection, getDocs, query, orderBy } from "firebase/firestore";
-import { db } from "../../firebase";
+import { Row, Col, Typography, Spin, Button, Space, Empty, Image, Dropdown, Breadcrumb } from "antd";
+import { InstagramOutlined, DownOutlined, ControlOutlined, RightOutlined, ShareAltOutlined } from "@ant-design/icons";
 import { ShopLayout } from "./ShopLayout";
 import { ProductCard } from "../../components/shop/ProductCard";
 import { FilterDrawer } from "../../components/shop/FilterDrawer";
 import { useProducts } from "../../hooks/useProducts";
+import { doc, getDoc, collection, query, where, getDocs } from "firebase/firestore";
+import { db } from "../../firebase";
+import { IStyle } from "../../interfaces";
+import { message, Tooltip } from "antd";
 
 const { Title, Text, Paragraph } = Typography;
 
-// Style metadata for header images and descriptions
-const STYLE_META: Record<string, { title: string; description: string; image: string; color: string }> = {
-    acubi: {
-        title: "Acubi Style",
-        description: "Discover the latest in Acubi Style fashion at JongTinh. Our curated collection features contemporary designs with unique silhouettes and versatile pieces. Elevate your wardrobe with statement items that blend modern aesthetics with everyday wearability.",
-        image: "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=1200",
-        color: "#FF006E",
-    },
-    street: {
-        title: "Street Style",
-        description: "Urban streetwear that defines modern culture. Bold designs, comfortable fits, and attitude-packed pieces for your everyday look.",
-        image: "https://images.unsplash.com/photo-1523398002811-999ca8dec234?w=1200",
-        color: "#8338EC",
-    },
-    coquette: {
-        title: "Coquette Style",
-        description: "Feminine, romantic, and playful pieces that embrace soft aesthetics. Lace, bows, and pastels for the dreamy wardrobe.",
-        image: "https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=1200",
-        color: "#3A86FF",
-    },
-    kpop: {
-        title: "KPOP Style",
-        description: "Inspired by your favorite K-pop idols. Trendy, bold, and eye-catching pieces that make you stage-ready.",
-        image: "https://images.unsplash.com/photo-1612502168967-0126ec0b6ad2?w=1200",
-        color: "#FFBE0B",
-    },
-    casual: {
-        title: "Casual Style",
-        description: "Effortless everyday looks that prioritize comfort without compromising style. Perfect for any occasion.",
-        image: "https://images.unsplash.com/photo-1483985988355-763728e1935b?w=1200",
-        color: "#4CAF50",
-    },
-    oversized: {
-        title: "Oversized Style",
-        description: "Relaxed silhouettes and comfortable fits. Embrace the oversized trend with our carefully selected pieces.",
-        image: "https://images.unsplash.com/photo-1556905055-8f358a7a47b2?w=1200",
-        color: "#FB5607",
-    },
-    minimal: {
-        title: "Minimal Style",
-        description: "Clean lines, neutral tones, and timeless designs. Less is more with our minimal collection.",
-        image: "https://images.unsplash.com/photo-1539109136881-3be0616acf4b?w=1200",
-        color: "#00B4D8",
-    },
+const GalleryItem: React.FC<{ img: string; slug?: string }> = ({ img, slug }) => {
+    const [hovered, setHovered] = useState(false);
+    return (
+        <div
+            onMouseEnter={() => setHovered(true)}
+            onMouseLeave={() => setHovered(false)}
+            style={{ position: "relative", aspectRatio: "1/1", overflow: "hidden", cursor: "pointer" }}
+        >
+            <Image
+                src={img}
+                preview={false}
+                style={{
+                    width: "100%",
+                    height: "100%",
+                    objectFit: "cover",
+                    transition: "transform 0.6s cubic-bezier(0.33, 1, 0.68, 1)",
+                    transform: hovered ? "scale(1.08)" : "scale(1)"
+                }}
+            />
+            <div style={{
+                position: "absolute", top: 0, left: 0, right: 0, bottom: 0,
+                background: "rgba(0,0,0,0.3)",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                opacity: hovered ? 1 : 0,
+                transition: "opacity 0.4s ease",
+                pointerEvents: "none"
+            }}>
+                <div style={{ textAlign: "center", transform: hovered ? "translateY(0)" : "translateY(10px)", transition: "transform 0.4s ease" }}>
+                    <InstagramOutlined style={{ fontSize: 24, color: "#fff", display: "block", margin: "0 auto 12px", filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.3))" }} />
+                    <div style={{
+                        background: "#000",
+                        color: "#fff",
+                        padding: "8px 20px",
+                        fontSize: 10,
+                        fontWeight: 900,
+                        letterSpacing: 2,
+                        display: "inline-block",
+                        boxShadow: "0 4px 15px rgba(0,0,0,0.3)"
+                    }}>
+                        BUY NOW
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
 };
 
 export const StyleCollectionPage: React.FC = () => {
     const { style } = useParams<{ style: string }>();
     const navigate = useNavigate();
     const styleKey = (style || "acubi").toLowerCase();
-    const styleMeta = STYLE_META[styleKey] || STYLE_META["acubi"];
+
+    const [styleMeta, setStyleMeta] = useState<IStyle | null>(null);
+    const [loadingStyle, setLoadingStyle] = useState(true);
+
+    useEffect(() => {
+        const fetchStyle = async () => {
+            setLoadingStyle(true);
+            try {
+                const docRef = doc(db, "styles", styleKey);
+                const snap = await getDoc(docRef);
+
+                if (snap.exists()) {
+                    setStyleMeta({ id: snap.id, ...snap.data() } as IStyle);
+                } else {
+                    const q = query(collection(db, "styles"), where("slug", "==", styleKey));
+                    const querySnapshot = await getDocs(q);
+                    if (!querySnapshot.empty) {
+                        const styleDoc = querySnapshot.docs[0];
+                        setStyleMeta({ id: styleDoc.id, ...styleDoc.data() } as IStyle);
+                    }
+                }
+            } catch (error) {
+                console.error("Error fetching style:", error);
+            } finally {
+                setLoadingStyle(false);
+            }
+        };
+        fetchStyle();
+    }, [styleKey]);
 
     const [searchQuery, setSearchQuery] = useState("");
     const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -73,177 +104,190 @@ export const StyleCollectionPage: React.FC = () => {
         minRating: 0,
     });
 
-    // Fetch products filtered by style
     const {
         products,
         loading: productsLoading,
-        hasMore,
         loadMore,
         loadingMore,
+        hasMore
     } = useProducts({
-        searchQuery: styleKey, // Search by style name
+        searchQuery: styleMeta?.name || styleKey,
         sortBy: sortBy,
         pageSize: 12,
         filters: activeFilters,
     });
 
+    const handleShare = () => {
+        const url = window.location.href;
+        if (navigator.share) {
+            navigator.share({
+                title: `${styleMeta?.name} Style Collection | JongTinh`,
+                text: `Explore the ${styleMeta?.name} trend on JongTinh. Curated lifestyle and premium picks.`,
+                url: url,
+            }).catch(() => {
+                navigator.clipboard.writeText(url);
+                message.success("Link copied to clipboard!");
+            });
+        } else {
+            navigator.clipboard.writeText(url);
+            message.success("Link copied to clipboard!");
+        }
+    };
+
+    if (loadingStyle) return <ShopLayout searchQuery={searchQuery} setSearchQuery={setSearchQuery} onSearch={() => {}}><div style={{ textAlign: "center", padding: "120px 0" }}><Spin size="large" /></div></ShopLayout>;
+
+    if (!styleMeta) return <ShopLayout searchQuery={searchQuery} setSearchQuery={setSearchQuery} onSearch={() => {}}><Empty description="Style collection not found" style={{ padding: "100px 0" }}><Button type="primary" onClick={() => navigate("/shop")}>Back to Shop</Button></Empty></ShopLayout>;
+
     return (
         <ShopLayout
             searchQuery={searchQuery}
             setSearchQuery={setSearchQuery}
-            onSearch={() => {
-                if (searchQuery.trim()) {
-                    navigate(`/shop/search?q=${encodeURIComponent(searchQuery.trim())}`);
-                }
-            }}
+            onSearch={() => searchQuery.trim() && navigate(`/shop/search?q=${encodeURIComponent(searchQuery.trim())}`)}
         >
-            {/* Header Banner */}
-            <div
-                style={{
+            {/* ═══════ HERO BANNER ═══════ */}
+            {styleMeta.bannerImage && (
+                <div style={{
                     position: "relative",
-                    borderRadius: 20,
+                    width: "100%",
+                    height: "450px",
+                    borderRadius: 24,
                     overflow: "hidden",
-                    marginBottom: 32,
-                    height: 300,
-                }}
-            >
-                <img
-                    src={styleMeta.image}
-                    alt={styleMeta.title}
-                    style={{
-                        width: "100%",
-                        height: "100%",
-                        objectFit: "cover",
-                        position: "absolute",
-                        top: 0,
-                        left: 0,
-                    }}
-                />
-                <div
-                    style={{
+                    marginBottom: 48,
+                    background: styleMeta.color || "#f0f0f0"
+                }}>
+                    <Image
+                        src={styleMeta.bannerImage}
+                        preview={false}
+                        style={{ width: "100%", height: "450px", objectFit: "cover" }}
+                    />
+                    <div style={{
                         position: "absolute",
                         top: 0, left: 0, right: 0, bottom: 0,
-                        background: "linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.2) 100%)",
-                    }}
-                />
-                <div style={{ position: "absolute", bottom: 32, left: 32, color: "#fff" }}>
-                    <Button
-                        icon={<ArrowLeftOutlined />}
-                        onClick={() => navigate("/shop")}
-                        style={{ marginBottom: 12, color: "#fff", borderColor: "rgba(255,255,255,0.5)" }}
-                        ghost
-                    >
-                        Back to Shop
-                    </Button>
-                    <Title level={1} style={{ color: "#fff", margin: 0, fontSize: 40, fontWeight: 800 }}>
-                        {styleMeta.title}
-                    </Title>
+                        background: "linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0) 60%)",
+                        display: "flex",
+                        flexDirection: "column",
+                        justifyContent: "flex-end",
+                        padding: "60px 48px"
+                    }}>
+                        <Title level={1} style={{ color: "#fff", margin: 0, fontSize: 56, fontWeight: 900, letterSpacing: -2 }}>
+                            {styleMeta.title || styleMeta.name}
+                        </Title>
+                        <Paragraph style={{ color: "rgba(255,255,255,0.9)", fontSize: 18, maxWidth: 700, margin: "16px 0 0" }}>
+                            {styleMeta.description}
+                        </Paragraph>
+                    </div>
                 </div>
-            </div>
-
-            {/* Description */}
-            <Paragraph
-                style={{
-                    fontSize: 16,
-                    color: "#666",
-                    lineHeight: 1.8,
-                    maxWidth: 800,
-                    marginBottom: 32,
-                    padding: "0 8px",
-                }}
-            >
-                {styleMeta.description}
-            </Paragraph>
-
-            {/* Sort & Filter Bar */}
-            <div
-                style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    marginBottom: 24,
-                    padding: "0 8px",
-                }}
-            >
-                <Text type="secondary">
-                    {products.length} products found
-                </Text>
-                <Space size={12}>
-                    <Button
-                        icon={<FilterOutlined />}
-                        onClick={() => setIsFilterOpen(true)}
-                        style={{ borderRadius: 10, height: 40 }}
-                    >
-                        Filters
-                    </Button>
-                    <Button
-                        type="text"
-                        size="small"
-                        style={{ fontWeight: 600 }}
-                        onClick={() =>
-                            setSortBy((s) => (s === "priceLowHigh" ? "createdAt" : "priceLowHigh"))
-                        }
-                    >
-                        {sortBy === "priceLowHigh" ? "💰 Price: Low to High" : "🆕 Newest First"}
-                    </Button>
-                </Space>
-            </div>
-
-            {/* Product Grid */}
-            {productsLoading && !loadingMore ? (
-                <div style={{ textAlign: "center", padding: "120px 0" }}>
-                    <Spin size="large" />
-                </div>
-            ) : (
-                <>
-                    {products.length > 0 ? (
-                        <Row gutter={[24, 32]}>
-                            {products.map((product) => (
-                                <Col xs={24} sm={12} md={8} lg={6} key={product.id}>
-                                    <ProductCard product={product} isDark={false} />
-                                </Col>
-                            ))}
-                        </Row>
-                    ) : (
-                        <Empty description={`No products found in ${styleMeta.title}`} style={{ padding: "100px 0" }}>
-                            <Button type="primary" onClick={() => navigate("/shop")}>
-                                Browse All Products
-                            </Button>
-                        </Empty>
-                    )}
-
-                    {hasMore && (
-                        <div style={{ textAlign: "center", marginTop: 64, marginBottom: 48 }}>
-                            <Button
-                                size="large"
-                                onClick={loadMore}
-                                loading={loadingMore}
-                                style={{
-                                    borderRadius: 15,
-                                    minWidth: 240,
-                                    height: 54,
-                                    fontWeight: 700,
-                                    fontSize: 16,
-                                }}
-                            >
-                                {loadingMore ? "Loading..." : "Load More"}
-                            </Button>
-                        </div>
-                    )}
-                </>
             )}
 
-            {/* Filter Drawer */}
-            <FilterDrawer
-                visible={isFilterOpen}
-                onClose={() => setIsFilterOpen(false)}
-                filters={activeFilters}
-                onFilterChange={setActiveFilters}
-                onReset={() =>
-                    setActiveFilters({ priceRange: [0, 5000], brands: [], inStock: false, minRating: 0 })
-                }
-                isDark={false}
-            />
+            {/* ═══════ BREADCRUMBS & TITLE ═══════ */}
+            <div style={{ padding: "0 8px", marginBottom: 32, display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
+                <div>
+                    <Breadcrumb
+                        separator={<RightOutlined style={{ fontSize: 10, color: "#ccc" }} />}
+                        items={[
+                            { title: <span onClick={() => navigate("/shop")} style={{ cursor: "pointer", color: "#888" }}>Homepage</span> },
+                            { title: <span style={{ fontWeight: 600 }}>{styleMeta.name} Style</span> },
+                        ]}
+                        style={{ marginBottom: 12 }}
+                    />
+                    <Title level={1} style={{ margin: 0, fontWeight: 800, fontSize: 42, letterSpacing: -1 }}>
+                        {styleMeta.name} Style
+                    </Title>
+                </div>
+                <Tooltip title="Share Collection">
+                    <Button
+                        icon={<ShareAltOutlined />}
+                        onClick={handleShare}
+                        style={{ borderRadius: "50%", width: 45, height: 45, display: "flex", alignItems: "center", justifyContent: "center", border: "1px solid #eee", boxShadow: "0 2px 8px rgba(0,0,0,0.05)" }}
+                    />
+                </Tooltip>
+            </div>
+
+            {/* ═══════ LIFESTYLE GALLERY (Image 1 Style) ═══════ */}
+            {styleMeta.gallery && styleMeta.gallery.length > 0 && (
+                <div style={{ marginBottom: 80 }}>
+                    <div style={{ marginBottom: 24, padding: "0 8px" }}>
+                        <Text style={{ fontWeight: 700, fontSize: 13, color: "#999", letterSpacing: 1.5 }}>
+                            STYLED BY <span style={{ color: "#111" }}>#{styleMeta.slug?.toUpperCase() || styleMeta.name.toUpperCase()}</span>
+                        </Text>
+                    </div>
+
+                    <div style={{
+                        display: "grid",
+                        gridTemplateColumns: "repeat(5, 1fr)",
+                        gap: "2px",
+                        marginBottom: 32
+                    }}>
+                        {styleMeta.gallery.map((img, idx) => (
+                            <GalleryItem key={idx} img={img} slug={styleMeta.slug} />
+                        ))}
+                    </div>
+
+                    <div style={{ textAlign: "center" }}>
+                        <Button style={{ borderRadius: 0, border: "1px solid #111", height: 40, padding: "0 32px", fontWeight: 600, fontSize: 12 }}>
+                            Load More
+                        </Button>
+                    </div>
+                </div>
+            )}
+
+            {/* ═══════ PRODUCT GRID CONTROLS (Image 2 Style) ═══════ */}
+            <div style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: 40,
+                padding: "0 8px",
+            }}>
+                <Dropdown menu={{ items: [
+                    { key: "createdAt", label: "Newest Arrivals" },
+                    { key: "priceLowHigh", label: "Price: Low to High" }
+                ], onClick: ({ key }) => setSortBy(key) }} trigger={["click"]}>
+                    <Button type="text" style={{ padding: 0, fontWeight: 600, fontSize: 16, display: "flex", alignItems: "center", gap: 8 }}>
+                        {sortBy === "createdAt" ? "Newest Arrivals" : "Price: Low to High"} <DownOutlined style={{ fontSize: 12 }} />
+                    </Button>
+                </Dropdown>
+
+                <Button
+                    type="text"
+                    icon={<ControlOutlined />}
+                    onClick={() => setIsFilterOpen(true)}
+                    style={{ fontWeight: 600, fontSize: 16, display: "flex", alignItems: "center", gap: 8 }}
+                >
+                    Show Filters
+                </Button>
+            </div>
+
+            {productsLoading && !loadingMore ? (
+                <div style={{ textAlign: "center", padding: "120px 0" }}><Spin size="large" /></div>
+            ) : products.length > 0 ? (
+                <Row gutter={[16, 32]}>
+                    {products.map((product) => (
+                        <Col xs={12} sm={12} md={8} lg={6} key={product.id}>
+                            <ProductCard product={product} isDark={false} />
+                        </Col>
+                    ))}
+                </Row>
+            ) : (
+                <div style={{ textAlign: "center", padding: "100px 48px", background: "#f9f9f9", borderRadius: 20 }}>
+                    <Empty description={<Title level={4} style={{ fontWeight: 700 }}>No items found in this style</Title>} />
+                </div>
+            )}
+
+            <FilterDrawer visible={isFilterOpen} onClose={() => setIsFilterOpen(false)} filters={activeFilters} onFilterChange={setActiveFilters} isDark={false} />
+
+            {/* Infinite Scroll Load More */}
+            {hasMore && (
+                <div style={{ textAlign: "center", marginTop: 48 }}>
+                    <Button
+                        loading={loadingMore}
+                        onClick={loadMore}
+                        style={{ borderRadius: 8, height: 48, padding: "0 40px", fontWeight: 700, border: "2px solid #111" }}
+                    >
+                        Load More Products
+                    </Button>
+                </div>
+            )}
         </ShopLayout>
     );
 };

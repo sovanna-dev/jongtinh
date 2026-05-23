@@ -185,9 +185,16 @@ export interface INotification {
 export interface IStyle {
     id: string;
     name: string;
+    slug?: string;
+    title?: string;
+    description?: string;
+    bannerImage?: string;
+    gallery?: string[];
     color: string;
     image: string;
     label: string;
     isActive: boolean;
     order?: number;
+    createdAt?: number;
+    updatedAt?: number;
 }

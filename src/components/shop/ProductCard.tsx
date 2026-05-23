@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Card, Typography, Tag, Image, Button, Space, Tooltip, message } from "antd";
-import { ShoppingCartOutlined, StarFilled, HeartOutlined, HeartFilled } from "@ant-design/icons";
+import { ShoppingCartOutlined, StarFilled, HeartOutlined, HeartFilled, InstagramOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router";
 import { IProduct } from "../../interfaces";
 import { useCart } from "../../contexts/CartContext";
@@ -13,14 +13,16 @@ const { Title, Text } = Typography;
 interface ProductCardProps {
     product: IProduct;
     isDark: boolean;
+    showMoveToCart?: boolean;
 }
 
-export const ProductCard: React.FC<ProductCardProps> = ({ product, isDark }) => {
+export const ProductCard: React.FC<ProductCardProps> = ({ product, isDark, showMoveToCart }) => {
     const navigate = useNavigate();
     const { addToCart } = useCart();
     const { isFavorite, toggleFavorite } = useWishlist();
     const [authModalOpen, setAuthModalOpen] = useState(false);
     const [isAnimating, setIsAnimating] = useState(false);
+    const [isHovered, setIsHovered] = useState(false);
 
     const price = product.discountPrice ?? product.price;
     const isInStock = product.isAvailable && (product.stockQuantity || 0) > 0;
@@ -64,17 +66,56 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, isDark }) => 
                 }}
                 styles={{ body: { padding: "12px 10px", flex: 1, display: "flex", flexDirection: "column" } }}
                 cover={
-                    <div style={{ position: "relative", overflow: "hidden", aspectRatio: "3/4" }}>
+                    <div
+                        onMouseEnter={() => setIsHovered(true)}
+                        onMouseLeave={() => setIsHovered(false)}
+                        style={{ position: "relative", overflow: "hidden", aspectRatio: "3/4" }}
+                    >
                         <Image
                             src={product.images?.[0] || "https://via.placeholder.com/300"}
                             alt={product.name}
                             height="100%"
                             width="100%"
-                            style={{ objectFit: "cover", transition: "transform 0.5s ease" }}
+                            style={{
+                                objectFit: "cover",
+                                transition: "transform 0.5s ease",
+                                transform: isHovered ? "scale(1.05)" : "scale(1)"
+                            }}
                             className="product-card-image"
                             fallback="https://via.placeholder.com/300?text=No+Image"
                             preview={false}
                         />
+
+                        {/* Hover Overlay */}
+                        <div style={{
+                            position: "absolute", top: 0, left: 0, right: 0, bottom: 0,
+                            background: "rgba(0,0,0,0.3)",
+                            display: "flex", alignItems: "center", justifyContent: "center",
+                            opacity: isHovered ? 1 : 0,
+                            transition: "opacity 0.4s ease",
+                            zIndex: 2,
+                            pointerEvents: "none"
+                        }}>
+                            <div style={{
+                                textAlign: "center",
+                                transform: isHovered ? "translateY(0)" : "translateY(15px)",
+                                transition: "transform 0.4s cubic-bezier(0.33, 1, 0.68, 1)"
+                            }}>
+                                <InstagramOutlined style={{ fontSize: 32, color: "#fff", display: "block", marginBottom: 16, filter: "drop-shadow(0 4px 8px rgba(0,0,0,0.3))" }} />
+                                <div style={{
+                                    background: "#000",
+                                    color: "#fff",
+                                    padding: "10px 24px",
+                                    fontSize: 12,
+                                    fontWeight: 900,
+                                    letterSpacing: 2,
+                                    display: "inline-block",
+                                    boxShadow: "0 8px 24px rgba(0,0,0,0.4)"
+                                }}>
+                                    BUY NOW
+                                </div>
+                            </div>
+                        </div>
 
                         {/* Wishlist Heart */}
                         <div
@@ -193,6 +234,12 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, isDark }) => 
                         onClick={(e) => {
                             e.stopPropagation();
                             addToCart(product);
+                            if (showMoveToCart && isFav) {
+                                toggleFavorite(product.id);
+                                message.success("Moved to cart and removed from wishlist!");
+                            } else {
+                                message.success(`${product.name} added to cart!`);
+                            }
                         }}
                         disabled={!isInStock}
                         style={{
@@ -206,7 +253,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, isDark }) => 
                             boxShadow: isInStock ? "0 4px 12px rgba(255, 0, 110, 0.25)" : "none"
                         }}
                     >
-                        {isInStock ? "Add to Cart" : "Out of Stock"}
+                        {isInStock ? (showMoveToCart ? "Move to Cart" : "Add to Cart") : "Out of Stock"}
                     </Button>
                 </div>
             </Card>
