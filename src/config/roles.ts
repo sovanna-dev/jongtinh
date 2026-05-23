@@ -70,9 +70,7 @@ export const ROLE_CONFIG: Record<AdminRole, RoleConfig> = {
     viewer: {
         label: "Viewer",
         color: "default",
-        resources: [
-            "dashboard",
-        ],
+        resources: [],
         canCreate: false,
         canEdit: false,
         canDelete: false,

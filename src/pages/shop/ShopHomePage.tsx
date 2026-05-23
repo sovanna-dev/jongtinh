@@ -126,19 +126,82 @@ export const ShopHomePage: React.FC = () => {
             }} />
 
             {/* 2. FEATURE ICONS */}
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: 20, marginBottom: 32, padding: "0 8px" }}>
+            {/* ═══════ FEATURE ICONS (Trust Badges) ═══════ */}
+            <div style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))",
+                gap: 20,
+                marginBottom: 32,
+                padding: "0 8px",
+            }}>
                 {[
-                    { icon: "🚚", title: "Free Shipping", desc: "On orders over $50", color: "#E6F7FF" },
-                    { icon: "🌍", title: "Online Order", desc: "Shop 24/7 anywhere", color: "#F6FFED" },
-                    { icon: "💰", title: "Save Money", desc: "Best prices & sales", color: "#FFF7E6" },
-                    { icon: "🏷️", title: "Promotions", desc: "Exclusive deals", color: "#FFF0F6" },
-                    { icon: "🎧", title: "24/7 Support", desc: "Anytime service", color: "#F9F0FF" },
-                    { icon: "🔒", title: "Secure Payments", desc: "Safe transactions", color: "#E6FFFB" },
-                ].map((f) => (
-                    <Card key={f.title} hoverable style={{ borderRadius: 16, textAlign: "center", border: "1px solid #f0f0f0", background: isDark ? "#1f1f1f" : f.color, boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }} bodyStyle={{ padding: "24px 16px" }}>
-                        <Text style={{ fontSize: 32, display: "block", marginBottom: 12 }}>{f.icon}</Text>
-                        <Title level={5} style={{ margin: "0 0 4px", fontSize: 14, fontWeight: 700 }}>{f.title}</Title>
-                        <Text type="secondary" style={{ fontSize: 12 }}>{f.desc}</Text>
+                    {
+                        icon: "🚚",
+                        title: "Free Shipping",
+                        desc: "On orders over $50",
+                        color: "#E6F7FF",
+                        action: () => navigate("/shop/search?q=free+shipping"),
+                    },
+                    {
+                        icon: "🌍",
+                        title: "Online Order",
+                        desc: "Shop 24/7 anywhere",
+                        color: "#F6FFED",
+                        action: () => navigate("/shop"),
+                    },
+                    {
+                        icon: "💰",
+                        title: "Save Money",
+                        desc: "Best prices & sales",
+                        color: "#FFF7E6",
+                        action: () => navigate("/shop/flash-sale"),
+                    },
+                    {
+                        icon: "🏷️",
+                        title: "Promotions",
+                        desc: "Exclusive deals",
+                        color: "#FFF0F6",
+                        action: () => navigate("/shop/flash-sale"),
+                    },
+                    {
+                        icon: "🎧",
+                        title: "24/7 Support",
+                        desc: "Anytime service",
+                        color: "#F9F0FF",
+                        action: () => navigate("/shop/profile"),
+                    },
+                    {
+                        icon: "🔒",
+                        title: "Secure Payments",
+                        desc: "Safe transactions",
+                        color: "#E6FFFB",
+                        action: () => {
+                            message.info("We accept ABA Pay, ACLEDA, Wing, and Cash on Delivery. All transactions are encrypted and secure.");
+                        },
+                    },
+                ].map((feature) => (
+                    <Card
+                        key={feature.title}
+                        hoverable
+                        onClick={feature.action}
+                        style={{
+                            borderRadius: 16,
+                            textAlign: "center",
+                            border: "1px solid #f0f0f0",
+                            background: isDark ? "#1f1f1f" : feature.color,
+                            boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
+                            cursor: "pointer",
+                            transition: "all 0.3s ease",
+                        }}
+                        bodyStyle={{ padding: "24px 16px" }}
+                    >
+                        <Text style={{ fontSize: 32, display: "block", marginBottom: 12 }}>{feature.icon}</Text>
+                        <Title level={5} style={{ margin: "0 0 4px", fontSize: 14, fontWeight: 700 }}>
+                            {feature.title}
+                        </Title>
+                        <Text type="secondary" style={{ fontSize: 12 }}>
+                            {feature.desc}
+                        </Text>
                     </Card>
                 ))}
             </div>
@@ -163,7 +226,7 @@ export const ShopHomePage: React.FC = () => {
                 <div style={{ display: "flex", gap: 16, overflowX: "auto", paddingBottom: 16, paddingLeft: 4, scrollbarWidth: "none", msOverflowStyle: "none" }} className="style-carousel">
                     {dynamicStyles.map((style) => (
                         <div key={style.id} onClick={() => navigate(`/shop/search?q=${encodeURIComponent(style.name)}`)}
-                            style={{ position: "relative", minWidth: 180, height: 260, borderRadius: 24, overflow: "hidden", cursor: "pointer", flexShrink: 0, boxShadow: "0 8px 24px rgba(0,0,0,0.12)", transition: "all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)" }}
+                            style={{ position: "relative", minWidth: 400, height: 600, borderRadius: 24, overflow: "hidden", cursor: "pointer", flexShrink: 0, boxShadow: "0 8px 24px rgba(0,0,0,0.12)", transition: "all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)" }}
                             className="style-card-ad">
                             <div style={{ width: "100%", height: "100%", backgroundImage: `url(${style.image})`, backgroundSize: "cover", backgroundPosition: "center", transition: "transform 0.6s ease" }} className="bg-image" />
                             <div style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, background: "linear-gradient(to bottom, transparent 40%, rgba(0,0,0,0.8) 100%)", display: "flex", flexDirection: "column", justifyContent: "flex-end", padding: "20px 16px" }}>

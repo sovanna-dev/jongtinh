@@ -1,18 +1,56 @@
 import { List, useTable, TextField, TagField, ShowButton } from "@refinedev/antd";
-import { Table, Space, Tag } from "antd";
+import { Table, Space, Tag, Select } from "antd";
 import { ISupportTicket } from "../../interfaces";
+import { useGetIdentity } from "@refinedev/core";
 
 export const TicketList = () => {
-    const { tableProps } = useTable<ISupportTicket>();
+    const { data: identity } = useGetIdentity<{ id: string; role: string }>();
+    const isAdmin = identity?.role && identity.role !== "viewer" && identity.role !== "customer";
+
+    const { tableProps, setFilters } = useTable<ISupportTicket>({
+        initialSorter: [{ field: "createdAt", order: "desc" }],
+        // 🔥 Customers can only see their own tickets
+        permanentFilter: isAdmin ? [] : [
+            { field: "userId", operator: "eq", value: identity?.id || "" },
+        ],
+        queryOptions: {
+            enabled: !!identity?.id, // Don't query until we have user identity
+        },
+    });
 
     return (
         <List>
-            <Table {...tableProps} rowKey="id">
-                <Table.Column
-                    dataIndex="id"
-                    title="ID"
-                    render={(value) => <TextField value={value.substring(0, 8)} />}
+            <Space style={{ marginBottom: 16 }}>
+                <Select
+                    placeholder="Filter by Status"
+                    style={{ width: 200 }}
+                    allowClear
+                    onChange={(value) => {
+                        setFilters([{ field: "status", operator: "eq", value }], "replace");
+                    }}
+                    options={[
+                        { label: "Open", value: "OPEN" },
+                        { label: "In Progress", value: "IN_PROGRESS" },
+                        { label: "Resolved", value: "RESOLVED" },
+                        { label: "Closed", value: "CLOSED" },
+                    ]}
                 />
+                <Select
+                    placeholder="Filter by Priority"
+                    style={{ width: 200 }}
+                    allowClear
+                    onChange={(value) => {
+                        setFilters([{ field: "priority", operator: "eq", value }], "replace");
+                    }}
+                    options={[
+                        { label: "Low", value: "LOW" },
+                        { label: "Medium", value: "MEDIUM" },
+                        { label: "High", value: "HIGH" },
+                    ]}
+                />
+            </Space>
+            <Table {...tableProps} rowKey="id">
+                <Table.Column dataIndex="id" title="ID" render={(value) => <TextField value={value?.substring(0, 8)} />} />
                 <Table.Column dataIndex="subject" title="Subject" />
                 <Table.Column
                     dataIndex="status"
@@ -35,11 +73,7 @@ export const TicketList = () => {
                         return <Tag color={color}>{value}</Tag>;
                     }}
                 />
-                <Table.Column
-                    dataIndex="createdAt"
-                    title="Created At"
-                    render={(value) => new Date(value).toLocaleString()}
-                />
+                <Table.Column dataIndex="createdAt" title="Created At" render={(value) => new Date(value).toLocaleString()} />
                 <Table.Column
                     title="Actions"
                     dataIndex="actions"

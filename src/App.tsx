@@ -5,7 +5,7 @@ import { useNotificationProvider, ErrorComponent, ThemedLayout, ThemedTitle, Aut
 import "@refinedev/antd/dist/reset.css";
 import { HashRouter, Route, Routes, Outlet, Navigate } from "react-router";
 import routerBindings, { UnsavedChangesNotifier, DocumentTitleHandler, CatchAllNavigate } from "@refinedev/react-router";
-import { App as AntdApp } from "antd";
+import { App as AntdApp, Spin } from "antd";
 import { dataProvider, authProvider } from "./providers/firebaseProvider";
 import { Header } from "./components/header";
 import { ColorModeContextProvider } from "./contexts/color-mode";
@@ -47,9 +47,61 @@ import { OrdersPage } from "./pages/shop/OrdersPage";
 import { ProfilePage } from "./pages/shop/ProfilePage";
 import { SearchResultsPage } from "./pages/shop/SearchResultsPage";
 import { FlashSalePage } from "./pages/shop/FlashSalePage";
+import { FaqPage as ShopFaqPage } from "./pages/shop/FaqPage";
 
+// ──────────────────────────────────────────────────────────────
+// Redirect based on role
+// ──────────────────────────────────────────────────────────────
+const AuthenticatedRedirect = () => {
+    const { hasAccess } = useRole();
+    const canAccessAdmin = hasAccess("dashboard");
+    return <Navigate to={canAccessAdmin ? "/admin" : "/shop"} replace />;
+};
+
+// ──────────────────────────────────────────────────────────────
+// Guard for admin routes — blocks customers
+// ──────────────────────────────────────────────────────────────
+const AdminLayoutGuard = () => {
+    const { hasAccess, loading } = useRole();
+
+    if (loading) {
+        return (
+            <div style={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                height: "100vh",
+            }}>
+                <Spin size="large" />
+            </div>
+        );
+    }
+
+    if (!hasAccess("dashboard")) {
+        return <Navigate to="/shop" replace />;
+    }
+
+    return (
+        <ThemedLayout
+            Header={() => <Header sticky />}
+            Title={({ collapsed }) => (
+                <ThemedTitle collapsed={collapsed} text="JongTinh Admin" />
+            )}
+        >
+            <Outlet />
+        </ThemedLayout>
+    );
+};
+
+// ──────────────────────────────────────────────────────────────
+// Main Admin Content
+// ──────────────────────────────────────────────────────────────
 function AppContent() {
-    const { hasAccess, roleConfig } = useRole();
+    const { hasAccess, roleConfig, loading } = useRole();
+
+    if (loading) {
+        return null;
+    }
 
     const allResources = [
         { name: "dashboard", list: "/admin", meta: { label: "Dashboard" } },
@@ -79,7 +131,7 @@ function AppContent() {
             }}
         >
             <Routes>
-                {/* 1. Shop Routes - Completely isolated from Admin Layout */}
+                {/* ═══════ 1. SHOP ROUTES (Public) ═══════ */}
                 <Route path="/shop" element={<ShopHomePage />} />
                 <Route path="/shop/product/:id" element={<ProductDetail />} />
                 <Route path="/shop/cart" element={<CartPage />} />
@@ -89,25 +141,16 @@ function AppContent() {
                 <Route path="/shop/profile" element={<ProfilePage />} />
                 <Route path="/shop/search" element={<SearchResultsPage />} />
                 <Route path="/shop/flash-sale" element={<FlashSalePage />} />
+                <Route path="/shop/faq" element={<ShopFaqPage />} />
 
-                {/* 2. Admin Routes - Protected by Authenticated and wrapped in ThemedLayout */}
+                {/* ═══════ 2. ADMIN ROUTES (Protected) ═══════ */}
                 <Route
                     element={
                         <Authenticated
                             key="auth-admin"
                             fallback={<CatchAllNavigate to="/login" />}
                         >
-                            <ThemedLayout
-                                Header={() => <Header sticky />}
-                                Title={({ collapsed }) => (
-                                    <ThemedTitle
-                                        collapsed={collapsed}
-                                        text="JongTinh Admin"
-                                    />
-                                )}
-                            >
-                                <Outlet />
-                            </ThemedLayout>
+                            <AdminLayoutGuard />
                         </Authenticated>
                     }
                 >
@@ -173,11 +216,11 @@ function AppContent() {
                     )}
                 </Route>
 
-                {/* 3. Auth Pages - Isolated from Admin Layout */}
+                {/* ═══════ 3. AUTH PAGES ═══════ */}
                 <Route
                     element={
                         <Authenticated key="auth-pages" fallback={<Outlet />}>
-                            <Navigate to="/admin" />
+                            <AuthenticatedRedirect />
                         </Authenticated>
                     }
                 >
@@ -186,13 +229,12 @@ function AppContent() {
                     <Route path="/forgot-password" element={<AuthPage type="forgotPassword" />} />
                 </Route>
 
-                {/* 4. Root & Catch-all Redirection */}
+                {/* ═══════ 4. ROOT & CATCH-ALL ═══════ */}
                 <Route path="/" element={<Navigate to="/shop" replace />} />
                 <Route path="*" element={<ErrorComponent />} />
             </Routes>
             <RefineKbar />
             <UnsavedChangesNotifier />
-
             <DocumentTitleHandler
                 handler={({ resource }) => {
                     const siteName = "JongTinh";
@@ -206,6 +248,9 @@ function AppContent() {
     );
 }
 
+// ──────────────────────────────────────────────────────────────
+// Main App
+// ──────────────────────────────────────────────────────────────
 function App() {
     return (
         <HashRouter>

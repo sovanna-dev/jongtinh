@@ -547,6 +547,10 @@ export const ShopLayout: React.FC<ShopLayoutProps> = ({ children, searchQuery, s
                                 onMouseEnter={(e) => { e.currentTarget.style.color = "#FF006E"; }}
                                 onMouseLeave={(e) => { e.currentTarget.style.color = isDark ? "#aaa" : "#ccc"; }}
                             >My Profile</a>
+                            <a href="/shop/faq" style={{ color: isDark ? "#aaa" : "#ccc", fontSize: 14, textDecoration: "none", transition: "color 0.3s" }}
+                                onMouseEnter={(e) => { e.currentTarget.style.color = "#FF006E"; }}
+                                onMouseLeave={(e) => { e.currentTarget.style.color = isDark ? "#aaa" : "#ccc"; }}
+                            >FAQ</a>
                             <a href="#" style={{ color: isDark ? "#aaa" : "#ccc", fontSize: 14, textDecoration: "none", transition: "color 0.3s" }}
                                 onMouseEnter={(e) => { e.currentTarget.style.color = "#FF006E"; }}
                                 onMouseLeave={(e) => { e.currentTarget.style.color = isDark ? "#aaa" : "#ccc"; }}

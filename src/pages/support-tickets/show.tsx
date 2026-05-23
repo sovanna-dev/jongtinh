@@ -37,6 +37,39 @@ export const TicketShow = () => {
     const { mutate: updateTicket } = useUpdate();
     const [form] = Form.useForm();
 
+       const handleAutoReply = (ticketId: string, subject: string, messageText: string) => {
+           const currentUser = auth.currentUser;
+           if (!currentUser) return;
+
+           const lowerSubject = subject.toLowerCase();
+           const lowerMessage = messageText.toLowerCase();
+           let autoReplyMessage = "";
+
+           if (lowerSubject.includes("order") || lowerMessage.includes("order")) {
+               autoReplyMessage = "Hello! If you're inquiring about an order, please ensure you've provided the order ID. You can track your order status in the 'Orders' section of your profile.";
+           } else if (lowerSubject.includes("refund") || lowerMessage.includes("refund")) {
+               autoReplyMessage = "We've received your refund request. Our team typically reviews these within 2-3 business days. Please keep an eye on your email for updates.";
+           } else if (lowerSubject.includes("delivery") || lowerMessage.includes("shipping")) {
+               autoReplyMessage = "Shipping times vary by location, but most orders arrive within 3-5 business days. You'll receive a notification once your package is on its way!";
+           }
+
+           if (autoReplyMessage) {
+               createReply({
+                   resource: `support_tickets/${ticketId}/replies`,
+                   values: {
+                       message: `[Auto-Reply Bot]: ${autoReplyMessage}`,
+                       userId: currentUser.uid,  // ← Use current user's ID, not "system-bot"
+                       isAdminReply: true,
+                       createdAt: Date.now() + 1000,
+                   },
+               }, {
+                   onSuccess: () => {
+                       refetchReplies();
+                   }
+               });
+           }
+       };
+
     const onFinish = (values: { message: string }) => {
         if (!record?.id) return;
 
@@ -64,10 +97,23 @@ export const TicketShow = () => {
                         resource: "support_tickets",
                         id: record.id,
                         values: { status: "IN_PROGRESS" },
+                    }, {
+                        onSuccess: () => {
+                            // Check if this is the first reply and from admin to trigger bot if needed
+                            // (Actually, the bot should probably trigger on ticket creation,
+                            // but here we can add a manual trigger or simulate it)
+                        }
                     });
                 }
             }
         });
+    };
+
+    const triggerBot = () => {
+        if (record) {
+            handleAutoReply(record.id, record.subject, record.message);
+            message.info("Bot analysis triggered");
+        }
     };
 
     const handleCloseTicket = () => {
@@ -89,7 +135,10 @@ export const TicketShow = () => {
                     <ListButton />
                     {defaultButtons}
                     {record?.status !== "CLOSED" && (
-                        <Button danger onClick={handleCloseTicket}>Close Ticket</Button>
+                        <>
+                            <Button onClick={triggerBot}>Run Bot Assistant</Button>
+                            <Button danger onClick={handleCloseTicket}>Close Ticket</Button>
+                        </>
                     )}
                 </Space>
             )}

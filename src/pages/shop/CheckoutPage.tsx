@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router";
 import { Typography, Form, Input, Button, Radio, Space, Divider, message, Steps, Card, Result, Row, Col, Badge, Empty } from "antd";
 import { CreditCardOutlined, BankOutlined, DollarOutlined, ShoppingOutlined, ArrowLeftOutlined, SafetyCertificateOutlined } from "@ant-design/icons";
-import { collection, doc, setDoc, addDoc } from "firebase/firestore";
+import { collection, doc, setDoc, addDoc, runTransaction, getDoc } from "firebase/firestore";
 import { db, auth } from "../../firebase";
 import { ShopLayout } from "./ShopLayout";
 import { useCart } from "../../contexts/CartContext";
@@ -46,22 +46,66 @@ export const CheckoutPage: React.FC = () => {
         try {
             const newOrderId = `ORD-${Date.now()}-${Math.random().toString(36).substring(2, 8)}`;
 
-            await setDoc(doc(db, "orders", newOrderId), {
-                id: newOrderId, orderId: newOrderId, userId: user.uid,
-                items: cart.map((item) => {
-                    const p = item.product.discountPrice ?? item.product.price;
-                    return { productId: item.product.id, productName: item.product.name, productImage: item.product.images?.[0] || "", price: p, quantity: item.quantity, userId: user.uid, totalPrice: p * item.quantity };
-                }),
-                shippingAddress: addressValues, paymentMethod,
-                subtotal: subtotal, shippingCost: shippingCost, total: total,
-                orderStatus: paymentMethod === "cod" ? "PROCESSING" : "PENDING",
-                createdAt: Date.now(), updatedAt: Date.now(),
-                trackingSteps: [
-                    { id: "pending", title: "Order Pending", description: "Waiting for confirmation" },
-                    { id: "processing", title: "Processing", description: "Preparing your order" },
-                    { id: "shipping", title: "Shipping", description: "On the way to you" },
-                    { id: "delivered", title: "Delivered", description: "Order completed" },
-                ],
+            await runTransaction(db, async (transaction) => {
+                // 1. Read all product snapshots
+                const productSnapshots = await Promise.all(
+                    cart.map((item) => transaction.get(doc(db, "products", item.product.id)))
+                );
+
+                // 2. Validate stock for each item
+                cart.forEach((item, index) => {
+                    const snap = productSnapshots[index];
+                    if (!snap.exists()) {
+                        throw new Error(`Product ${item.product.name} no longer exists.`);
+                    }
+                    const currentStock = snap.data().stockQuantity || 0;
+                    if (currentStock < item.quantity) {
+                        throw new Error(`Insufficient stock for ${item.product.name}. Available: ${currentStock}`);
+                    }
+                });
+
+                // 3. Perform updates (Write operations)
+                cart.forEach((item, index) => {
+                    const snap = productSnapshots[index];
+                    const currentStock = snap.data().stockQuantity || 0;
+                    transaction.update(doc(db, "products", item.product.id), {
+                        stockQuantity: currentStock - item.quantity
+                    });
+                });
+
+                // 4. Create the order
+                const orderData = {
+                    id: newOrderId,
+                    orderId: newOrderId,
+                    userId: user.uid,
+                    items: cart.map((item) => {
+                        const p = item.product.discountPrice ?? item.product.price;
+                        return {
+                            productId: item.product.id,
+                            productName: item.product.name,
+                            productImage: item.product.images?.[0] || "",
+                            price: p,
+                            quantity: item.quantity,
+                            userId: user.uid,
+                            totalPrice: p * item.quantity,
+                        };
+                    }),
+                    shippingAddress: addressValues,
+                    paymentMethod,
+                    subtotal: subtotal,
+                    shippingCost: shippingCost,
+                    total: total,
+                    orderStatus: paymentMethod === "cod" ? "PROCESSING" : "PENDING",
+                    createdAt: Date.now(),
+                    updatedAt: Date.now(),
+                    trackingSteps: [
+                        { id: "pending", title: "Order Pending", description: "Waiting for confirmation" },
+                        { id: "processing", title: "Processing", description: "Preparing your order" },
+                        { id: "shipping", title: "Shipping", description: "On the way to you" },
+                        { id: "delivered", title: "Delivered", description: "Order completed" },
+                    ],
+                };
+                transaction.set(doc(db, "orders", newOrderId), orderData);
             });
 
             try {

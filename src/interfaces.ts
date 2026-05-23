@@ -130,6 +130,16 @@ export interface IUser {
     createdAt?: number;
 }
 
+export interface IFaq {
+    id: string;
+    question: string;
+    answer: string;
+    order: number;
+    category?: string;
+    helpfulCount?: number;
+    unhelpfulCount?: number;
+}
+
 export interface ISupportTicket {
     id: string;
     userId: string;
@@ -144,6 +154,7 @@ export interface ISupportTicket {
     createdAt: number;
     updatedAt: number;
 }
+
 
 export interface ITicketReply {
     id: string;
