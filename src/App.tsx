@@ -11,6 +11,7 @@ import { Header } from "./components/header";
 import { ColorModeContextProvider } from "./contexts/color-mode";
 import { RoleProvider, useRole } from "./contexts/RoleContext";
 import { CartProvider } from "./contexts/CartContext";
+import { WishlistProvider } from "./contexts/WishlistContext";
 import { CustomerAuthProvider } from "./contexts/CustomerAuthContext";
 
 // Admin Pages
@@ -48,7 +49,8 @@ import { ProfilePage } from "./pages/shop/ProfilePage";
 import { SearchResultsPage } from "./pages/shop/SearchResultsPage";
 import { FlashSalePage } from "./pages/shop/FlashSalePage";
 import { FaqPage as ShopFaqPage } from "./pages/shop/FaqPage";
-
+import { StyleCollectionPage } from "./pages/shop/StyleCollectionPage";
+import { WishlistPage } from "./pages/shop/WishlistPage";
 // ──────────────────────────────────────────────────────────────
 // Redirect based on role
 // ──────────────────────────────────────────────────────────────
@@ -135,6 +137,7 @@ function AppContent() {
                 <Route path="/shop" element={<ShopHomePage />} />
                 <Route path="/shop/product/:id" element={<ProductDetail />} />
                 <Route path="/shop/cart" element={<CartPage />} />
+                <Route path="/shop/wishlist" element={<WishlistPage />} />
                 <Route path="/shop/checkout" element={<CheckoutPage />} />
                 <Route path="/shop/order/:id" element={<OrderTracking />} />
                 <Route path="/shop/orders" element={<OrdersPage />} />
@@ -142,6 +145,7 @@ function AppContent() {
                 <Route path="/shop/search" element={<SearchResultsPage />} />
                 <Route path="/shop/flash-sale" element={<FlashSalePage />} />
                 <Route path="/shop/faq" element={<ShopFaqPage />} />
+                <Route path="/shop/style/:style" element={<StyleCollectionPage />} />
 
                 {/* ═══════ 2. ADMIN ROUTES (Protected) ═══════ */}
                 <Route
@@ -259,11 +263,13 @@ function App() {
                     <AntdApp>
                         <DevtoolsProvider>
                             <CustomerAuthProvider>
-                                <CartProvider>
-                                    <RoleProvider>
-                                        <AppContent />
-                                    </RoleProvider>
-                                </CartProvider>
+                                <WishlistProvider>
+                                    <CartProvider>
+                                        <RoleProvider>
+                                            <AppContent />
+                                        </RoleProvider>
+                                    </CartProvider>
+                                </WishlistProvider>
                             </CustomerAuthProvider>
                             <DevtoolsPanel />
                         </DevtoolsProvider>

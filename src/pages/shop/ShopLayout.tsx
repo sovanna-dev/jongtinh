@@ -6,7 +6,8 @@ import {
 import {
     ShoppingCartOutlined, SearchOutlined, ShoppingOutlined, DeleteOutlined,
     UserOutlined, LogoutOutlined, OrderedListOutlined, DashboardOutlined,
-    ProfileOutlined, SunOutlined, MoonOutlined, BellOutlined, AreaChartOutlined
+    ProfileOutlined, SunOutlined, MoonOutlined, BellOutlined, AreaChartOutlined,
+    HeartOutlined
 } from "@ant-design/icons";
 import { useNavigate } from "react-router";
 import { auth, db } from "../../firebase";
@@ -14,6 +15,7 @@ import { signOut, onAuthStateChanged, User } from "firebase/auth";
 import { doc, getDoc, collection, query, where, orderBy, limit, onSnapshot, updateDoc, writeBatch, deleteDoc } from "firebase/firestore";
 import { useCustomerAuth } from "../../contexts/CustomerAuthContext";
 import { useCart } from "../../contexts/CartContext";
+import { useWishlist } from "../../contexts/WishlistContext";
 import { ColorModeContext } from "../../contexts/color-mode";
 import { INotification } from "../../interfaces";
 import logo from "../../images/logo.webp";
@@ -39,6 +41,7 @@ export const ShopLayout: React.FC<ShopLayoutProps> = ({ children, searchQuery, s
     const [user, setUser] = useState<User | null>(auth.currentUser);
     const [notifications, setNotifications] = useState<INotification[]>([]);
     const { cart, removeFromCart, updateQuantity, cartCount, cartTotal } = useCart();
+    const { favorites } = useWishlist();
     const [authModalOpen, setAuthModalOpen] = useState(false);
     const { user: customerUser, logout: customerLogout } = useCustomerAuth();
     const [isAdmin, setIsAdmin] = useState(false);
@@ -158,6 +161,12 @@ export const ShopLayout: React.FC<ShopLayoutProps> = ({ children, searchQuery, s
             icon: <OrderedListOutlined />,
             label: "My Orders",
             onClick: () => navigate("/shop/orders"),
+        },
+        {
+            key: "wishlist",
+            icon: <HeartOutlined />,
+            label: "My Wishlist",
+            onClick: () => navigate("/shop/wishlist"),
         },
         {
             key: "profile",
@@ -306,6 +315,15 @@ export const ShopLayout: React.FC<ShopLayoutProps> = ({ children, searchQuery, s
                             />
                         </Tooltip>
                     )}
+
+                    <Tooltip title="Wishlist">
+                        <Badge count={favorites.size} showZero offset={[-2, 2]} color="#FF006E">
+                            <HeartOutlined
+                                style={{ fontSize: 26, cursor: "pointer", color: isDark ? "#fff" : "#333" }}
+                                onClick={() => navigate("/shop/wishlist")}
+                            />
+                        </Badge>
+                    </Tooltip>
 
                     <Badge count={cartCount} showZero offset={[-2, 2]} color="#FF006E">
                         <ShoppingCartOutlined
@@ -539,6 +557,10 @@ export const ShopLayout: React.FC<ShopLayoutProps> = ({ children, searchQuery, s
                                 onMouseEnter={(e) => { e.currentTarget.style.color = "#FF006E"; }}
                                 onMouseLeave={(e) => { e.currentTarget.style.color = isDark ? "#aaa" : "#ccc"; }}
                             >My Orders</a>
+                            <a href="/shop/wishlist" style={{ color: isDark ? "#aaa" : "#ccc", fontSize: 14, textDecoration: "none", transition: "color 0.3s" }}
+                                onMouseEnter={(e) => { e.currentTarget.style.color = "#FF006E"; }}
+                                onMouseLeave={(e) => { e.currentTarget.style.color = isDark ? "#aaa" : "#ccc"; }}
+                            >My Wishlist</a>
                             <a href="/shop/cart" style={{ color: isDark ? "#aaa" : "#ccc", fontSize: 14, textDecoration: "none", transition: "color 0.3s" }}
                                 onMouseEnter={(e) => { e.currentTarget.style.color = "#FF006E"; }}
                                 onMouseLeave={(e) => { e.currentTarget.style.color = isDark ? "#aaa" : "#ccc"; }}

@@ -225,7 +225,7 @@ export const ShopHomePage: React.FC = () => {
                         <Col key={style.name}>
                             <Card
                                 hoverable
-                                onClick={() => navigate(`/shop/search?q=${encodeURIComponent(style.name)}`)}
+                                onClick={() => navigate(`/shop/style/${style.name.toLowerCase()}`)}
                                 style={{
                                     borderRadius: 16,
                                     width: 130,
