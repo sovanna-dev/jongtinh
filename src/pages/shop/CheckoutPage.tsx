@@ -193,7 +193,11 @@ export const CheckoutPage: React.FC = () => {
                             title={<Title level={2} style={{ fontWeight: 800 }}>{t.checkout.orderSuccess}</Title>}
                             subTitle={
                                 <div style={{ background: isDark ? "#1f1f1f" : "#f9f9f9", padding: 24, borderRadius: 16, marginTop: 24 }}>
-                                    <Text style={{ fontSize: 16 }}>{t.checkout.orderReceived.replace("{id}", "")} <Text strong style={{ color: "#FF006E" }}>#{orderId}</Text> {t.checkout.orderReceived.split("}").pop()}</Text>
+                                    <Text style={{ fontSize: 16 }}>
+                                        {t.checkout.orderReceived.split("{id}")[0]}
+                                        <Text strong style={{ color: "#FF006E" }}>#{orderId}</Text>
+                                        {t.checkout.orderReceived.split("{id}")[1]}
+                                    </Text>
                                     <br />
                                     <Text type="secondary">{t.checkout.shippingNotify}</Text>
                                 </div>

@@ -13,7 +13,7 @@ import { SubCategoryScroll } from "../../components/shop/SubCategoryScroll";
 import { NotificationBanner } from "../../components/shop/NotificationBanner";
 import { ProductCard } from "../../components/shop/ProductCard";
 import { FilterDrawer } from "../../components/shop/FilterDrawer";
-import { useProducts } from "../../hooks/useProducts";
+import { useLanguage } from "../../contexts/LanguageContext";
 
 const { Title, Text } = Typography;
 
@@ -31,6 +31,7 @@ const STYLE_TAGS = [
 export const ShopHomePage: React.FC = () => {
     const navigate = useNavigate();
     const { mode } = useContext(ColorModeContext);
+    const { t } = useLanguage();
     const isDark = mode === "dark";
 
     // --- State ---
@@ -90,7 +91,7 @@ export const ShopHomePage: React.FC = () => {
 
     const copyPromoCode = (code: string) => {
         navigator.clipboard.writeText(code);
-        message.success(`Code "${code}" copied! Apply at checkout.`);
+        message.success(t.home.linkCopied || `Code "${code}" copied! Apply at checkout.`);
     };
 
     // --- Fetching Global Metadata ---

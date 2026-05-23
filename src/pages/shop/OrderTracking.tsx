@@ -12,7 +12,7 @@ const { Title, Text } = Typography;
 const STATUS_COLORS: Record<string, string> = { PENDING: "#FFBE0B", PROCESSING: "#3A86FF", SHIPPING: "#8338EC", DELIVERED: "#4CAF50", CANCELLED: "#E53935" };
 
 export const OrderTracking: React.FC = () => {
-    const { t } = useLanguage();
+    const { t, language } = useLanguage();
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
     const [searchQuery, setSearchQuery] = useState("");
@@ -50,7 +50,7 @@ export const OrderTracking: React.FC = () => {
                 <Button onClick={() => navigate("/shop")} style={{ marginBottom: 16 }}>← {t.product.backToShop}</Button>
                 <Card>
                     <Space align="center" style={{ marginBottom: 16 }}><Title level={3} style={{ margin: 0 }}>{t.order.orderId} #{order.orderId?.substring(0, 8)?.toUpperCase()}</Title><Tag color={STATUS_COLORS[order.orderStatus]}>{t.order.status[order.orderStatus as keyof typeof t.order.status] || order.orderStatus}</Tag></Space>
-                    <Text type="secondary">{t.order.placedOn} {new Date(order.createdAt).toLocaleString()}</Text>
+                    <Text type="secondary">{t.order.placedOn} {new Date(order.createdAt).toLocaleString(language === 'km' ? 'km-KH' : 'en-US')}</Text>
                     <Steps current={currentStep >= 0 ? currentStep : 0} status={order.orderStatus === "CANCELLED" ? "error" : "process"} style={{ marginTop: 24, marginBottom: 24 }} items={[{ title: t.order.steps.placed }, { title: t.order.steps.processing }, { title: t.order.steps.shipping }, { title: t.order.steps.delivered }]} />
                     <Descriptions bordered column={2} style={{ marginTop: 24 }}>
                         <Descriptions.Item label={t.order.customer}>{order.shippingAddress?.fullName}</Descriptions.Item>

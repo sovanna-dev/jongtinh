@@ -150,7 +150,7 @@ export const ProductDetail: React.FC = () => {
                         <Title level={1} style={{ marginTop: 8, marginBottom: 0, fontSize: 32, fontWeight: 800 }}>{product.name}</Title>
                         {product.brand && (
                             <Text type="secondary" style={{ fontSize: 14, display: "block", marginBottom: 16 }}>
-                                by <Text strong style={{ color: "#FF006E" }}>{product.brand}</Text>
+                                {t.product.by} <Text strong style={{ color: "#FF006E" }}>{product.brand}</Text>
                             </Text>
                         )}
 
@@ -167,7 +167,7 @@ export const ProductDetail: React.FC = () => {
                                 <Text style={{ color: "#faad14", fontSize: 16 }}>★</Text>
                                 <Text strong style={{ fontSize: 16 }}>{product.rating}</Text>
                             </div>
-                            <Text type="secondary" style={{ fontSize: 14 }}>({product.reviewCount} verified reviews)</Text>
+                            <Text type="secondary" style={{ fontSize: 14 }}>({product.reviewCount} {t.product.verifiedReviews})</Text>
                         </Space>
 
                         <div style={{
@@ -182,7 +182,7 @@ export const ProductDetail: React.FC = () => {
                                     <Title level={1} style={{ color: "#FF006E", margin: 0, fontSize: 42, fontWeight: 800 }}>${product.discountPrice.toFixed(2)}</Title>
                                     <Text delete type="secondary" style={{ fontSize: 20 }}>${product.price.toFixed(2)}</Text>
                                     <Tag color="#FF006E" style={{ borderRadius: 8, border: "none", fontWeight: 700, padding: "4px 12px", fontSize: 14 }}>
-                                        Save {Math.round(((product.price - product.discountPrice) / product.price) * 100)}%
+                                        {t.product.savePercent.replace("{percent}", Math.round(((product.price - product.discountPrice) / product.price) * 100).toString())}
                                     </Tag>
                                 </div>
                             ) : (
@@ -256,7 +256,7 @@ export const ProductDetail: React.FC = () => {
                         {availableColors.length > 0 && (
                             <div style={{ marginBottom: 24 }}>
                                 <Title level={5} style={{ fontWeight: 700, marginBottom: 12 }}>
-                                    {t.product.selectColor} {selectedColor && <Tag color="#FF006E" style={{ marginLeft: 8 }}>{selectedColor}</Tag>}
+                                    {t.product.selectColor} {selectedColor && <Tag color="#FF006E" style={{ marginLeft: 8 }}>{typeof selectedColor === 'string' ? selectedColor : (selectedColor as any).name}</Tag>}
                                 </Title>
                                 <Space size={12} wrap>
                                     {availableColors.map((c: any, i: number) => {

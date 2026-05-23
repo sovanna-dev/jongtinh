@@ -13,7 +13,7 @@ const { Title, Text } = Typography;
 interface UserProfile { displayName: string; email: string; phoneNumber: string; photoUrl: string; isAdmin: boolean; role: string; createdAt: number; }
 
 export const ProfilePage: React.FC = () => {
-    const { t } = useLanguage();
+    const { t, language } = useLanguage();
     const [searchQuery, setSearchQuery] = useState("");
     const [profile, setProfile] = useState<UserProfile | null>(null);
     const [notifications, setNotifications] = useState<INotification[]>([]);
@@ -127,7 +127,7 @@ export const ProfilePage: React.FC = () => {
                     <Descriptions bordered column={1} style={{ marginTop: 24, textAlign: "left" }}>
                         <Descriptions.Item label={<><MailOutlined /> {t.profile.email}</>}>{profile?.email}</Descriptions.Item>
                         <Descriptions.Item label={<><PhoneOutlined /> {t.profile.phone}</>}>{profile?.phoneNumber || t.profile.notProvided}</Descriptions.Item>
-                        <Descriptions.Item label={<><CalendarOutlined /> {t.profile.memberSince}</>}>{profile?.createdAt ? new Date(profile.createdAt).toLocaleDateString() : t.profile.unknown}</Descriptions.Item>
+                        <Descriptions.Item label={<><CalendarOutlined /> {t.profile.memberSince}</>}>{profile?.createdAt ? new Date(profile.createdAt).toLocaleDateString(language === 'km' ? 'km-KH' : 'en-US') : t.profile.unknown}</Descriptions.Item>
                     </Descriptions>
                     <Button type="primary" icon={<EditOutlined />} style={{ marginTop: 24, background: "#FF006E", border: "none", borderRadius: 8, height: 40 }} onClick={handleEdit}>{t.profile.editProfile}</Button>
                 </Card>
@@ -164,7 +164,7 @@ export const ProfilePage: React.FC = () => {
                                         </div>
                                         <div style={{ marginTop: 8 }}>
                                             <Text style={{ fontSize: 12, color: "#999" }}>
-                                                {new Date(n.timestamp).toLocaleString()}
+                                                {new Date(n.timestamp).toLocaleString(language === 'km' ? 'km-KH' : 'en-US')}
                                             </Text>
                                         </div>
                                     </div>

@@ -614,12 +614,12 @@ export const ShopLayout: React.FC<ShopLayoutProps> = ({ children, searchQuery, s
                             <div>
                                 <Text style={{ color: "#FF006E", fontSize: 13, fontWeight: 600 }}>{t.footer.monFri}</Text>
                                 <br />
-                                <Text style={{ color: isDark ? "#aaa" : "#ccc", fontSize: 14 }}>8:00 AM — 8:00 PM</Text>
+                                <Text style={{ color: isDark ? "#aaa" : "#ccc", fontSize: 14 }}>{t.footer.monFriTime}</Text>
                             </div>
                             <div>
                                 <Text style={{ color: "#FF006E", fontSize: 13, fontWeight: 600 }}>{t.footer.saturday}</Text>
                                 <br />
-                                <Text style={{ color: isDark ? "#aaa" : "#ccc", fontSize: 14 }}>9:00 AM — 6:00 PM</Text>
+                                <Text style={{ color: isDark ? "#aaa" : "#ccc", fontSize: 14 }}>{t.footer.satTime}</Text>
                             </div>
                             <div>
                                 <Text style={{ color: "#FF006E", fontSize: 13, fontWeight: 600 }}>{t.footer.sunday}</Text>
@@ -647,10 +647,10 @@ export const ShopLayout: React.FC<ShopLayoutProps> = ({ children, searchQuery, s
                                 </div>
                                 <div>
                                     <Text style={{ color: isDark ? "#aaa" : "#ccc", fontSize: 13, display: "block" }}>
-                                        #123, Street 456, Sangkat Tuol Kouk
+                                        {t.footer.addressLine1}
                                     </Text>
                                     <Text style={{ color: isDark ? "#aaa" : "#ccc", fontSize: 13, display: "block" }}>
-                                        Khan Tuol Kouk, Phnom Penh, Cambodia
+                                        {t.footer.addressLine2}
                                     </Text>
                                 </div>
                             </div>

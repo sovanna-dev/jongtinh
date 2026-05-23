@@ -21,6 +21,7 @@
     "cart": "Cart",
     "notifications": "Notifications",
     "wishlist": "My Wishlist",
+    "home": "Home",
     "chartsTooltip": "Website State / Live Charts",
     "loggedOut": "Logged out successfully"
   },
@@ -74,6 +75,7 @@
     "newsletterDesc2": "special offers.",
     "emailPlaceholder": "Your email address",
     "signUp": "Sign Up",
+    "linkCopied": "Promo code copied to clipboard!",
     "trending": "TRENDING"
   },
   "product": {
@@ -98,7 +100,9 @@
     "movedToCart": "Moved to cart and removed from wishlist!",
     "removedFromWishlist": "Removed from wishlist",
     "addedToWishlist": "Added to wishlist",
-    "inStockCount": "{count} items in stock"
+    "inStockCount": "{count} items in stock",
+    "verifiedReviews": "verified reviews",
+    "savePercent": "Save {percent}%"
   },
   "cart": {
     "title": "Shopping Cart",
@@ -292,10 +296,14 @@
     "contact": "Contact",
     "businessHours": "🕐 Business Hours",
     "monFri": "Monday — Friday",
+    "monFriTime": "8:00 AM — 8:00 PM",
     "saturday": "Saturday",
+    "satTime": "9:00 AM — 6:00 PM",
     "sunday": "Sunday",
     "closed": "Closed",
     "contactUs": "📍 Contact Us",
+    "addressLine1": "#123, Street 456, Sangkat Tuol Kouk",
+    "addressLine2": "Khan Tuol Kouk, Phnom Penh, Cambodia",
     "privacy": "Privacy Policy",
     "terms": "Terms of Service",
     "refund": "Refund Policy",
@@ -375,6 +383,22 @@
     "notFound": "Style collection not found",
     "showFilters": "Show Filters"
   },
+  "adminOrders": {
+    "title": "Orders Management",
+    "orderId": "Order ID",
+    "date": "Date",
+    "customer": "Customer",
+    "total": "Total",
+    "status": "Status",
+    "actions": "Actions",
+    "filter": {
+      "pending": "Pending",
+      "processing": "Processing",
+      "shipping": "Shipping",
+      "delivered": "Delivered",
+      "cancelled": "Cancelled"
+    }
+  },
   "flashSale": {
     "title": "FLASH SALE",
     "subtitle": "Up to {percent} OFF on selected items!",
@@ -388,5 +412,52 @@
     "available": "{count} available",
     "empty": "No flash sale items at the moment.",
     "viewAll": "View All Deals →"
+  },
+  "tickets": {
+    "title": "Support Tickets",
+    "ticketDetails": "Ticket Details",
+    "subject": "Subject",
+    "message": "Message",
+    "category": "Category",
+    "relatedOrder": "Related Order",
+    "userInfo": "User Information",
+    "name": "Name",
+    "email": "Email",
+    "conversation": "Conversation",
+    "adminSupport": "Admin Support",
+    "customer": "Customer",
+    "noReplies": "No replies yet",
+    "replyToTicket": "Reply to Ticket",
+    "typeReply": "Type your reply here...",
+    "sendReply": "Send Reply",
+    "runBot": "Run Bot Assistant",
+    "closeTicket": "Close Ticket",
+    "status": {
+      "OPEN": "OPEN",
+      "IN_PROGRESS": "IN PROGRESS",
+      "RESOLVED": "RESOLVED",
+      "CLOSED": "CLOSED"
+    },
+    "priority": {
+      "LOW": "LOW",
+      "MEDIUM": "MEDIUM",
+      "HIGH": "HIGH"
+    },
+    "filterStatus": "Filter by Status",
+    "filterPriority": "Filter by Priority",
+    "createdAt": "Created At",
+    "actions": "Actions",
+    "messages": {
+      "loginToReply": "You must be logged in to reply",
+      "replySent": "Reply sent successfully",
+      "botTriggered": "Bot analysis triggered",
+      "ticketClosed": "Ticket closed"
+    },
+    "autoReplies": {
+      "order": "Hello! If you're inquiring about an order, please ensure you've provided the order ID. You can track your order status in the 'Orders' section of your profile.",
+      "refund": "We've received your refund request. Our team typically reviews these within 2-3 business days. Please keep an eye on your email for updates.",
+      "delivery": "Shipping times vary by location, but most orders arrive within 3-5 business days. You'll receive a notification once your package is on its way!",
+      "botPrefix": "[Auto-Reply Bot]: "
+    }
   }
 }
