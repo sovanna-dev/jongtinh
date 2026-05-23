@@ -13,6 +13,7 @@ import { RoleProvider, useRole } from "./contexts/RoleContext";
 import { CartProvider } from "./contexts/CartContext";
 import { WishlistProvider } from "./contexts/WishlistContext";
 import { CustomerAuthProvider } from "./contexts/CustomerAuthContext";
+import { LanguageProvider } from "./contexts/LanguageContext";
 
 // Admin Pages
 import { BannerList } from "./pages/promotion-banners/list";
@@ -262,15 +263,17 @@ function App() {
                 <ColorModeContextProvider>
                     <AntdApp>
                         <DevtoolsProvider>
-                            <CustomerAuthProvider>
-                                <WishlistProvider>
-                                    <CartProvider>
-                                        <RoleProvider>
-                                            <AppContent />
-                                        </RoleProvider>
-                                    </CartProvider>
-                                </WishlistProvider>
-                            </CustomerAuthProvider>
+                            <LanguageProvider>
+                                <CustomerAuthProvider>
+                                    <WishlistProvider>
+                                        <CartProvider>
+                                            <RoleProvider>
+                                                <AppContent />
+                                            </RoleProvider>
+                                        </CartProvider>
+                                    </WishlistProvider>
+                                </CustomerAuthProvider>
+                            </LanguageProvider>
                             <DevtoolsPanel />
                         </DevtoolsProvider>
                     </AntdApp>

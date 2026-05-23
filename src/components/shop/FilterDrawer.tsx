@@ -3,6 +3,7 @@ import { Drawer, Space, Button, Checkbox, Divider, Slider, Typography, Tag, Skel
 import { FilterOutlined, ReloadOutlined } from "@ant-design/icons";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "../../firebase";
+import { useLanguage } from "../../contexts/LanguageContext";
 
 const { Title, Text } = Typography;
 
@@ -18,6 +19,7 @@ interface FilterDrawerProps {
 export const FilterDrawer: React.FC<FilterDrawerProps> = ({
     visible, onClose, filters, onFilterChange, onReset, isDark
 }) => {
+    const { t } = useLanguage();
     const [availableBrands, setAvailableBrands] = useState<string[]>([]);
     const [loadingBrands, setLoadingBrands] = useState(false);
 
@@ -59,7 +61,7 @@ export const FilterDrawer: React.FC<FilterDrawerProps> = ({
             title={
                 <Space>
                     <FilterOutlined />
-                    <span>Filter Products</span>
+                    <span>{t.home.filters}</span>
                 </Space>
             }
             placement="right"
@@ -68,7 +70,7 @@ export const FilterDrawer: React.FC<FilterDrawerProps> = ({
             width={320}
             extra={
                 <Button type="text" icon={<ReloadOutlined />} onClick={onReset}>
-                    Reset
+                    {t.home.reset || "Reset"}
                 </Button>
             }
             styles={{
@@ -79,7 +81,7 @@ export const FilterDrawer: React.FC<FilterDrawerProps> = ({
             <Space direction="vertical" size={24} style={{ width: "100%" }}>
                 {/* Price Range */}
                 <div>
-                    <Title level={5}>Price Range</Title>
+                    <Title level={5}>{t.home.priceRange || "Price Range"}</Title>
                     <Slider
                         range
                         defaultValue={[0, 2000]}
@@ -97,7 +99,7 @@ export const FilterDrawer: React.FC<FilterDrawerProps> = ({
 
                 {/* Dynamic Attributes: Brands */}
                 <div>
-                    <Title level={5}>Brands</Title>
+                    <Title level={5}>{t.home.brands || "Brands"}</Title>
                     {loadingBrands ? (
                         <Skeleton active paragraph={{ rows: 3 }} title={false} />
                     ) : (
@@ -112,17 +114,18 @@ export const FilterDrawer: React.FC<FilterDrawerProps> = ({
 
                 {/* Availability */}
                 <div>
-                    <Title level={5}>Availability</Title>
+                    <Title level={5}>{t.home.availability || "Availability"}</Title>
                     <Checkbox
+                        checked={filters.inStock}
                         onChange={(e) => onFilterChange({ ...filters, inStock: e.target.checked })}
                     >
-                        In Stock Only
+                        {t.home.inStockOnly || "In Stock Only"}
                     </Checkbox>
                 </div>
 
                 {/* Ratings */}
                 <div>
-                    <Title level={5}>Minimum Rating</Title>
+                    <Title level={5}>{t.home.minRating || "Minimum Rating"}</Title>
                     <Space wrap>
                         {[4, 3, 2].map(star => (
                             <Tag.CheckableTag
@@ -131,7 +134,7 @@ export const FilterDrawer: React.FC<FilterDrawerProps> = ({
                                 onChange={() => onFilterChange({ ...filters, minRating: star })}
                                 style={{ borderRadius: 12, padding: "4px 12px" }}
                             >
-                                {star}★ & Up
+                                {star}★ {t.home.andUp || "& Up"}
                             </Tag.CheckableTag>
                         ))}
                     </Space>
@@ -144,7 +147,7 @@ export const FilterDrawer: React.FC<FilterDrawerProps> = ({
                 borderTop: isDark ? "1px solid #333" : "1px solid #f0f0f0"
             }}>
                 <Button type="primary" block size="large" onClick={onClose} style={{ borderRadius: 12, height: 48, background: "#FF006E", border: "none" }}>
-                    Show Results
+                    {t.home.showResults || "Show Results"}
                 </Button>
             </div>
         </Drawer>

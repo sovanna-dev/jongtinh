@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Image } from "antd";
 import Lottie from "lottie-react";
 import { ICategory } from "../../interfaces";
+import { useLanguage } from "../../contexts/LanguageContext";
 
 // Map category names to Lottie animation files
 const categoryAnimations: Record<string, string> = {
@@ -21,6 +22,7 @@ interface CategoryChipProps {
 }
 
 export const CategoryChip: React.FC<CategoryChipProps> = ({ cat, isSelected, onClick, isDark }) => {
+    const { t } = useLanguage();
     const [animationData, setAnimationData] = useState<any>(null);
 
     useEffect(() => {
@@ -42,6 +44,8 @@ export const CategoryChip: React.FC<CategoryChipProps> = ({ cat, isSelected, onC
         return isDark ? "rgba(255, 255, 255, 0.7)" : "#666";
     };
 
+    const categoryName = cat ? (t.categories[cat.name as keyof typeof t.categories] || cat.name) : t.home.allProducts;
+
     return (
         <div
             onClick={onClick}
@@ -58,7 +62,7 @@ export const CategoryChip: React.FC<CategoryChipProps> = ({ cat, isSelected, onC
                 whiteSpace: "nowrap", flexShrink: 0, userSelect: "none",
             }}
         >
-            {cat ? (
+            {cat && (
                 <>
                     {animationData ? (
                         <div style={{ width: 24, height: 24 }}>
@@ -78,11 +82,9 @@ export const CategoryChip: React.FC<CategoryChipProps> = ({ cat, isSelected, onC
                             />
                         </div>
                     ) : null}
-                    {cat.name}
                 </>
-            ) : (
-                "All Products"
             )}
+            {categoryName}
         </div>
     );
 };

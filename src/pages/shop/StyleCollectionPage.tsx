@@ -10,10 +10,11 @@ import { doc, getDoc, collection, query, where, getDocs } from "firebase/firesto
 import { db } from "../../firebase";
 import { IStyle } from "../../interfaces";
 import { message, Tooltip } from "antd";
+import { useLanguage } from "../../contexts/LanguageContext";
 
 const { Title, Text, Paragraph } = Typography;
 
-const GalleryItem: React.FC<{ img: string }> = ({ img }) => {
+const GalleryItem: React.FC<{ img: string; buyNowText: string }> = ({ img, buyNowText }) => {
     const [hovered, setHovered] = useState(false);
     return (
         <div
@@ -52,7 +53,7 @@ const GalleryItem: React.FC<{ img: string }> = ({ img }) => {
                         display: "inline-block",
                         boxShadow: "0 4px 15px rgba(0,0,0,0.3)"
                     }}>
-                        BUY NOW
+                        {buyNowText}
                     </div>
                 </div>
             </div>
@@ -61,6 +62,7 @@ const GalleryItem: React.FC<{ img: string }> = ({ img }) => {
 };
 
 export const StyleCollectionPage: React.FC = () => {
+    const { t } = useLanguage();
     const { style } = useParams<{ style: string }>();
     const navigate = useNavigate();
     const styleKey = (style || "acubi").toLowerCase();
@@ -126,17 +128,17 @@ export const StyleCollectionPage: React.FC = () => {
                 url: url,
             }).catch(() => {
                 navigator.clipboard.writeText(url);
-                message.success("Link copied to clipboard!");
+                message.success(t.style.linkCopied);
             });
         } else {
             navigator.clipboard.writeText(url);
-            message.success("Link copied to clipboard!");
+            message.success(t.style.linkCopied);
         }
     };
 
     if (loadingStyle) return <ShopLayout searchQuery={searchQuery} setSearchQuery={setSearchQuery} onSearch={() => {}}><div style={{ textAlign: "center", padding: "120px 0" }}><Spin size="large" /></div></ShopLayout>;
 
-    if (!styleMeta) return <ShopLayout searchQuery={searchQuery} setSearchQuery={setSearchQuery} onSearch={() => {}}><Empty description="Style collection not found" style={{ padding: "100px 0" }}><Button type="primary" onClick={() => navigate("/shop")}>Back to Shop</Button></Empty></ShopLayout>;
+    if (!styleMeta) return <ShopLayout searchQuery={searchQuery} setSearchQuery={setSearchQuery} onSearch={() => {}}><Empty description={t.style.notFound} style={{ padding: "100px 0" }}><Button type="primary" onClick={() => navigate("/shop")}>{t.product.backToShop}</Button></Empty></ShopLayout>;
 
     return (
         <ShopLayout
@@ -185,16 +187,16 @@ export const StyleCollectionPage: React.FC = () => {
                         className="style-breadcrumb"
                         separator={<RightOutlined style={{ fontSize: 10, color: "#ccc" }} />}
                         items={[
-                            { title: <span onClick={() => navigate("/shop")} style={{ cursor: "pointer", color: "#888" }}>Homepage</span> },
-                            { title: <span style={{ fontWeight: 600 }}>{styleMeta.name} Style</span> },
+                            { title: <span onClick={() => navigate("/shop")} style={{ cursor: "pointer", color: "#888" }}>{t.style.homepage}</span> },
+                            { title: <span style={{ fontWeight: 600 }}>{t.style.title.replace("{name}", styleMeta.name)}</span> },
                         ]}
                         style={{ marginBottom: 12 }}
                     />
                     <Title level={1} className="style-main-title" style={{ margin: 0, fontWeight: 800, fontSize: 42, letterSpacing: -1 }}>
-                        {styleMeta.name} Style
+                        {t.style.title.replace("{name}", styleMeta.name)}
                     </Title>
                 </div>
-                <Tooltip title="Share Collection">
+                <Tooltip title={t.style.shareCollection}>
                     <Button
                         icon={<ShareAltOutlined />}
                         onClick={handleShare}
@@ -209,7 +211,7 @@ export const StyleCollectionPage: React.FC = () => {
                 <div style={{ marginBottom: 80 }}>
                     <div style={{ marginBottom: 24, padding: "0 8px" }}>
                         <Text style={{ fontWeight: 700, fontSize: 13, color: "#999", letterSpacing: 1.5 }}>
-                            STYLED BY <span style={{ color: "#111" }}>#{styleMeta.slug?.toUpperCase() || styleMeta.name.toUpperCase()}</span>
+                            {t.style.styledBy} <span style={{ color: "#111" }}>#{styleMeta.slug?.toUpperCase() || styleMeta.name.toUpperCase()}</span>
                         </Text>
                     </div>
 
@@ -219,13 +221,13 @@ export const StyleCollectionPage: React.FC = () => {
                         marginBottom: 32
                     }}>
                         {styleMeta.gallery.map((img, idx) => (
-                            <GalleryItem key={idx} img={img} />
+                            <GalleryItem key={idx} img={img} buyNowText={t.product.buyNow} />
                         ))}
                     </div>
 
                     <div style={{ textAlign: "center" }}>
                         <Button style={{ borderRadius: 0, border: "1px solid #111", height: 40, padding: "0 32px", fontWeight: 600, fontSize: 12 }}>
-                            Load More
+                            {t.style.loadMore}
                         </Button>
                     </div>
                 </div>
@@ -240,11 +242,11 @@ export const StyleCollectionPage: React.FC = () => {
                 padding: "0 8px",
             }}>
                 <Dropdown menu={{ items: [
-                    { key: "createdAt", label: "Newest Arrivals" },
-                    { key: "priceLowHigh", label: "Price: Low to High" }
+                    { key: "createdAt", label: t.home.newest },
+                    { key: "priceLowHigh", label: t.home.priceLow }
                 ], onClick: ({ key }) => setSortBy(key) }} trigger={["click"]}>
                     <Button type="text" style={{ padding: 0, fontWeight: 600, fontSize: 16, display: "flex", alignItems: "center", gap: 8 }}>
-                        {sortBy === "createdAt" ? "Newest Arrivals" : "Price: Low to High"} <DownOutlined style={{ fontSize: 12 }} />
+                        {sortBy === "createdAt" ? t.home.newest : t.home.priceLow} <DownOutlined style={{ fontSize: 12 }} />
                     </Button>
                 </Dropdown>
 
@@ -254,7 +256,7 @@ export const StyleCollectionPage: React.FC = () => {
                     onClick={() => setIsFilterOpen(true)}
                     style={{ fontWeight: 600, fontSize: 16, display: "flex", alignItems: "center", gap: 8 }}
                 >
-                    Show Filters
+                    {t.style.showFilters}
                 </Button>
             </div>
 
@@ -270,7 +272,7 @@ export const StyleCollectionPage: React.FC = () => {
                 </Row>
             ) : (
                 <div style={{ textAlign: "center", padding: "100px 48px", background: "#f9f9f9", borderRadius: 20 }}>
-                    <Empty description={<Title level={4} style={{ fontWeight: 700 }}>No items found in this style</Title>} />
+                    <Empty description={<Title level={4} style={{ fontWeight: 700 }}>{t.style.noItems}</Title>} />
                 </div>
             )}
 
@@ -296,7 +298,7 @@ export const StyleCollectionPage: React.FC = () => {
                         onClick={loadMore}
                         style={{ borderRadius: 8, height: 48, padding: "0 40px", fontWeight: 700, border: "2px solid #111" }}
                     >
-                        Load More Products
+                        {t.style.loadMoreProducts}
                     </Button>
                 </div>
             )}

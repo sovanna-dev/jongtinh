@@ -17,6 +17,7 @@ import { useCustomerAuth } from "../../contexts/CustomerAuthContext";
 import { useCart } from "../../contexts/CartContext";
 import { useWishlist } from "../../contexts/WishlistContext";
 import { ColorModeContext } from "../../contexts/color-mode";
+import { useLanguage } from "../../contexts/LanguageContext";
 import { INotification } from "../../interfaces";
 import logo from "../../images/logo.webp";
 import { AuthModal } from "../../components/shop/AuthModal";
@@ -37,6 +38,7 @@ interface ShopLayoutProps {
 export const ShopLayout: React.FC<ShopLayoutProps> = ({ children, searchQuery, setSearchQuery, onSearch }) => {
     const navigate = useNavigate();
     const { mode, setMode } = React.useContext(ColorModeContext);
+    const { language, setLanguage, t } = useLanguage();
     const [cartOpen, setCartOpen] = useState(false);
     const [user, setUser] = useState<User | null>(auth.currentUser);
     const [notifications, setNotifications] = useState<INotification[]>([]);
@@ -142,7 +144,7 @@ export const ShopLayout: React.FC<ShopLayoutProps> = ({ children, searchQuery, s
 
     const handleLogout = async () => {
         await signOut(auth);
-        message.success("Logged out");
+        message.success(t.header.loggedOut);
         navigate("/shop");
     };
 
@@ -151,7 +153,7 @@ export const ShopLayout: React.FC<ShopLayoutProps> = ({ children, searchQuery, s
         ...(isAdmin ? [{
             key: "dashboard",
             icon: <DashboardOutlined />,
-            label: "Dashboard",
+            label: t.header.dashboard,
             onClick: () => {
                 window.location.hash = "#/admin";
             },
@@ -159,26 +161,26 @@ export const ShopLayout: React.FC<ShopLayoutProps> = ({ children, searchQuery, s
         {
             key: "orders",
             icon: <OrderedListOutlined />,
-            label: "My Orders",
+            label: t.header.myOrders,
             onClick: () => navigate("/shop/orders"),
         },
         {
             key: "wishlist",
             icon: <HeartOutlined />,
-            label: "My Wishlist",
+            label: t.header.wishlist,
             onClick: () => navigate("/shop/wishlist"),
         },
         {
             key: "profile",
             icon: <ProfileOutlined />,
-            label: "My Profile",
+            label: t.header.myProfile,
             onClick: () => navigate("/shop/profile"),
         },
         { type: "divider" as const },
         {
             key: "logout",
             icon: <LogoutOutlined />,
-            label: "Logout",
+            label: t.header.logout,
             danger: true,
             onClick: handleLogout,
         },
@@ -269,7 +271,7 @@ export const ShopLayout: React.FC<ShopLayoutProps> = ({ children, searchQuery, s
                 }}>
                     <div style={{ position: "relative", width: "100%", maxWidth: 600 }}>
                         <Input
-                            placeholder="Search..."
+                            placeholder={t.header.search}
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             onPressEnter={onSearch}
@@ -296,6 +298,25 @@ export const ShopLayout: React.FC<ShopLayoutProps> = ({ children, searchQuery, s
                             onClick={() => navigate("/shop/search")}
                         />
                     )}
+
+                    <Button
+                        type="text"
+                        onClick={() => setLanguage(language === "en" ? "km" : "en")}
+                        style={{
+                            height: 44,
+                            width: 44,
+                            fontWeight: 700,
+                            fontSize: 14,
+                            color: isDark ? "#fff" : "#333",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            borderRadius: "50%",
+                        }}
+                    >
+                        {language === "en" ? "ខ្មែរ" : "EN"}
+                    </Button>
+
                     <Button
                         type="text"
                         shape="circle"
@@ -305,7 +326,7 @@ export const ShopLayout: React.FC<ShopLayoutProps> = ({ children, searchQuery, s
                     />
 
                     {isAdmin && (
-                        <Tooltip title="Website State / Live Charts">
+                        <Tooltip title={t.header.chartsTooltip}>
                             <Button
                                 type="text"
                                 shape="circle"
@@ -316,7 +337,7 @@ export const ShopLayout: React.FC<ShopLayoutProps> = ({ children, searchQuery, s
                         </Tooltip>
                     )}
 
-                    <Tooltip title="Wishlist">
+                    <Tooltip title={t.header.wishlist}>
                         <Badge count={favorites.size} showZero offset={[-2, 2]} color="#FF006E">
                             <HeartOutlined
                                 style={{ fontSize: 26, cursor: "pointer", color: isDark ? "#fff" : "#333" }}
@@ -337,10 +358,10 @@ export const ShopLayout: React.FC<ShopLayoutProps> = ({ children, searchQuery, s
                             placement="bottomRight"
                             title={
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '4px 0' }}>
-                                    <Text strong>Recent Notifications</Text>
+                                    <Text strong>{t.notifications.title}</Text>
                                     {unreadCount > 0 && (
                                         <Button type="link" size="small" onClick={markAllAsRead} style={{ fontSize: 12, padding: 0 }}>
-                                            Mark all as read
+                                            {t.notifications.markAllAsRead}
                                         </Button>
                                     )}
                                 </div>
@@ -399,7 +420,7 @@ export const ShopLayout: React.FC<ShopLayoutProps> = ({ children, searchQuery, s
                                         onClick={() => navigate('/shop/orders')}
                                         style={{ marginTop: 8, borderTop: '1px solid #f0f0f0', borderRadius: 0 }}
                                     >
-                                        View All Notifications
+                                        {t.notifications.viewAll}
                                     </Button>
                                 </div>
                             }
@@ -438,7 +459,7 @@ export const ShopLayout: React.FC<ShopLayoutProps> = ({ children, searchQuery, s
                             }}
                             icon={<UserOutlined />}
                         >
-                            Login
+                            {t.header.login}
                         </Button>
                     )}
 
@@ -491,7 +512,7 @@ export const ShopLayout: React.FC<ShopLayoutProps> = ({ children, searchQuery, s
                         </Space>
 
                         <Text style={{ color: isDark ? "#aaa" : "#ccc", fontSize: 14, lineHeight: 1.8, display: "block", marginBottom: 24 }}>
-                            Your trusted online shopping destination in Cambodia. We offer a wide range of quality products at competitive prices with reliable delivery nationwide.
+                            {t.footer.description}
                         </Text>
 
                         {/* Social Media Icons */}
@@ -546,64 +567,64 @@ export const ShopLayout: React.FC<ShopLayoutProps> = ({ children, searchQuery, s
                     {/* Column 2: Quick Links */}
                     <div>
                         <Title level={5} style={{ color: "#fff", marginBottom: 20, fontWeight: 700, fontSize: 16 }}>
-                            Quick Links
+                            {t.footer.quickLinks}
                         </Title>
                         <Space direction="vertical" size={12}>
                             <a href="/shop" style={{ color: isDark ? "#aaa" : "#ccc", fontSize: 14, textDecoration: "none", transition: "color 0.3s" }}
                                 onMouseEnter={(e) => { e.currentTarget.style.color = "#FF006E"; }}
                                 onMouseLeave={(e) => { e.currentTarget.style.color = isDark ? "#aaa" : "#ccc"; }}
-                            >Home</a>
+                            >{t.footer.home}</a>
                             <a href="/shop/orders" style={{ color: isDark ? "#aaa" : "#ccc", fontSize: 14, textDecoration: "none", transition: "color 0.3s" }}
                                 onMouseEnter={(e) => { e.currentTarget.style.color = "#FF006E"; }}
                                 onMouseLeave={(e) => { e.currentTarget.style.color = isDark ? "#aaa" : "#ccc"; }}
-                            >My Orders</a>
+                            >{t.footer.orders}</a>
                             <a href="/shop/wishlist" style={{ color: isDark ? "#aaa" : "#ccc", fontSize: 14, textDecoration: "none", transition: "color 0.3s" }}
                                 onMouseEnter={(e) => { e.currentTarget.style.color = "#FF006E"; }}
                                 onMouseLeave={(e) => { e.currentTarget.style.color = isDark ? "#aaa" : "#ccc"; }}
-                            >My Wishlist</a>
+                            >{t.footer.wishlist}</a>
                             <a href="/shop/cart" style={{ color: isDark ? "#aaa" : "#ccc", fontSize: 14, textDecoration: "none", transition: "color 0.3s" }}
                                 onMouseEnter={(e) => { e.currentTarget.style.color = "#FF006E"; }}
                                 onMouseLeave={(e) => { e.currentTarget.style.color = isDark ? "#aaa" : "#ccc"; }}
-                            >Shopping Cart</a>
+                            >{t.footer.cart}</a>
                             <a href="/shop/profile" style={{ color: isDark ? "#aaa" : "#ccc", fontSize: 14, textDecoration: "none", transition: "color 0.3s" }}
                                 onMouseEnter={(e) => { e.currentTarget.style.color = "#FF006E"; }}
                                 onMouseLeave={(e) => { e.currentTarget.style.color = isDark ? "#aaa" : "#ccc"; }}
-                            >My Profile</a>
+                            >{t.footer.profile}</a>
                             <a href="/shop/faq" style={{ color: isDark ? "#aaa" : "#ccc", fontSize: 14, textDecoration: "none", transition: "color 0.3s" }}
                                 onMouseEnter={(e) => { e.currentTarget.style.color = "#FF006E"; }}
                                 onMouseLeave={(e) => { e.currentTarget.style.color = isDark ? "#aaa" : "#ccc"; }}
-                            >FAQ</a>
+                            >{t.footer.faq}</a>
                             <a href="#" style={{ color: isDark ? "#aaa" : "#ccc", fontSize: 14, textDecoration: "none", transition: "color 0.3s" }}
                                 onMouseEnter={(e) => { e.currentTarget.style.color = "#FF006E"; }}
                                 onMouseLeave={(e) => { e.currentTarget.style.color = isDark ? "#aaa" : "#ccc"; }}
-                            >About Us</a>
+                            >{t.footer.about}</a>
                             <a href="#" style={{ color: isDark ? "#aaa" : "#ccc", fontSize: 14, textDecoration: "none", transition: "color 0.3s" }}
                                 onMouseEnter={(e) => { e.currentTarget.style.color = "#FF006E"; }}
                                 onMouseLeave={(e) => { e.currentTarget.style.color = isDark ? "#aaa" : "#ccc"; }}
-                            >Contact</a>
+                            >{t.footer.contact}</a>
                         </Space>
                     </div>
 
                     {/* Column 3: Business Hours */}
                     <div>
                         <Title level={5} style={{ color: "#fff", marginBottom: 20, fontWeight: 700, fontSize: 16 }}>
-                            🕐 Business Hours
+                            {t.footer.businessHours}
                         </Title>
                         <Space direction="vertical" size={10}>
                             <div>
-                                <Text style={{ color: "#FF006E", fontSize: 13, fontWeight: 600 }}>Monday — Friday</Text>
+                                <Text style={{ color: "#FF006E", fontSize: 13, fontWeight: 600 }}>{t.footer.monFri}</Text>
                                 <br />
                                 <Text style={{ color: isDark ? "#aaa" : "#ccc", fontSize: 14 }}>8:00 AM — 8:00 PM</Text>
                             </div>
                             <div>
-                                <Text style={{ color: "#FF006E", fontSize: 13, fontWeight: 600 }}>Saturday</Text>
+                                <Text style={{ color: "#FF006E", fontSize: 13, fontWeight: 600 }}>{t.footer.saturday}</Text>
                                 <br />
                                 <Text style={{ color: isDark ? "#aaa" : "#ccc", fontSize: 14 }}>9:00 AM — 6:00 PM</Text>
                             </div>
                             <div>
-                                <Text style={{ color: "#FF006E", fontSize: 13, fontWeight: 600 }}>Sunday</Text>
+                                <Text style={{ color: "#FF006E", fontSize: 13, fontWeight: 600 }}>{t.footer.sunday}</Text>
                                 <br />
-                                <Text style={{ color: isDark ? "#aaa" : "#ccc", fontSize: 14 }}>Closed</Text>
+                                <Text style={{ color: isDark ? "#aaa" : "#ccc", fontSize: 14 }}>{t.footer.closed}</Text>
                             </div>
                         </Space>
                     </div>
@@ -611,7 +632,7 @@ export const ShopLayout: React.FC<ShopLayoutProps> = ({ children, searchQuery, s
                     {/* Column 4: Contact Info */}
                     <div>
                         <Title level={5} style={{ color: "#fff", marginBottom: 20, fontWeight: 700, fontSize: 16 }}>
-                            📍 Contact Us
+                            {t.footer.contactUs}
                         </Title>
                         <Space direction="vertical" size={16} style={{ width: "100%" }}>
                             <div style={{ display: "flex", gap: 12 }}>
@@ -685,12 +706,12 @@ export const ShopLayout: React.FC<ShopLayoutProps> = ({ children, searchQuery, s
                 }}>
                     <div style={{ maxWidth: 1300, margin: "0 auto", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }}>
                         <Text style={{ color: isDark ? "#777" : "#888", fontSize: 13 }}>
-                            © {new Date().getFullYear()} <span style={{ color: "#FF006E", fontWeight: 600 }}>JongTinh</span> (ចង់ទិញ). All rights reserved.
+                            © {new Date().getFullYear()} <span style={{ color: "#FF006E", fontWeight: 600 }}>JongTinh</span> (ចង់ទិញ). {t.footer.rights}
                         </Text>
                         <Space size={24}>
-                            <a href="#" style={{ color: isDark ? "#777" : "#888", fontSize: 13, textDecoration: "none" }}>Privacy Policy</a>
-                            <a href="#" style={{ color: isDark ? "#777" : "#888", fontSize: 13, textDecoration: "none" }}>Terms of Service</a>
-                            <a href="#" style={{ color: isDark ? "#777" : "#888", fontSize: 13, textDecoration: "none" }}>Refund Policy</a>
+                            <a href="#" style={{ color: isDark ? "#777" : "#888", fontSize: 13, textDecoration: "none" }}>{t.footer.privacy}</a>
+                            <a href="#" style={{ color: isDark ? "#777" : "#888", fontSize: 13, textDecoration: "none" }}>{t.footer.terms}</a>
+                            <a href="#" style={{ color: isDark ? "#777" : "#888", fontSize: 13, textDecoration: "none" }}>{t.footer.refund}</a>
                         </Space>
                     </div>
                 </div>
@@ -700,7 +721,7 @@ export const ShopLayout: React.FC<ShopLayoutProps> = ({ children, searchQuery, s
                 title={
                     <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                         <ShoppingCartOutlined style={{ color: "#FF006E" }} />
-                        <span>My Shopping Cart</span>
+                        <span>{t.cart.title}</span>
                     </div>
                 }
                 open={cartOpen}
@@ -725,9 +746,9 @@ export const ShopLayout: React.FC<ShopLayoutProps> = ({ children, searchQuery, s
                         }}>
                             <ShoppingCartOutlined style={{ fontSize: 48, color: "#d9d9d9" }} />
                         </div>
-                        <Title level={4}>Your cart is empty</Title>
+                        <Title level={4}>{t.cart.empty}</Title>
                         <Text type="secondary" style={{ display: "block", marginBottom: 32 }}>
-                            Looks like you haven't added anything to your cart yet.
+                            {t.cart.empty}
                         </Text>
                         <Button
                             type="primary"
@@ -735,7 +756,7 @@ export const ShopLayout: React.FC<ShopLayoutProps> = ({ children, searchQuery, s
                             onClick={() => setCartOpen(false)}
                             style={{ background: "#FF006E", borderRadius: 12, border: "none", height: 48, padding: "0 32px" }}
                         >
-                            Start Shopping
+                            {t.cart.startShopping}
                         </Button>
                     </div>
                 ) : (
@@ -774,7 +795,7 @@ export const ShopLayout: React.FC<ShopLayoutProps> = ({ children, searchQuery, s
                                                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
                                                     <Text strong style={{ fontSize: 15, display: "block", width: "85%" }} ellipsis>{item.product.name}</Text>
                                                     {item.product.selectedSize && (
-                                                        <Text style={{ fontSize: 12, color: "#FF006E", display: "block" }}>Size: {item.product.selectedSize}</Text>
+                                                        <Text style={{ fontSize: 12, color: "#FF006E", display: "block" }}>{t.product.size}: {item.product.selectedSize}</Text>
                                                     )}
                                                     {item.product.selectedColor && (
                                                         <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 2 }}>
@@ -843,11 +864,11 @@ export const ShopLayout: React.FC<ShopLayoutProps> = ({ children, searchQuery, s
                             boxShadow: "0 -4px 12px rgba(0,0,0,0.03)"
                         }}>
                             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
-                                <Text type="secondary">Subtotal</Text>
+                                <Text type="secondary">{t.cart.subtotal}</Text>
                                 <Text strong>${cartTotal.toFixed(2)}</Text>
                             </div>
                             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 20 }}>
-                                <Title level={4} style={{ margin: 0 }}>Total Amount</Title>
+                                <Title level={4} style={{ margin: 0 }}>{t.cart.total}</Title>
                                 <Title level={4} style={{ margin: 0, color: "#FF006E" }}>${cartTotal.toFixed(2)}</Title>
                             </div>
 
@@ -867,7 +888,7 @@ export const ShopLayout: React.FC<ShopLayoutProps> = ({ children, searchQuery, s
                                         boxShadow: "0 8px 16px rgba(255, 0, 110, 0.2)"
                                     }}
                                 >
-                                    Proceed to Checkout
+                                    {t.cart.checkout}
                                 </Button>
                                 <Button
                                     type="default"
@@ -880,7 +901,7 @@ export const ShopLayout: React.FC<ShopLayoutProps> = ({ children, searchQuery, s
                                         fontWeight: 600
                                     }}
                                 >
-                                    View Full Cart
+                                    {t.cart.viewCart}
                                 </Button>
                             </Space>
                         </div>

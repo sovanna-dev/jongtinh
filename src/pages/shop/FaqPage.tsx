@@ -5,11 +5,13 @@ import { ShopLayout } from "./ShopLayout";
 import { collection, query, orderBy, onSnapshot, doc, updateDoc, increment } from "firebase/firestore";
 import { db } from "../../firebase";
 import { IFaq } from "../../interfaces";
+import { useLanguage } from "../../contexts/LanguageContext";
 
 const { Title, Text } = Typography;
 const { Panel } = Collapse;
 
 export const FaqPage: React.FC = () => {
+    const { t } = useLanguage();
     const [faqs, setFaqs] = useState<IFaq[]>([]);
     const [filteredFaqs, setFilteredFaqs] = useState<IFaq[]>([]);
     const [searchQuery, setSearchQuery] = useState("");
@@ -70,15 +72,15 @@ export const FaqPage: React.FC = () => {
             <div style={{ maxWidth: 800, margin: "0 auto", padding: "20px 0" }}>
                 <div style={{ textAlign: "center", marginBottom: 48 }}>
                     <QuestionCircleOutlined style={{ fontSize: 48, color: "#FF006E", marginBottom: 16 }} />
-                    <Title level={2}>Frequently Asked Questions</Title>
+                    <Title level={2}>{t.faq.title}</Title>
                     <Text type="secondary" style={{ fontSize: 16 }}>
-                        Find answers to common questions about our services, shipping, and more.
+                        {t.faq.subtitle}
                     </Text>
                 </div>
 
                 <div style={{ marginBottom: 32 }}>
                     <Input
-                        placeholder="Search for questions..."
+                        placeholder={t.faq.searchPlaceholder}
                         prefix={<SearchOutlined style={{ color: "#FF006E" }} />}
                         size="large"
                         onChange={(e) => handleSearch(e.target.value)}
@@ -97,7 +99,7 @@ export const FaqPage: React.FC = () => {
                             <Panel
                                 header={
                                     <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                                        <Tag color="blue" style={{ borderRadius: 4 }}>{faq.category || "General"}</Tag>
+                                        <Tag color="blue" style={{ borderRadius: 4 }}>{faq.category || t.faq.general}</Tag>
                                         <Text strong style={{ fontSize: 16 }}>{faq.question}</Text>
                                     </div>
                                 }
@@ -121,7 +123,7 @@ export const FaqPage: React.FC = () => {
                                         justifyContent: "space-between",
                                         alignItems: "center"
                                     }}>
-                                        <Text type="secondary" style={{ fontSize: 13 }}>Was this helpful?</Text>
+                                        <Text type="secondary" style={{ fontSize: 13 }}>{t.faq.wasHelpful}</Text>
                                         <Space>
                                             <Button
                                                 type={votedIds.includes(faq.id) ? "text" : "default"}
@@ -130,7 +132,7 @@ export const FaqPage: React.FC = () => {
                                                 disabled={votedIds.includes(faq.id)}
                                                 style={{ borderRadius: 8 }}
                                             >
-                                                Yes
+                                                {t.faq.yes}
                                             </Button>
                                             <Button
                                                 type={votedIds.includes(faq.id) ? "text" : "default"}
@@ -139,7 +141,7 @@ export const FaqPage: React.FC = () => {
                                                 disabled={votedIds.includes(faq.id)}
                                                 style={{ borderRadius: 8 }}
                                             >
-                                                No
+                                                {t.faq.no}
                                             </Button>
                                         </Space>
                                     </div>
@@ -148,7 +150,7 @@ export const FaqPage: React.FC = () => {
                         ))}
                     </Collapse>
                 ) : (
-                    <Empty description="No FAQs found matching your search." />
+                    <Empty description={t.faq.noResults} />
                 )}
 
                 <Card
@@ -160,16 +162,16 @@ export const FaqPage: React.FC = () => {
                         textAlign: "center"
                     }}
                 >
-                    <Title level={3} style={{ color: "white", margin: 0 }}>Still have questions?</Title>
+                    <Title level={3} style={{ color: "white", margin: 0 }}>{t.faq.stillHaveQuestions}</Title>
                     <Text style={{ color: "rgba(255,255,255,0.8)", display: "block", marginTop: 8, marginBottom: 24 }}>
-                        Our support team is here to help you 24/7.
+                        {t.faq.supportTeam}
                     </Text>
                     <Button
                         size="large"
                         style={{ borderRadius: 12, fontWeight: 600, height: 48, padding: "0 32px" }}
                         onClick={() => window.location.hash = "#/shop/profile"} // Redirect to support tickets in profile
                     >
-                        Contact Support
+                        {t.faq.contactSupport}
                     </Button>
                 </Card>
             </div>

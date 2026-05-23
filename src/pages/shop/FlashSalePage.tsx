@@ -8,12 +8,14 @@ import { IProduct } from "../../interfaces";
 import { ShopLayout } from "./ShopLayout";
 import { ColorModeContext } from "../../contexts/color-mode";
 import { ProductCard } from "../../components/shop/ProductCard";
+import { useLanguage } from "../../contexts/LanguageContext";
 
 const { Title, Text } = Typography;
 
 export const FlashSalePage: React.FC = () => {
     const navigate = useNavigate();
     const { mode } = useContext(ColorModeContext);
+    const { t } = useLanguage();
     const isDark = mode === "dark";
 
     const [products, setProducts] = useState<IProduct[]>([]);
@@ -125,7 +127,7 @@ export const FlashSalePage: React.FC = () => {
                     onClick={() => navigate(-1)}
                     style={{ marginBottom: 24, borderRadius: 12, fontWeight: 600 }}
                 >
-                    Back to Shop
+                    {t.product.backToShop}
                 </Button>
 
                 {/* Hero Banner */}
@@ -161,23 +163,23 @@ export const FlashSalePage: React.FC = () => {
                                 fontSize: 14, fontWeight: 800, padding: "6px 20px",
                                 borderRadius: 20, border: "none", letterSpacing: 2,
                             }}>
-                                <ThunderboltOutlined /> LIMITED TIME
+                                <ThunderboltOutlined /> {t.flashSale.limitedTime}
                             </Tag>
                         </div>
 
                         <Title level={1} style={{ color: "#fff", margin: "0 0 12px", fontWeight: 900, fontSize: 48 }}>
-                            FLASH SALE
+                            {t.flashSale.title}
                         </Title>
                         <Text style={{ display: "block", color: "rgba(255,255,255,0.85)", fontSize: 18, marginBottom: 24 }}>
-                            Up to <span style={{ color: "#FF006E", fontWeight: 800 }}>70% OFF</span> on selected items!
+                            {t.flashSale.subtitle.replace("{percent}", "70%")}
                         </Text>
 
                         {/* Countdown Timer */}
                         <div style={{ display: "flex", gap: 12, justifyContent: "center", marginBottom: 24 }}>
                             {[
-                                { label: "Hours", value: timeLeft.hours },
-                                { label: "Mins", value: timeLeft.minutes },
-                                { label: "Secs", value: timeLeft.seconds },
+                                { label: t.flashSale.hours, value: timeLeft.hours },
+                                { label: t.flashSale.mins, value: timeLeft.minutes },
+                                { label: t.flashSale.secs, value: timeLeft.seconds },
                             ].map((item) => (
                                 <div key={item.label} style={{
                                     background: "rgba(255,255,255,0.1)",
@@ -221,10 +223,10 @@ export const FlashSalePage: React.FC = () => {
                                 <FireOutlined style={{ color: "#FF006E", fontSize: 24 }} />
                                 <div>
                                     <Title level={3} style={{ margin: 0, fontWeight: 800 }}>
-                                        🔥 Hot Deals For You
+                                        {t.flashSale.hotDeals}
                                     </Title>
                                     <Text type="secondary" style={{ fontSize: 13 }}>
-                                        Auto-scrolling • Swipe or use arrows
+                                        {t.flashSale.scrollHint}
                                     </Text>
                                 </div>
                             </Space>
@@ -314,7 +316,7 @@ export const FlashSalePage: React.FC = () => {
                                                             padding: "6px 12px", borderRadius: 8,
                                                             fontSize: 11, fontWeight: 700,
                                                         }}>
-                                                            🔥 Only {product.stockQuantity} left
+                                                            {t.flashSale.onlyLeft.replace("{count}", String(product.stockQuantity))}
                                                         </div>
                                                     )}
                                                 </div>
@@ -354,7 +356,7 @@ export const FlashSalePage: React.FC = () => {
                                                         }} />
                                                     </div>
                                                     <Text type="secondary" style={{ fontSize: 10, marginTop: 4, display: "block" }}>
-                                                        {product.stockQuantity} available
+                                                        {t.flashSale.available.replace("{count}", String(product.stockQuantity))}
                                                     </Text>
                                                 </div>
                                             )}
@@ -371,9 +373,9 @@ export const FlashSalePage: React.FC = () => {
                         `}</style>
                     </div>
                 ) : (
-                    <Empty description="No flash sale items at the moment." style={{ padding: "80px 0" }}>
+                    <Empty description={t.flashSale.empty} style={{ padding: "80px 0" }}>
                         <Button type="primary" onClick={() => navigate("/shop")} style={{ background: "#FF006E", border: "none" }}>
-                            Browse All Products
+                            {t.home.viewAllProducts}
                         </Button>
                     </Empty>
                 )}
@@ -390,7 +392,7 @@ export const FlashSalePage: React.FC = () => {
                                 padding: "0 48px", boxShadow: "0 8px 24px rgba(255, 0, 110, 0.3)",
                             }}
                         >
-                            View All Deals →
+                            {t.flashSale.viewAll}
                         </Button>
                     </div>
                 )}

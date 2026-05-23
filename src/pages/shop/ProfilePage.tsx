@@ -5,6 +5,7 @@ import { doc, getDoc, updateDoc, collection, query, where, orderBy, onSnapshot, 
 import { db, auth } from "../../firebase";
 import { ShopLayout } from "./ShopLayout";
 import { useCart } from "../../contexts/CartContext";
+import { useLanguage } from "../../contexts/LanguageContext";
 import { INotification } from "../../interfaces";
 
 const { Title, Text } = Typography;
@@ -12,6 +13,7 @@ const { Title, Text } = Typography;
 interface UserProfile { displayName: string; email: string; phoneNumber: string; photoUrl: string; isAdmin: boolean; role: string; createdAt: number; }
 
 export const ProfilePage: React.FC = () => {
+    const { t } = useLanguage();
     const [searchQuery, setSearchQuery] = useState("");
     const [profile, setProfile] = useState<UserProfile | null>(null);
     const [notifications, setNotifications] = useState<INotification[]>([]);
@@ -29,10 +31,10 @@ export const ProfilePage: React.FC = () => {
                 const snap = await getDoc(doc(db, "users", user.uid));
                 const d = snap.exists() ? snap.data() : {};
                 setProfile({ displayName: d.displayName || user.displayName || "User", email: d.email || user.email || "", phoneNumber: d.phoneNumber || "", photoUrl: d.photoUrl || user.photoURL || "", isAdmin: d.isAdmin || false, role: d.role || "viewer", createdAt: d.createdAt || 0 });
-            } catch { message.error("Could not load profile"); }
+            } catch { message.error(t.profile.messages.loadFailed); }
             setLoading(false);
         })();
-    }, [user]);
+    }, [user, t.profile.messages.loadFailed]);
 
     useEffect(() => {
         if (!user) {
@@ -61,16 +63,16 @@ export const ProfilePage: React.FC = () => {
         try {
             await updateDoc(doc(db, "notifications", id), { isRead: true });
         } catch (error) {
-            message.error("Failed to mark as read");
+            message.error(t.profile.messages.notifMarkReadFailed);
         }
     };
 
     const deleteNotification = async (id: string) => {
         try {
             await deleteDoc(doc(db, "notifications", id));
-            message.success("Notification deleted");
+            message.success(t.profile.messages.notifDeleted);
         } catch (error) {
-            message.error("Failed to delete notification");
+            message.error(t.profile.messages.notifDeleteFailed);
         }
     };
 
@@ -86,7 +88,7 @@ export const ProfilePage: React.FC = () => {
                 updatedAt: Date.now()
             });
             setProfile((p) => p ? { ...p, displayName: values.displayName, phoneNumber: values.phoneNumber || "" } : null);
-            message.success("Profile updated!");
+            message.success(t.profile.messages.updated);
             setEditModalOpen(false);
         }
         catch (e: unknown) {
@@ -102,8 +104,8 @@ export const ProfilePage: React.FC = () => {
         try {
             const res = await fetch(`https://api.cloudinary.com/v1_1/${import.meta.env.VITE_CLOUDINARY_CLOUD_NAME}/image/upload`, { method: "POST", body: fd });
             const data = await res.json();
-            if (data.secure_url) { await updateDoc(doc(db, "users", user.uid), { photoUrl: data.secure_url }); setProfile((p) => p ? { ...p, photoUrl: data.secure_url } : null); message.success("Photo updated!"); }
-        } catch { message.error("Upload failed"); }
+            if (data.secure_url) { await updateDoc(doc(db, "users", user.uid), { photoUrl: data.secure_url }); setProfile((p) => p ? { ...p, photoUrl: data.secure_url } : null); message.success(t.profile.messages.photoUpdated); }
+        } catch { message.error(t.profile.messages.uploadFailed); }
     };
 
     if (loading) return <ShopLayout searchQuery={searchQuery} setSearchQuery={setSearchQuery} onSearch={() => {}}><div style={{ textAlign: "center", padding: 100 }}><Spin size="large" /></div></ShopLayout>;
@@ -111,7 +113,7 @@ export const ProfilePage: React.FC = () => {
     return (
         <ShopLayout searchQuery={searchQuery} setSearchQuery={setSearchQuery} onSearch={() => {}}>
             <div style={{ maxWidth: 600, margin: "0 auto" }}>
-                <Title level={2}>My Profile</Title>
+                <Title level={2}>{t.profile.title}</Title>
                 <Card style={{ borderRadius: 16, textAlign: "center" }}>
                     <div style={{ position: "relative", display: "inline-block" }}>
                         <Avatar size={100} src={profile?.photoUrl} icon={!profile?.photoUrl ? <UserOutlined /> : undefined} style={{ background: "linear-gradient(135deg, #FF006E, #8338EC)", marginBottom: 16, fontSize: 36 }}>{!profile?.photoUrl && profile?.displayName?.charAt(0)?.toUpperCase()}</Avatar>
@@ -121,21 +123,21 @@ export const ProfilePage: React.FC = () => {
                     </div>
                     <Title level={3}>{profile?.displayName}</Title>
                     <Text type="secondary">{profile?.email}</Text>
-                    {profile?.isAdmin && <div style={{ marginTop: 8 }}><Tag color="red">{profile.role === "super_admin" ? "Super Admin" : profile.role === "product_manager" ? "Product Manager" : profile.role === "order_manager" ? "Order Manager" : profile.role === "support_agent" ? "Support Agent" : "Admin"}</Tag></div>}
+                    {profile?.isAdmin && <div style={{ marginTop: 8 }}><Tag color="red">{t.profile.roles[profile.role as keyof typeof t.profile.roles] || profile.role}</Tag></div>}
                     <Descriptions bordered column={1} style={{ marginTop: 24, textAlign: "left" }}>
-                        <Descriptions.Item label={<><MailOutlined /> Email</>}>{profile?.email}</Descriptions.Item>
-                        <Descriptions.Item label={<><PhoneOutlined /> Phone</>}>{profile?.phoneNumber || "Not provided"}</Descriptions.Item>
-                        <Descriptions.Item label={<><CalendarOutlined /> Member Since</>}>{profile?.createdAt ? new Date(profile.createdAt).toLocaleDateString() : "Unknown"}</Descriptions.Item>
+                        <Descriptions.Item label={<><MailOutlined /> {t.profile.email}</>}>{profile?.email}</Descriptions.Item>
+                        <Descriptions.Item label={<><PhoneOutlined /> {t.profile.phone}</>}>{profile?.phoneNumber || t.profile.notProvided}</Descriptions.Item>
+                        <Descriptions.Item label={<><CalendarOutlined /> {t.profile.memberSince}</>}>{profile?.createdAt ? new Date(profile.createdAt).toLocaleDateString() : t.profile.unknown}</Descriptions.Item>
                     </Descriptions>
-                    <Button type="primary" icon={<EditOutlined />} style={{ marginTop: 24, background: "#FF006E", border: "none", borderRadius: 8, height: 40 }} onClick={handleEdit}>Edit Profile</Button>
+                    <Button type="primary" icon={<EditOutlined />} style={{ marginTop: 24, background: "#FF006E", border: "none", borderRadius: 8, height: 40 }} onClick={handleEdit}>{t.profile.editProfile}</Button>
                 </Card>
 
-                <Title level={3} style={{ marginTop: 40 }}>Notifications</Title>
+                <Title level={3} style={{ marginTop: 40 }}>{t.profile.notifications}</Title>
                 <Card style={{ borderRadius: 16 }}>
                     <Space direction="vertical" style={{ width: "100%" }} size={16}>
                         {notifications.length === 0 ? (
                             <div style={{ textAlign: "center", padding: "20px 0" }}>
-                                <Text type="secondary">No notifications yet</Text>
+                                <Text type="secondary">{t.profile.noNotifications}</Text>
                             </div>
                         ) : (
                             notifications.map(n => (
@@ -154,7 +156,7 @@ export const ProfilePage: React.FC = () => {
                                     <div style={{ flex: 1 }}>
                                         <Space align="center">
                                             <Text strong={!n.isRead}>{n.title}</Text>
-                                            {!n.isRead && <Tag color="#FF006E">New</Tag>}
+                                            {!n.isRead && <Tag color="#FF006E">{t.profile.new}</Tag>}
                                             <Tag color={n.type === "ORDER" ? "blue" : n.type === "PROMO" ? "green" : "default"}>{n.type}</Tag>
                                         </Space>
                                         <div style={{ marginTop: 4 }}>
@@ -168,7 +170,7 @@ export const ProfilePage: React.FC = () => {
                                     </div>
                                     <Space>
                                         {!n.isRead && (
-                                            <Button size="small" onClick={() => markAsRead(n.id)}>Mark as read</Button>
+                                            <Button size="small" onClick={() => markAsRead(n.id)}>{t.profile.markAsRead}</Button>
                                         )}
                                         <Button
                                             size="small"
@@ -184,12 +186,12 @@ export const ProfilePage: React.FC = () => {
                     </Space>
                 </Card>
             </div>
-            <Modal title="Edit Profile" open={editModalOpen} onCancel={() => setEditModalOpen(false)} footer={null} width={500}>
+            <Modal title={t.profile.editProfile} open={editModalOpen} onCancel={() => setEditModalOpen(false)} footer={null} width={500}>
                 <Form form={form} layout="vertical" onFinish={handleSave}>
-                    <Form.Item name="displayName" label="Full Name" rules={[{ required: true }]}><Input size="large" /></Form.Item>
-                    <Form.Item name="phoneNumber" label="Phone Number"><Input size="large" /></Form.Item>
-                    <Form.Item label="Email"><Input value={profile?.email} disabled size="large" /></Form.Item>
-                    <Space style={{ width: "100%", justifyContent: "flex-end" }}><Button onClick={() => setEditModalOpen(false)}>Cancel</Button><Button type="primary" htmlType="submit" loading={saving} style={{ background: "#FF006E", border: "none" }}>Save Changes</Button></Space>
+                    <Form.Item name="displayName" label={t.profile.fullName} rules={[{ required: true }]}><Input size="large" /></Form.Item>
+                    <Form.Item name="phoneNumber" label={t.profile.phoneLabel}><Input size="large" /></Form.Item>
+                    <Form.Item label={t.profile.email}><Input value={profile?.email} disabled size="large" /></Form.Item>
+                    <Space style={{ width: "100%", justifyContent: "flex-end" }}><Button onClick={() => setEditModalOpen(false)}>{t.profile.cancel}</Button><Button type="primary" htmlType="submit" loading={saving} style={{ background: "#FF006E", border: "none" }}>{t.profile.saveChanges}</Button></Space>
                 </Form>
             </Modal>
         </ShopLayout>

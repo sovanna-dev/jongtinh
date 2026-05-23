@@ -7,6 +7,7 @@ import { useCart } from "../../contexts/CartContext";
 import { useWishlist } from "../../contexts/WishlistContext";
 import { auth } from "../../firebase";
 import { AuthModal } from "./AuthModal";
+import { useLanguage } from "../../contexts/LanguageContext";
 
 const { Title, Text } = Typography;
 
@@ -18,6 +19,7 @@ interface ProductCardProps {
 
 export const ProductCard: React.FC<ProductCardProps> = ({ product, isDark, showMoveToCart }) => {
     const navigate = useNavigate();
+    const { t } = useLanguage();
     const { addToCart } = useCart();
     const { isFavorite, toggleFavorite } = useWishlist();
     const [authModalOpen, setAuthModalOpen] = useState(false);
@@ -43,7 +45,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, isDark, showM
         setIsAnimating(true);
         toggleFavorite(product.id);
         setTimeout(() => setIsAnimating(false), 300);
-        message.success(isFav ? "Removed from wishlist" : "Added to wishlist");
+        message.success(isFav ? t.product.removedFromWishlist : t.product.addedToWishlist);
     };
 
     return (
@@ -112,7 +114,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, isDark, showM
                                     display: "inline-block",
                                     boxShadow: "0 8px 24px rgba(0,0,0,0.4)"
                                 }}>
-                                    BUY NOW
+                                    {t.product.buyNow || "BUY NOW"}
                                 </div>
                             </div>
                         </div>
@@ -155,7 +157,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, isDark, showM
                                 backdropFilter: "blur(2px)"
                             }}>
                                 <Tag color="default" style={{ padding: "6px 16px", borderRadius: 20, fontWeight: 700, border: "none" }}>
-                                    OUT OF STOCK
+                                    {t.product.outOfStock.toUpperCase()}
                                 </Tag>
                             </div>
                         )}
@@ -236,9 +238,9 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, isDark, showM
                             addToCart(product);
                             if (showMoveToCart && isFav) {
                                 toggleFavorite(product.id);
-                                message.success("Moved to cart and removed from wishlist!");
+                                message.success(t.product.movedToCart || "Moved to cart and removed from wishlist!");
                             } else {
-                                message.success(`${product.name} added to cart!`);
+                                message.success(t.product.addedToCart.replace("{name}", product.name));
                             }
                         }}
                         disabled={!isInStock}
@@ -253,7 +255,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, isDark, showM
                             boxShadow: isInStock ? "0 4px 12px rgba(255, 0, 110, 0.25)" : "none"
                         }}
                     >
-                        {isInStock ? (showMoveToCart ? "Move to Cart" : "Add to Cart") : "Out of Stock"}
+                        {isInStock ? (showMoveToCart ? (t.product.moveToCart || "Move to Cart") : t.product.addToCart) : t.product.outOfStock}
                     </Button>
                 </div>
             </Card>

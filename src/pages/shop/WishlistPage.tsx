@@ -9,10 +9,12 @@ import { ShopLayout } from "./ShopLayout";
 import { ProductCard } from "../../components/shop/ProductCard";
 import { useWishlist } from "../../contexts/WishlistContext";
 import { ColorModeContext } from "../../contexts/color-mode";
+import { useLanguage } from "../../contexts/LanguageContext";
 
 const { Title, Text } = Typography;
 
 export const WishlistPage: React.FC = () => {
+    const { t } = useLanguage();
     const navigate = useNavigate();
     const { favorites, loading: wishlistLoading } = useWishlist();
     const { mode } = React.useContext(ColorModeContext);
@@ -62,23 +64,23 @@ export const WishlistPage: React.FC = () => {
         >
             <div style={{ marginBottom: 24 }}>
                 <Breadcrumb items={[
-                    { title: <><HomeOutlined /> <span>Home</span></>, onClick: () => navigate("/shop"), className: "cursor-pointer" },
-                    { title: "My Wishlist" }
+                    { title: <><HomeOutlined /> <span>{t.header.home || "Home"}</span></>, onClick: () => navigate("/shop"), className: "cursor-pointer" },
+                    { title: t.wishlist.title }
                 ]} />
             </div>
 
             <div style={{ marginBottom: 40 }}>
                 <Title level={2} style={{ margin: 0, fontWeight: 800 }}>
-                    My Wishlist <HeartOutlined style={{ color: "#FF006E" }} />
+                    {t.wishlist.title} <HeartOutlined style={{ color: "#FF006E" }} />
                 </Title>
                 <Text type="secondary">
-                    {favorites.size} items saved to your favorites
+                    {t.wishlist.subtitle.replace("{count}", favorites.size.toString())}
                 </Text>
             </div>
 
             {loading || wishlistLoading ? (
                 <div style={{ textAlign: "center", padding: "100px 0" }}>
-                    <Spin size="large" tip="Loading your favorites..." />
+                    <Spin size="large" tip={t.wishlist.loading} />
                 </div>
             ) : products.length > 0 ? (
                 <Row gutter={[16, 32]}>
@@ -93,8 +95,8 @@ export const WishlistPage: React.FC = () => {
                     image={Empty.PRESENTED_IMAGE_SIMPLE}
                     description={
                         <Space direction="vertical">
-                            <Text strong>Your wishlist is empty</Text>
-                            <Text type="secondary">Save items you like to see them here later!</Text>
+                            <Text strong>{t.wishlist.empty}</Text>
+                            <Text type="secondary">{t.wishlist.emptyDesc}</Text>
                         </Space>
                     }
                     style={{ padding: "100px 0" }}
@@ -105,7 +107,7 @@ export const WishlistPage: React.FC = () => {
                         onClick={() => navigate("/shop")}
                         style={{ background: "#FF006E", border: "none", borderRadius: 12, height: 48, padding: "0 32px" }}
                     >
-                        Go Shopping
+                        {t.wishlist.goShopping}
                     </Button>
                 </Empty>
             )}

@@ -8,6 +8,7 @@ import { IProduct } from "../../interfaces";
 import { ShopLayout } from "./ShopLayout";
 import { useCart } from "../../contexts/CartContext";
 import { useWishlist } from "../../contexts/WishlistContext";
+import { useLanguage } from "../../contexts/LanguageContext";
 import { auth } from "../../firebase";
 import { AuthModal } from "../../components/shop/AuthModal";
 
@@ -16,6 +17,7 @@ const { Title, Text } = Typography;
 export const ProductDetail: React.FC = () => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
+    const { t } = useLanguage();
     const [product, setProduct] = useState<IProduct | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [quantity, setQuantity] = useState(1);
@@ -71,7 +73,7 @@ export const ProductDetail: React.FC = () => {
     };
 
     if (isLoading) return <ShopLayout searchQuery={searchQuery} setSearchQuery={setSearchQuery} onSearch={handleSearch}><div style={{ textAlign: "center", padding: 100 }}><Spin size="large" /></div></ShopLayout>;
-    if (!product) return <ShopLayout searchQuery={searchQuery} setSearchQuery={setSearchQuery} onSearch={handleSearch}><div style={{ textAlign: "center", padding: 100 }}><Title level={4}>Product not found</Title><Button onClick={() => navigate("/shop")}>Back to Shop</Button></div></ShopLayout>;
+    if (!product) return <ShopLayout searchQuery={searchQuery} setSearchQuery={setSearchQuery} onSearch={handleSearch}><div style={{ textAlign: "center", padding: 100 }}><Title level={4}>{t.product.productNotFound}</Title><Button onClick={() => navigate("/shop")}>{t.product.backToShop}</Button></div></ShopLayout>;
 
     return (
         <ShopLayout searchQuery={searchQuery} setSearchQuery={setSearchQuery} onSearch={handleSearch}>
@@ -86,7 +88,7 @@ export const ProductDetail: React.FC = () => {
                     boxShadow: "0 2px 8px rgba(0,0,0,0.05)"
                 }}
             >
-                Back to Shop
+                {t.product.backToShop}
             </Button>
 
             <Row gutter={[48, 48]}>
@@ -211,7 +213,7 @@ export const ProductDetail: React.FC = () => {
                                     margin: 0
                                 }}
                             >
-                                {isInStock ? `${product.stockQuantity} items in stock` : "Out of Stock"}
+                                {isInStock ? t.product.inStockCount.replace("{count}", String(product.stockQuantity)) : t.product.outOfStock}
                             </Tag>
                         </div>
 
@@ -219,7 +221,7 @@ export const ProductDetail: React.FC = () => {
                         {availableSizes.length > 0 && (
                             <div style={{ marginBottom: 24 }}>
                                 <Title level={5} style={{ fontWeight: 700, marginBottom: 12 }}>
-                                    Select Size {selectedSize && <Tag color="#FF006E" style={{ marginLeft: 8 }}>{selectedSize}</Tag>}
+                                    {t.product.selectSize} {selectedSize && <Tag color="#FF006E" style={{ marginLeft: 8 }}>{selectedSize}</Tag>}
                                 </Title>
                                 <Space size={12} wrap>
                                     {availableSizes.map((size: string) => (
@@ -254,7 +256,7 @@ export const ProductDetail: React.FC = () => {
                         {availableColors.length > 0 && (
                             <div style={{ marginBottom: 24 }}>
                                 <Title level={5} style={{ fontWeight: 700, marginBottom: 12 }}>
-                                    Select Color {selectedColor && <Tag color="#FF006E" style={{ marginLeft: 8 }}>{selectedColor}</Tag>}
+                                    {t.product.selectColor} {selectedColor && <Tag color="#FF006E" style={{ marginLeft: 8 }}>{selectedColor}</Tag>}
                                 </Title>
                                 <Space size={12} wrap>
                                     {availableColors.map((c: any, i: number) => {
@@ -314,7 +316,7 @@ export const ProductDetail: React.FC = () => {
                                         ) || selectedColor,
                                     };
                                     addToCart(productWithSelection, quantity);
-                                    message.success(`${product.name}${selectedSize ? ` (${selectedSize})` : ""} added to cart!`);
+                                    message.success(t.product.addedToCart.replace("{name}", product.name));
                                 }}
                                 disabled={!isInStock}
                                 style={{
@@ -328,7 +330,7 @@ export const ProductDetail: React.FC = () => {
                                     flex: 1
                                 }}
                             >
-                                {isInStock ? "Add to Cart" : "Out of Stock"}
+                                {isInStock ? t.product.addToCart : t.product.outOfStock}
                             </Button>
 
                             <Button
@@ -340,7 +342,7 @@ export const ProductDetail: React.FC = () => {
                                     } else {
                                         const wasFavorite = isFavorite(product.id);
                                         toggleFavorite(product.id);
-                                        message.success(wasFavorite ? "Removed from wishlist" : "Added to wishlist");
+                                        message.success(wasFavorite ? t.product.removedFromWishlist : t.product.addedToWishlist);
                                     }
                                 }}
                                 style={{
@@ -361,13 +363,13 @@ export const ProductDetail: React.FC = () => {
                         <Divider />
 
                         <div style={{ marginBottom: 32 }}>
-                            <Title level={4} style={{ fontWeight: 700 }}>Description</Title>
+                            <Title level={4} style={{ fontWeight: 700 }}>{t.product.description}</Title>
                             <Text style={{ fontSize: 16, lineHeight: 1.8, color: "#444" }}>{product.description}</Text>
                         </div>
 
                         {product.specifications && Object.keys(product.specifications).length > 0 && (
                             <div style={{ marginBottom: 32 }}>
-                                <Title level={4} style={{ fontWeight: 700 }}>Product Specifications</Title>
+                                <Title level={4} style={{ fontWeight: 700 }}>{t.product.specifications}</Title>
                                 <Descriptions
                                     bordered
                                     size="middle"
@@ -384,7 +386,7 @@ export const ProductDetail: React.FC = () => {
 
                         {product.attributes && (Array.isArray(product.attributes) ? product.attributes.length > 0 : Object.keys(product.attributes).length > 0) && (
                             <div style={{ marginBottom: 32 }}>
-                                <Title level={4} style={{ fontWeight: 700 }}>Details</Title>
+                                <Title level={4} style={{ fontWeight: 700 }}>{t.product.details}</Title>
                                 <Descriptions
                                     bordered
                                     size="middle"
@@ -412,7 +414,7 @@ export const ProductDetail: React.FC = () => {
 
                         {product.colors && product.colors.length > 0 && (
                             <div>
-                                <Title level={4} style={{ fontWeight: 700 }}>Available Colors</Title>
+                                <Title level={4} style={{ fontWeight: 700 }}>{t.product.colors}</Title>
                                 <Space size={16} style={{ marginTop: 12 }}>
                                     {product.colors.map((c, i) => (
                                         <Tooltip title={c.name || c.hex} key={i}>

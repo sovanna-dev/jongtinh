@@ -8,9 +8,12 @@ import { useCart } from "../../contexts/CartContext";
 import { useCustomerAuth } from "../../contexts/CustomerAuthContext";
 import { AuthModal } from "../../components/shop/AuthModal";
 
+import { useLanguage } from "../../contexts/LanguageContext";
+
 const { Title, Text } = Typography;
 
 export const CartPage: React.FC = () => {
+    const { t } = useLanguage();
     const navigate = useNavigate();
     const [searchQuery, setSearchQuery] = useState("");
     const [authModalOpen, setAuthModalOpen] = useState(false);
@@ -39,18 +42,18 @@ export const CartPage: React.FC = () => {
                         onClick={() => navigate("/shop")}
                         style={{ paddingLeft: 0, color: "#555" }}
                     >
-                        Back to Shopping
+                        {t.cart.backToShopping}
                     </Button>
-                    <Title level={2} style={{ margin: "8px 0 0 0", fontWeight: 800 }}>My Cart</Title>
+                    <Title level={2} style={{ margin: "8px 0 0 0", fontWeight: 800 }}>{t.cart.myCart}</Title>
                 </div>
-                <Text strong style={{ fontSize: 16 }}>{cart.length} Items</Text>
+                <Text strong style={{ fontSize: 16 }}>{t.cart.items.replace("{count}", cart.length.toString())}</Text>
             </div>
 
             {cart.length === 0 ? (
                 <Card style={{ borderRadius: 24, textAlign: "center", padding: "64px 0", border: "none", boxShadow: "0 4px 20px rgba(0,0,0,0.05)" }}>
                     <Empty
                         image={<ShoppingOutlined style={{ fontSize: 64, color: "#d9d9d9" }} />}
-                        description={<Text type="secondary" style={{ fontSize: 18 }}>Your shopping cart is empty</Text>}
+                        description={<Text type="secondary" style={{ fontSize: 18 }}>{t.cart.empty}</Text>}
                     >
                         <Button
                             type="primary"
@@ -58,7 +61,7 @@ export const CartPage: React.FC = () => {
                             onClick={() => navigate("/shop")}
                             style={{ background: "#FF006E", borderRadius: 12, height: 48, fontWeight: 600, marginTop: 16 }}
                         >
-                            Explore Products
+                            {t.cart.exploreProducts}
                         </Button>
                     </Empty>
                 </Card>
@@ -90,7 +93,7 @@ export const CartPage: React.FC = () => {
                                                     {item.product.name}
                                                 </Text>
                                                 {item.product.selectedSize && (
-                                                    <Text style={{ fontSize: 12, color: "#FF006E", display: "block" }}>Size: {item.product.selectedSize}</Text>
+                                                    <Text style={{ fontSize: 12, color: "#FF006E", display: "block" }}>{t.product.size}: {item.product.selectedSize}</Text>
                                                 )}
                                                 {item.product.selectedColor && (
                                                     <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 2 }}>
@@ -102,13 +105,13 @@ export const CartPage: React.FC = () => {
                                                             border: "1px solid #d9d9d9"
                                                         }} />
                                                         <Text style={{ fontSize: 12, color: "#666" }}>
-                                                            {typeof item.product.selectedColor === "string"
+                                                            {t.product.colors}: {typeof item.product.selectedColor === "string"
                                                                 ? item.product.selectedColor
                                                                 : item.product.selectedColor?.name || ""}
                                                         </Text>
                                                     </div>
                                                 )}
-                                                <Text type="secondary" style={{ fontSize: 12 }}>Unit Price: ${price.toFixed(2)}</Text>
+                                                <Text type="secondary" style={{ fontSize: 12 }}>{t.cart.unitPrice}: ${price.toFixed(2)}</Text>
                                             </Col>
                                             <Col xs={14} sm={6} style={{ textAlign: "center" }}>
                                                 <div style={{ display: "inline-flex", alignItems: "center", border: "1px solid #f0f0f0", borderRadius: 10, padding: "2px 8px" }}>
@@ -133,19 +136,19 @@ export const CartPage: React.FC = () => {
                     <Col xs={24} lg={8}>
                         <Card
                             style={{ borderRadius: 24, border: "none", boxShadow: "0 8px 24px rgba(0,0,0,0.08)", position: "sticky", top: 100 }}
-                            title={<Title level={4} style={{ margin: 0 }}>Order Summary</Title>}
+                            title={<Title level={4} style={{ margin: 0 }}>{t.cart.orderSummary}</Title>}
                         >
                             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 12 }}>
-                                <Text type="secondary">Subtotal</Text>
+                                <Text type="secondary">{t.cart.subtotal}</Text>
                                 <Text strong>${cartTotal.toFixed(2)}</Text>
                             </div>
                             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 12 }}>
-                                <Text type="secondary">Shipping</Text>
+                                <Text type="secondary">{t.cart.shipping}</Text>
                                 <Text strong>${shipping.toFixed(2)}</Text>
                             </div>
                             <Divider style={{ margin: "16px 0" }} />
                             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 24 }}>
-                                <Title level={3} style={{ margin: 0 }}>Total</Title>
+                                <Title level={3} style={{ margin: 0 }}>{t.cart.total}</Title>
                                 <Title level={3} style={{ margin: 0, color: "#FF006E" }}>${finalTotal.toFixed(2)}</Title>
                             </div>
 
@@ -156,11 +159,11 @@ export const CartPage: React.FC = () => {
                                 onClick={handleCheckout}
                                 style={{ background: "#FF006E", height: 56, borderRadius: 16, fontSize: 18, fontWeight: 700, border: "none", boxShadow: "0 8px 20px rgba(255, 0, 110, 0.2)" }}
                             >
-                                Checkout Now
+                                {t.cart.checkoutNow}
                             </Button>
 
                             <div style={{ marginTop: 20, textAlign: "center" }}>
-                                <Text type="secondary" style={{ fontSize: 12 }}>Secure payment powered by SmartShop Pay</Text>
+                                <Text type="secondary" style={{ fontSize: 12 }}>{t.cart.securePayment}</Text>
                             </div>
                         </Card>
                     </Col>

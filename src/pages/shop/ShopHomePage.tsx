@@ -14,6 +14,7 @@ import { NotificationBanner } from "../../components/shop/NotificationBanner";
 import { ProductCard } from "../../components/shop/ProductCard";
 import { FilterDrawer } from "../../components/shop/FilterDrawer";
 import { useProducts } from "../../hooks/useProducts";
+import { useLanguage } from "../../contexts/LanguageContext";
 import { FilterOutlined, CopyOutlined, FireOutlined, ClockCircleOutlined, LeftOutlined, RightOutlined } from "@ant-design/icons";
 
 const { Title, Text } = Typography;
@@ -31,6 +32,7 @@ const STYLE_TAGS = [
 export const ShopHomePage: React.FC = () => {
     const navigate = useNavigate();
     const { mode } = useContext(ColorModeContext);
+    const { t } = useLanguage();
     const isDark = mode === "dark";
 
     const [searchQuery, setSearchQuery] = useState("");
@@ -72,7 +74,7 @@ export const ShopHomePage: React.FC = () => {
 
     const copyPromoCode = (code: string) => {
         navigator.clipboard.writeText(code);
-        message.success(`Code "${code}" copied! Apply at checkout.`);
+        message.success(t.home.linkCopied || `Code "${code}" copied! Apply at checkout.`);
     };
 
     useEffect(() => {
@@ -138,46 +140,46 @@ export const ShopHomePage: React.FC = () => {
                 {[
                     {
                         icon: "🚚",
-                        title: "Free Shipping",
-                        desc: "On orders over $50",
+                        title: t.home.freeShipping,
+                        desc: t.home.freeShippingDesc,
                         color: "#E6F7FF",
                         action: () => navigate("/shop/search?q=free+shipping"),
                     },
                     {
                         icon: "🌍",
-                        title: "Online Order",
-                        desc: "Shop 24/7 anywhere",
+                        title: t.home.onlineOrder,
+                        desc: t.home.onlineOrderDesc,
                         color: "#F6FFED",
                         action: () => navigate("/shop"),
                     },
                     {
                         icon: "💰",
-                        title: "Save Money",
-                        desc: "Best prices & sales",
+                        title: t.home.saveMoney,
+                        desc: t.home.saveMoneyDesc,
                         color: "#FFF7E6",
                         action: () => navigate("/shop/flash-sale"),
                     },
                     {
                         icon: "🏷️",
-                        title: "Promotions",
-                        desc: "Exclusive deals",
+                        title: t.home.promotions,
+                        desc: t.home.promotionsDesc,
                         color: "#FFF0F6",
                         action: () => navigate("/shop/flash-sale"),
                     },
                     {
                         icon: "🎧",
-                        title: "24/7 Support",
-                        desc: "Anytime service",
+                        title: t.home.support,
+                        desc: t.home.supportDesc,
                         color: "#F9F0FF",
                         action: () => navigate("/shop/profile"),
                     },
                     {
                         icon: "🔒",
-                        title: "Secure Payments",
-                        desc: "Safe transactions",
+                        title: t.home.securePayments,
+                        desc: t.home.securePaymentsDesc,
                         color: "#E6FFFB",
                         action: () => {
-                            message.info("We accept ABA Pay, ACLEDA, Wing, and Cash on Delivery. All transactions are encrypted and secure.");
+                            message.info(t.home.securePaymentInfo);
                         },
                     },
                 ].map((feature) => (
@@ -221,7 +223,7 @@ export const ShopHomePage: React.FC = () => {
             {/* 5. CHOOSE YOUR STYLE */}
             <div style={{ marginBottom: 56 }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
-                    <Title level={3} style={{ margin: 0, fontWeight: 800 }}>Choose Your Style</Title>
+                    <Title level={3} style={{ margin: 0, fontWeight: 800 }}>{t.home.chooseStyle}</Title>
                     <Space size={12}>
                         {/* Left Arrow */}
                         <Button
@@ -352,7 +354,7 @@ export const ShopHomePage: React.FC = () => {
                                     padding: "2px 12px",
                                     letterSpacing: 0.5,
                                 }}>
-                                    TRENDING
+                                    {t.home.trending}
                                 </Tag>
                                 <Title level={3} style={{
                                     color: "#fff",
@@ -407,8 +409,8 @@ export const ShopHomePage: React.FC = () => {
             {newProducts.length > 0 && (
                 <div style={{ marginBottom: 56 }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
-                        <Space size={12}><div style={{ width: 44, height: 44, borderRadius: 12, background: "#fff0f6", display: "flex", alignItems: "center", justifyContent: "center" }}><ClockCircleOutlined style={{ color: "#FF006E", fontSize: 24 }} /></div><Title level={3} style={{ margin: 0, fontWeight: 800 }}>✨ New This Week</Title></Space>
-                        <Button type="link" onClick={() => { setSortBy("createdAt"); document.getElementById('all-products-section')?.scrollIntoView({ behavior: 'smooth' }); }} style={{ fontWeight: 700, fontSize: 15 }}>View All Items →</Button>
+                        <Space size={12}><div style={{ width: 44, height: 44, borderRadius: 12, background: "#fff0f6", display: "flex", alignItems: "center", justifyContent: "center" }}><ClockCircleOutlined style={{ color: "#FF006E", fontSize: 24 }} /></div><Title level={3} style={{ margin: 0, fontWeight: 800 }}>{t.home.newThisWeek}</Title></Space>
+                        <Button type="link" onClick={() => { setSortBy("createdAt"); document.getElementById('all-products-section')?.scrollIntoView({ behavior: 'smooth' }); }} style={{ fontWeight: 700, fontSize: 15 }}>{t.home.viewAll}</Button>
                     </div>
                     <Row gutter={[12, 24]}>{newProducts.map((p) => (<Col xs={12} sm={12} md={8} lg={6} key={p.id}><ProductCard product={p} isDark={isDark} /></Col>))}</Row>
                 </div>
@@ -418,8 +420,8 @@ export const ShopHomePage: React.FC = () => {
             {bestsellerProducts.length > 0 && (
                 <div style={{ marginBottom: 56 }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
-                        <Space size={12}><div style={{ width: 44, height: 44, borderRadius: 12, background: "#fff7e6", display: "flex", alignItems: "center", justifyContent: "center" }}><FireOutlined style={{ color: "#fa8c16", fontSize: 24 }} /></div><Title level={3} style={{ margin: 0, fontWeight: 800 }}>🔥 Weekly Bestsellers</Title></Space>
-                        <Button type="link" onClick={() => { setSortBy("rating"); document.getElementById('all-products-section')?.scrollIntoView({ behavior: 'smooth' }); }} style={{ fontWeight: 700, fontSize: 15 }}>View All Bestsellers →</Button>
+                        <Space size={12}><div style={{ width: 44, height: 44, borderRadius: 12, background: "#fff7e6", display: "flex", alignItems: "center", justifyContent: "center" }}><FireOutlined style={{ color: "#fa8c16", fontSize: 24 }} /></div><Title level={3} style={{ margin: 0, fontWeight: 800 }}>{t.home.bestsellers}</Title></Space>
+                        <Button type="link" onClick={() => { setSortBy("rating"); document.getElementById('all-products-section')?.scrollIntoView({ behavior: 'smooth' }); }} style={{ fontWeight: 700, fontSize: 15 }}>{t.home.viewAll}</Button>
                     </div>
                     <Row gutter={[12, 24]}>{bestsellerProducts.map((p) => (<Col xs={12} sm={12} md={8} lg={6} key={p.id}><ProductCard product={p} isDark={isDark} /></Col>))}</Row>
                 </div>
@@ -428,10 +430,10 @@ export const ShopHomePage: React.FC = () => {
             {/* 8. DEAL BANNER */}
             <div style={{ backgroundImage: "linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.6)), url('https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=1600&q=80')", backgroundSize: "cover", backgroundPosition: "center", borderRadius: 24, padding: "80px 32px", marginBottom: 48, textAlign: "center", color: "#fff", position: "relative", overflow: "hidden", minHeight: 340, display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center" }}>
                 <div style={{ position: "relative", zIndex: 1 }}>
-                    <Text style={{ color: "#FF006E", fontSize: 16, fontWeight: 800, letterSpacing: 3, textTransform: "uppercase", textShadow: "0 2px 4px rgba(0,0,0,0.3)" }}>Exclusive Offer</Text>
-                    <Title level={1} style={{ color: "#fff", margin: "12px 0", fontWeight: 900, fontSize: 42 }}>Up to <span style={{ color: "#FF006E", fontSize: 64 }}>70% OFF</span></Title>
-                    <Text style={{ color: "#fff", fontSize: 20, display: "block", marginBottom: 32, fontWeight: 500, textShadow: "0 2px 4px rgba(0,0,0,0.5)" }}>Limited Time: On all T-Shirts & Accessories</Text>
-                    <Button size="large" onClick={() => navigate("/shop/flash-sale")} style={{ background: "#FF006E", border: "none", borderRadius: 12, height: 50, fontWeight: 700, fontSize: 16, padding: "0 40px" }}>Shop Now →</Button>
+                    <Text style={{ color: "#FF006E", fontSize: 16, fontWeight: 800, letterSpacing: 3, textTransform: "uppercase", textShadow: "0 2px 4px rgba(0,0,0,0.3)" }}>{t.home.exclusiveOffer}</Text>
+                    <Title level={1} style={{ color: "#fff", margin: "12px 0", fontWeight: 900, fontSize: 42 }}>{t.flashSale.subtitle.split("{percent}")[0]}<span style={{ color: "#FF006E", fontSize: 64 }}>70% OFF</span>{t.flashSale.subtitle.split("{percent}")[1]}</Title>
+                    <Text style={{ color: "#fff", fontSize: 20, display: "block", marginBottom: 32, fontWeight: 500, textShadow: "0 2px 4px rgba(0,0,0,0.5)" }}>{t.flashSale.scrollHint}</Text>
+                    <Button size="large" onClick={() => navigate("/shop/flash-sale")} style={{ background: "#FF006E", border: "none", borderRadius: 12, height: 50, fontWeight: 700, fontSize: 16, padding: "0 40px" }}>{t.home.shopNow} →</Button>
                 </div>
             </div>
 
@@ -439,14 +441,14 @@ export const ShopHomePage: React.FC = () => {
             <div id="all-products-section" style={{ marginBottom: 32, padding: "40px 12px 0", borderTop: isDark ? "1px solid #333" : "1px solid #eee" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", flexWrap: "wrap", gap: 20, marginBottom: 32 }}>
                     <div>
-                        <Space align="baseline" size={12}><Title level={2} style={{ margin: 0, fontSize: 32, fontWeight: 900 }}>{currentCategoryData ? currentCategoryData.name : "All Products"}</Title><Text type="secondary" style={{ fontSize: 16, fontWeight: 600 }}>({products.length}{hasMore ? "+" : ""} items found)</Text></Space>
-                        <div style={{ marginTop: 6 }}><Text type="secondary" style={{ fontSize: 15, fontWeight: 400 }}>{selectedSubCategory ? `Discover our exclusive ${currentCategoryData?.subCategories.find(s => s.id === selectedSubCategory)?.name} selection.` : "Explore our curated collection of high-quality fashion and lifestyle items."}</Text></div>
+                        <Space align="baseline" size={12}><Title level={2} style={{ margin: 0, fontSize: 32, fontWeight: 900 }}>{currentCategoryData ? currentCategoryData.name : t.home.allProducts}</Title><Text type="secondary" style={{ fontSize: 16, fontWeight: 600 }}>{t.home.foundItems.replace("{count}", String(products.length)).replace("{plus}", hasMore ? "+" : "")}</Text></Space>
+                        <div style={{ marginTop: 6 }}><Text type="secondary" style={{ fontSize: 15, fontWeight: 400 }}>{selectedSubCategory ? `Discover our exclusive ${currentCategoryData?.subCategories.find(s => s.id === selectedSubCategory)?.name} selection.` : t.home.subtitle}</Text></div>
                     </div>
                     <Space size={16}>
-                        <Badge count={activeFilterCount} color="#FF006E" size="small" offset={[-2, 2]}><Button icon={<FilterOutlined />} onClick={() => setIsFilterOpen(true)} style={{ borderRadius: 12, height: 46, padding: "0 24px", fontWeight: 600, fontSize: 15, boxShadow: "0 2px 8px rgba(0,0,0,0.05)" }}>Filter</Button></Badge>
+                        <Badge count={activeFilterCount} color="#FF006E" size="small" offset={[-2, 2]}><Button icon={<FilterOutlined />} onClick={() => setIsFilterOpen(true)} style={{ borderRadius: 12, height: 46, padding: "0 24px", fontWeight: 600, fontSize: 15, boxShadow: "0 2px 8px rgba(0,0,0,0.05)" }}>{t.home.filters}</Button></Badge>
                         <div style={{ width: 1, height: 28, background: isDark ? "#444" : "#ddd" }} />
-                        <Dropdown menu={{ items: [{ key: "createdAt", label: "🆕 Newest Arrivals" }, { key: "priceLowHigh", label: "💰 Price: Low to High" }, { key: "priceHighLow", label: "💸 Price: High to Low" }, { key: "rating", label: "⭐ Top Rated" }], onClick: ({ key }) => setSortBy(key), selectedKeys: [sortBy] }} trigger={["click"]}>
-                            <Button type="text" style={{ fontWeight: 700, height: 46, fontSize: 15, padding: "0 12px", color: "#FF006E" }}>{sortBy === "priceLowHigh" ? "Price: Low to High" : sortBy === "priceHighLow" ? "Price: High to Low" : sortBy === "rating" ? "Top Rated" : "Newest Arrivals"} ▼</Button>
+                        <Dropdown menu={{ items: [{ key: "createdAt", label: `🆕 ${t.home.newest}` }, { key: "priceLowHigh", label: `💰 ${t.home.priceLow}` }, { key: "priceHighLow", label: `💸 ${t.home.priceHigh}` }, { key: "rating", label: `⭐ ${t.home.topRated}` }], onClick: ({ key }) => setSortBy(key), selectedKeys: [sortBy] }} trigger={["click"]}>
+                            <Button type="text" style={{ fontWeight: 700, height: 46, fontSize: 15, padding: "0 12px", color: "#FF006E" }}>{sortBy === "priceLowHigh" ? t.home.priceLow : sortBy === "priceHighLow" ? t.home.priceHigh : sortBy === "rating" ? t.home.topRated : t.home.newest} ▼</Button>
                         </Dropdown>
                     </Space>
                 </div>
@@ -458,13 +460,13 @@ export const ShopHomePage: React.FC = () => {
                         <Row gutter={[12, 32]}>{products.map((p) => (<Col xs={12} sm={12} md={8} lg={6} key={p.id}><ProductCard product={p} isDark={isDark} /></Col>))}</Row>
                         {hasMore && (
                             <div style={{ textAlign: "center", marginTop: 80, marginBottom: 60 }}>
-                                <Button size="large" onClick={loadMore} loading={loadingMore} style={{ borderRadius: 18, minWidth: 280, height: 60, fontWeight: 800, fontSize: 17, background: isDark ? "#1f1f1f" : "#fff", borderColor: "#FF006E", color: "#FF006E", boxShadow: "0 8px 24px rgba(255, 0, 110, 0.12)" }}>{loadingMore ? "Fetching More..." : "Load More Products"}</Button>
+                                <Button size="large" onClick={loadMore} loading={loadingMore} style={{ borderRadius: 18, minWidth: 280, height: 60, fontWeight: 800, fontSize: 17, background: isDark ? "#1f1f1f" : "#fff", borderColor: "#FF006E", color: "#FF006E", boxShadow: "0 8px 24px rgba(255, 0, 110, 0.12)" }}>{loadingMore ? t.home.loading : t.home.discoverMore}</Button>
                             </div>
                         )}
                     </>
                 ) : (
-                    <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="We couldn't find any products." style={{ padding: "100px 0" }}>
-                        <Button type="primary" onClick={() => handleSelectCategory(null)} style={{ background: "#FF006E", border: "none" }}>View All Products</Button>
+                    <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={t.home.noProducts} style={{ padding: "100px 0" }}>
+                        <Button type="primary" onClick={() => handleSelectCategory(null)} style={{ background: "#FF006E", border: "none" }}>{t.home.viewAllProducts}</Button>
                     </Empty>
                 )}
             </div>
@@ -487,10 +489,10 @@ export const ShopHomePage: React.FC = () => {
 
             {/* 11. NEWSLETTER */}
             <div style={{ background: isDark ? "#1a1a2e" : "#0d1b2a", borderRadius: 24, padding: "48px 32px", marginBottom: 0, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 24 }}>
-                <div><Title level={3} style={{ color: "#fff", margin: "0 0 8px", fontWeight: 800 }}>Sign Up For Newsletter</Title><Text style={{ color: "rgba(255,255,255,0.7)", fontSize: 16 }}>Get E-mail updates about our latest shop and <span style={{ color: "#FF006E", fontWeight: 700 }}>special offers.</span></Text></div>
+                <div><Title level={3} style={{ color: "#fff", margin: "0 0 8px", fontWeight: 800 }}>{t.home.newsletterTitle}</Title><Text style={{ color: "rgba(255,255,255,0.7)", fontSize: 16 }}>{t.home.newsletterDesc1}<span style={{ color: "#FF006E", fontWeight: 700 }}>{t.home.newsletterDesc2}</span></Text></div>
                 <Space size={12} style={{ width: "100%", maxWidth: 450 }}>
-                    <Input placeholder="Your email address" size="large" style={{ borderRadius: 12, height: 50, flex: 1 }} />
-                    <Button type="primary" size="large" style={{ background: "#FF006E", border: "none", borderRadius: 12, height: 50, fontWeight: 700, padding: "0 32px" }}>Sign Up</Button>
+                    <Input placeholder={t.home.emailPlaceholder} size="large" style={{ borderRadius: 12, height: 50, flex: 1 }} />
+                    <Button type="primary" size="large" style={{ background: "#FF006E", border: "none", borderRadius: 12, height: 50, fontWeight: 700, padding: "0 32px" }}>{t.home.signUp}</Button>
                 </Space>
             </div>
 

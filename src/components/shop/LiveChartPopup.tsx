@@ -3,6 +3,7 @@ import { Modal, Row, Col, Card, Statistic, Typography, Space, Divider } from "an
 import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { useList } from "@refinedev/core";
 import { IOrder } from "../../interfaces";
+import { useLanguage } from "../../contexts/LanguageContext";
 
 const { Title, Text } = Typography;
 
@@ -15,6 +16,7 @@ interface LiveChartPopupProps {
 }
 
 export const LiveChartPopup: React.FC<LiveChartPopupProps> = ({ visible, onClose, isDark }) => {
+    const { t, language } = useLanguage();
     const { query: ordersQuery } = useList<IOrder>({
         resource: "orders",
         pagination: { pageSize: 50 },
@@ -30,15 +32,15 @@ export const LiveChartPopup: React.FC<LiveChartPopupProps> = ({ visible, onClose
     });
 
     const revenueData = last7Days.map(date => ({
-        date: new Date(date).toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+        date: new Date(date).toLocaleDateString(language === "km" ? "km-KH" : "en-US", { month: "short", day: "numeric" }),
         revenue: orders.filter(o => new Date(o.createdAt).toISOString().split("T")[0] === date && o.orderStatus !== "CANCELLED").reduce((sum, o) => sum + o.total, 0),
     }));
 
     const statusData = [
-        { name: "Pending", value: orders.filter(o => o.orderStatus === "PENDING").length },
-        { name: "Processing", value: orders.filter(o => o.orderStatus === "PROCESSING").length },
-        { name: "Shipping", value: orders.filter(o => o.orderStatus === "SHIPPING").length },
-        { name: "Delivered", value: orders.filter(o => o.orderStatus === "DELIVERED").length },
+        { name: t.order.status.PENDING, value: orders.filter(o => o.orderStatus === "PENDING").length },
+        { name: t.order.status.PROCESSING, value: orders.filter(o => o.orderStatus === "PROCESSING").length },
+        { name: t.order.status.SHIPPING, value: orders.filter(o => o.orderStatus === "SHIPPING").length },
+        { name: t.order.status.DELIVERED, value: orders.filter(o => o.orderStatus === "DELIVERED").length },
     ].filter(s => s.value > 0);
 
     return (
@@ -64,7 +66,7 @@ export const LiveChartPopup: React.FC<LiveChartPopupProps> = ({ visible, onClose
                             <animate attributeName="y" values="2;10;2" dur="2.5s" repeatCount="indefinite" />
                         </rect>
                     </svg>
-                    <Title level={4} style={{ margin: 0 }}>Live Analytics</Title>
+                    <Title level={4} style={{ margin: 0 }}>{t.analytics.title}</Title>
                 </Space>
             }
             open={visible}
@@ -77,16 +79,16 @@ export const LiveChartPopup: React.FC<LiveChartPopupProps> = ({ visible, onClose
             <Row gutter={[16, 16]}>
                 <Col span={12}>
                     <Card bordered={false} style={{ background: isDark ? "#262626" : "#f5f5f5", borderRadius: 16 }}>
-                        <Statistic title="Live Revenue" value={totalRevenue} precision={2} prefix="$" valueStyle={{ color: "#4CAF50" }} />
+                        <Statistic title={t.analytics.revenue} value={totalRevenue} precision={2} prefix="$" valueStyle={{ color: "#4CAF50" }} />
                     </Card>
                 </Col>
                 <Col span={12}>
                     <Card bordered={false} style={{ background: isDark ? "#262626" : "#f5f5f5", borderRadius: 16 }}>
-                        <Statistic title="Total Orders" value={orders.length} valueStyle={{ color: "#3A86FF" }} />
+                        <Statistic title={t.analytics.totalOrders} value={orders.length} valueStyle={{ color: "#3A86FF" }} />
                     </Card>
                 </Col>
                 <Col span={24}>
-                    <Divider orientation="left">Revenue (7 Days)</Divider>
+                    <Divider orientation="left">{t.analytics.revenue7Days}</Divider>
                     <div style={{ height: 250 }}>
                         <ResponsiveContainer>
                             <BarChart data={revenueData}>
@@ -100,7 +102,7 @@ export const LiveChartPopup: React.FC<LiveChartPopupProps> = ({ visible, onClose
                     </div>
                 </Col>
                 <Col span={24}>
-                    <Divider orientation="left">Order Status</Divider>
+                    <Divider orientation="left">{t.analytics.orderStatus}</Divider>
                     <div style={{ height: 200, display: 'flex', justifyContent: 'center' }}>
                         <ResponsiveContainer>
                             <PieChart>
@@ -114,7 +116,7 @@ export const LiveChartPopup: React.FC<LiveChartPopupProps> = ({ visible, onClose
                 </Col>
             </Row>
             <div style={{ textAlign: 'center', marginTop: 12 }}>
-                <Text type="secondary">Real-time data from JongTinh Platform</Text>
+                <Text type="secondary">{t.analytics.platformSource}</Text>
             </div>
         </Modal>
     );

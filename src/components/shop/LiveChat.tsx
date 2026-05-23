@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { Button, Card, Input, Avatar, Badge, Space, Typography, Tooltip, Tag } from "antd";
 import { MessageOutlined, CloseOutlined, SendOutlined, CustomerServiceOutlined } from "@ant-design/icons";
 import { motion, AnimatePresence } from "framer-motion";
+import { useLanguage } from "../../contexts/LanguageContext";
 
 const { Text, Title } = Typography;
 
@@ -17,33 +18,44 @@ interface LiveChatProps {
     isDark?: boolean;
 }
 
-const QUICK_REPLIES = [
-    "📦 Track my order",
-    "💳 Payment issue",
-    "🚚 Delivery time",
-    "↩️ Return policy",
-    "❓ General question",
-];
-
 export const LiveChat: React.FC<LiveChatProps> = ({ isDark }) => {
+    const { t } = useLanguage();
     const [isOpen, setIsOpen] = useState(false);
     const [message, setMessage] = useState("");
     const [isTyping, setIsTyping] = useState(false);
     const [messages, setMessages] = useState<Message[]>([
         {
             id: "1",
-            text: "Hello! 👋 Welcome to JongTinh Support.\n\nHow can I help you today?",
+            text: t.chat.agentWelcome,
             sender: "agent",
             timestamp: new Date(),
         },
         {
             id: "2",
-            text: "You can ask me about:\n📦 • Order tracking\n💳 • Payment methods\n🚚 • Delivery information\n↩️ • Returns & refunds\n🛍️ • Product questions",
+            text: t.chat.agentHelpList,
             sender: "agent",
             timestamp: new Date(),
         },
     ]);
     const scrollRef = useRef<HTMLDivElement>(null);
+
+    // Sync initial messages when language changes
+    useEffect(() => {
+        setMessages([
+            {
+                id: "1",
+                text: t.chat.agentWelcome,
+                sender: "agent",
+                timestamp: new Date(),
+            },
+            {
+                id: "2",
+                text: t.chat.agentHelpList,
+                sender: "agent",
+                timestamp: new Date(),
+            },
+        ]);
+    }, [t.chat.agentWelcome, t.chat.agentHelpList]);
 
     useEffect(() => {
         if (scrollRef.current) {
@@ -54,28 +66,28 @@ export const LiveChat: React.FC<LiveChatProps> = ({ isDark }) => {
     const generateSmartResponse = (userMessage: string): string => {
         const message = userMessage.toLowerCase().trim();
 
-        if (message.includes("track") || message.includes("order") || message.includes("📦")) {
-            return "I can help you track your order! 📦\n\nTo check your order status:\n1. Go to **Profile → My Orders**\n2. Tap on any order to see tracking details\n3. You'll see the current status (Pending → Processing → Shipping → Delivered)\n\nDo you have a specific order number?";
+        if (message.includes("track") || message.includes("order") || message.includes("📦") || message.includes("តាមដាន")) {
+            return t.chat.responses.track;
         }
-        if (message.includes("payment") || message.includes("pay") || message.includes("💳")) {
-            return "We support multiple payment methods:\n\n🏦 **ABA Pay**\n🏦 **ACLEDA**\n🏦 **Wing**\n💵 **Cash on Delivery**\n\nWhat payment issue are you experiencing?";
+        if (message.includes("payment") || message.includes("pay") || message.includes("💳") || message.includes("ការទូទាត់")) {
+            return t.chat.responses.payment;
         }
-        if (message.includes("delivery") || message.includes("shipping") || message.includes("🚚")) {
-            return "📦 **Standard Delivery:** 2-3 business days\n🚀 **Express:** 1-2 business days\n📍 **Coverage:** All major cities in Cambodia\n💰 **Shipping:** FREE for all orders!\n\nWould you like to track a specific order?";
+        if (message.includes("delivery") || message.includes("shipping") || message.includes("🚚") || message.includes("ដឹកជញ្ជូន")) {
+            return t.chat.responses.delivery;
         }
-        if (message.includes("return") || message.includes("refund") || message.includes("↩️")) {
-            return "Our return policy:\n✅ **30 days** from delivery\n✅ Item must be unused\n✅ Refund via original payment\n✅ Processing: 5-7 business days\n\nWant to create a return request?";
+        if (message.includes("return") || message.includes("refund") || message.includes("↩️") || message.includes("ប្តូរ")) {
+            return t.chat.responses.return;
         }
-        if (message.includes("product") || message.includes("item") || message.includes("🛍️")) {
-            return "🔍 Search products by name\n📂 Browse by category\n⭐ Check ratings and reviews\n❤️ Save to favorites\n\nWhat product are you looking for?";
+        if (message.includes("product") || message.includes("item") || message.includes("🛍️") || message.includes("ផលិតផល")) {
+            return t.chat.responses.product;
         }
-        if (message.includes("hello") || message.includes("hi") || message.includes("help")) {
-            return "Hello! 😊 I'm here to help.\n\nAsk me about:\n📦 Orders\n💳 Payments\n🚚 Delivery\n↩️ Returns\n🛍️ Products\n\nWhat can I assist you with?";
+        if (message.includes("hello") || message.includes("hi") || message.includes("help") || message.includes("សួស្តី")) {
+            return t.chat.responses.hello;
         }
-        if (message.includes("thank") || message.includes("bye")) {
-            return "You're welcome! 😊\n\n📞 Call: +855 12 345 678\n📧 Email: support@jongtinh.com\n🎫 Create a support ticket\n\nHave a great day! 🛍️";
+        if (message.includes("thank") || message.includes("bye") || message.includes("អរគុណ")) {
+            return t.chat.responses.thanks;
         }
-        return "Thank you for your message! 🙏\n\nFor faster help, you can:\n📞 Call: +855 12 345 678\n📧 Email: support@jongtinh.com\n🎫 Create a support ticket";
+        return t.chat.responses.default;
     };
 
     const handleSend = (text?: string) => {
@@ -103,6 +115,14 @@ export const LiveChat: React.FC<LiveChatProps> = ({ isDark }) => {
             setMessages((prev) => [...prev, agentMsg]);
         }, 1500);
     };
+
+    const QUICK_REPLIES = [
+        { key: "track", text: t.chat.quickReplies.track },
+        { key: "payment", text: t.chat.quickReplies.payment },
+        { key: "delivery", text: t.chat.quickReplies.delivery },
+        { key: "return", text: t.chat.quickReplies.return },
+        { key: "general", text: t.chat.quickReplies.general },
+    ];
 
     return (
         <div style={{ position: "fixed", bottom: 30, right: 30, zIndex: 1000 }}>
@@ -141,8 +161,8 @@ export const LiveChat: React.FC<LiveChatProps> = ({ isDark }) => {
                                         <Avatar size="large" icon={<CustomerServiceOutlined />} style={{ backgroundColor: "rgba(255,255,255,0.2)" }} />
                                     </Badge>
                                     <div>
-                                        <Title level={5} style={{ color: "white", margin: 0, fontSize: 16 }}>JongTinh Support</Title>
-                                        <Text style={{ color: "rgba(255,255,255,0.8)", fontSize: 12 }}>We typically reply in a few minutes</Text>
+                                        <Title level={5} style={{ color: "white", margin: 0, fontSize: 16 }}>{t.chat.title}</Title>
+                                        <Text style={{ color: "rgba(255,255,255,0.8)", fontSize: 12 }}>{t.chat.subtitle}</Text>
                                     </div>
                                 </Space>
                                 <Button type="text" icon={<CloseOutlined style={{ color: "white" }} />} onClick={() => setIsOpen(false)} />
@@ -208,7 +228,7 @@ export const LiveChat: React.FC<LiveChatProps> = ({ isDark }) => {
                             }}>
                                 {QUICK_REPLIES.map((reply) => (
                                     <Tag
-                                        key={reply}
+                                        key={reply.key}
                                         style={{
                                             cursor: "pointer",
                                             borderRadius: 20,
@@ -219,9 +239,9 @@ export const LiveChat: React.FC<LiveChatProps> = ({ isDark }) => {
                                             background: isDark ? "rgba(255,0,110,0.1)" : "#fff0f6",
                                             marginInline: 0,
                                         }}
-                                        onClick={() => handleSend(reply)}
+                                        onClick={() => handleSend(reply.text)}
                                     >
-                                        {reply}
+                                        {reply.text}
                                     </Tag>
                                 ))}
                             </div>
@@ -229,7 +249,7 @@ export const LiveChat: React.FC<LiveChatProps> = ({ isDark }) => {
                             {/* Input */}
                             <div style={{ padding: "12px 16px", borderTop: isDark ? "1px solid #333" : "1px solid #f0f0f0" }}>
                                 <Input
-                                    placeholder="Type your message..."
+                                    placeholder={t.chat.placeholder}
                                     suffix={
                                         <Button
                                             type="primary"
@@ -253,7 +273,7 @@ export const LiveChat: React.FC<LiveChatProps> = ({ isDark }) => {
             </AnimatePresence>
 
             {/* FAB Button with Lottie-style pulse */}
-            <Tooltip title="Chat with support" placement="left">
+            <Tooltip title={t.chat.tooltip} placement="left">
                 <div style={{ position: "relative" }}>
                     <div style={{
                         position: "absolute",

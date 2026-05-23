@@ -5,6 +5,7 @@ import { useNavigate } from "react-router";
 import { doc, updateDoc } from "firebase/firestore";
 import { db } from "../../firebase";
 import { INotification } from "../../interfaces";
+import { useLanguage } from "../../contexts/LanguageContext";
 
 const { Title, Text } = Typography;
 
@@ -19,6 +20,7 @@ export const NotificationBanner: React.FC<NotificationBannerProps> = ({
     notifications, dismissedIds, onDismiss, isDark,
 }) => {
     const navigate = useNavigate();
+    const { language } = useLanguage();
 
     const visibleNotifications = notifications.filter(
         n => !dismissedIds.includes(n.id) && !n.isRead
@@ -78,7 +80,7 @@ export const NotificationBanner: React.FC<NotificationBannerProps> = ({
                             {notification.message}
                         </Text>
                         <Text type="secondary" style={{ fontSize: 11, marginTop: 4, display: "block" }}>
-                            {new Date(notification.timestamp).toLocaleDateString("en-US", {
+                            {new Date(notification.timestamp).toLocaleDateString(language === "km" ? "km-KH" : "en-US", {
                                 month: "short", day: "numeric", hour: "2-digit", minute: "2-digit",
                             })}
                         </Text>

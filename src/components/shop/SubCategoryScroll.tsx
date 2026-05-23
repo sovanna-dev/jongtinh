@@ -1,6 +1,7 @@
 import React from "react";
 import { Tag, Space } from "antd";
 import { ISubCategory } from "../../interfaces";
+import { useLanguage } from "../../contexts/LanguageContext";
 
 interface SubCategoryScrollProps {
     subCategories: ISubCategory[];
@@ -15,6 +16,7 @@ export const SubCategoryScroll: React.FC<SubCategoryScrollProps> = ({
     onSelectSubCategory,
     isDark
 }) => {
+    const { t } = useLanguage();
     if (!subCategories || subCategories.length === 0) return null;
 
     return (
@@ -38,7 +40,7 @@ export const SubCategoryScroll: React.FC<SubCategoryScrollProps> = ({
                         background: selectedSubCategory === null ? "#FF006E" : "transparent",
                     }}
                 >
-                    All
+                    {t.common.all}
                 </Tag.CheckableTag>
                 {subCategories.map((sub) => (
                     <Tag.CheckableTag

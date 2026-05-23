@@ -2,6 +2,7 @@ import React from "react";
 import { Carousel, Typography } from "antd";
 import { IPromotionBanner } from "../../interfaces";
 import logo from "../../images/logo.webp";
+import { useLanguage } from "../../contexts/LanguageContext";
 
 const { Title, Text } = Typography;
 
@@ -11,6 +12,7 @@ interface BannerCarouselProps {
 }
 
 export const BannerCarousel: React.FC<BannerCarouselProps> = ({ banners, onBannerClick }) => {
+    const { t } = useLanguage();
     if (banners.length === 0) {
         return (
             <div style={{
@@ -24,7 +26,7 @@ export const BannerCarousel: React.FC<BannerCarouselProps> = ({ banners, onBanne
                     <img src={logo} alt="SmartShop Logo" style={{ width: 100, height: 100, marginBottom: 16, filter: "drop-shadow(0 4px 8px rgba(0,0,0,0.2))" }} />
                     <Title level={1} style={{ color: "#fff", marginBottom: 8, fontSize: 48, fontWeight: 800 }}>JongTinh</Title>
                     <Text style={{ color: "rgba(255,255,255,0.9)", fontSize: 20, maxWidth: 600, display: "inline-block" }}>
-                        Discover amazing products at the best prices in Cambodia 🇰🇭
+                        {t.home.subtitle}
                     </Text>
                 </div>
             </div>
@@ -84,7 +86,7 @@ export const BannerCarousel: React.FC<BannerCarouselProps> = ({ banners, onBanne
                             {banner.actionUrl && (
                                 <div style={{ marginTop: 12 }}>
                                     <span style={{ color: "#fff", fontSize: 14, fontWeight: 600, background: "rgba(255,255,255,0.2)", padding: "8px 20px", borderRadius: 20, backdropFilter: "blur(10px)", border: "1px solid rgba(255,255,255,0.3)" }}>
-                                        Shop Now →
+                                        {t.home.shopNow || "Shop Now"} →
                                     </span>
                                 </div>
                             )}

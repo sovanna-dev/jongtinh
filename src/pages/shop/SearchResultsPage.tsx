@@ -8,10 +8,12 @@ import { IProduct } from "../../interfaces";
 import { ShopLayout } from "./ShopLayout";
 import { ProductCard } from "../../components/shop/ProductCard";
 import { ColorModeContext } from "../../contexts/color-mode";
+import { useLanguage } from "../../contexts/LanguageContext";
 
 const { Title, Text } = Typography;
 
 export const SearchResultsPage: React.FC = () => {
+    const { t } = useLanguage();
     const navigate = useNavigate();
     const { mode } = useContext(ColorModeContext);
     const isDark = mode === "dark";
@@ -79,7 +81,7 @@ export const SearchResultsPage: React.FC = () => {
             }
         } catch (error) {
             console.error("Failed to fetch search results:", error);
-            message.error("Failed to perform search");
+            message.error(t.search.failed);
         } finally {
             setIsLoading(false);
         }
@@ -96,8 +98,8 @@ export const SearchResultsPage: React.FC = () => {
             <div style={{ marginBottom: 24 }}>
                 <Breadcrumb
                     items={[
-                        { title: <><HomeOutlined /> <span>Home</span></>, onClick: () => navigate("/shop"), className: "cursor-pointer" },
-                        { title: "Search Results" },
+                        { title: <><HomeOutlined /> <span>{t.footer.home}</span></>, onClick: () => navigate("/shop"), className: "cursor-pointer" },
+                        { title: t.search.title },
                     ]}
                 />
             </div>
@@ -105,14 +107,14 @@ export const SearchResultsPage: React.FC = () => {
             <div style={{ marginBottom: 32 }}>
                 <Title level={2}>
                     <SearchOutlined style={{ marginRight: 12, color: "#FF006E" }} />
-                    {queryTerm ? `Search results for "${queryTerm}"` : "All Products"}
+                    {queryTerm ? t.search.resultsFor.replace("{query}", queryTerm) : t.home.allProducts}
                 </Title>
-                <Text type="secondary">{products.length} products found</Text>
+                <Text type="secondary">{t.search.productsFound.replace("{count}", products.length.toString())}</Text>
             </div>
 
             {isLoading ? (
                 <div style={{ textAlign: "center", padding: "100px 0" }}>
-                    <Spin size="large" tip="Searching our collection..." />
+                    <Spin size="large" tip={t.search.searching} />
                 </div>
             ) : products.length > 0 ? (
                 <Row gutter={[12, 32]}>
@@ -127,12 +129,12 @@ export const SearchResultsPage: React.FC = () => {
                     <Empty
                         description={
                             <span>
-                                No products found for "<strong>{queryTerm}</strong>"
+                                {t.search.noResults.replace("{query}", queryTerm)}
                             </span>
                         }
                     >
                         <Button type="primary" onClick={() => navigate("/shop")} style={{ background: "#FF006E", border: "none", borderRadius: 10 }}>
-                            Back to Shop
+                            {t.product.backToShop}
                         </Button>
                     </Empty>
                 </div>
