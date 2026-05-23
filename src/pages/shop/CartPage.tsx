@@ -89,6 +89,25 @@ export const CartPage: React.FC = () => {
                                                     onClick={() => navigate(`/shop/product/${item.product.id}`)}>
                                                     {item.product.name}
                                                 </Text>
+                                                {item.product.selectedSize && (
+                                                    <Text style={{ fontSize: 12, color: "#FF006E", display: "block" }}>Size: {item.product.selectedSize}</Text>
+                                                )}
+                                                {item.product.selectedColor && (
+                                                    <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 2 }}>
+                                                        <div style={{
+                                                            width: 12, height: 12, borderRadius: "50%",
+                                                            backgroundColor: typeof item.product.selectedColor === "string"
+                                                                ? item.product.selectedColor
+                                                                : item.product.selectedColor?.hex || "#ccc",
+                                                            border: "1px solid #d9d9d9"
+                                                        }} />
+                                                        <Text style={{ fontSize: 12, color: "#666" }}>
+                                                            {typeof item.product.selectedColor === "string"
+                                                                ? item.product.selectedColor
+                                                                : item.product.selectedColor?.name || ""}
+                                                        </Text>
+                                                    </div>
+                                                )}
                                                 <Text type="secondary" style={{ fontSize: 12 }}>Unit Price: ${price.toFixed(2)}</Text>
                                             </Col>
                                             <Col xs={14} sm={6} style={{ textAlign: "center" }}>

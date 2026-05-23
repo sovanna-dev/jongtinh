@@ -19,6 +19,8 @@ export const ProductDetail: React.FC = () => {
     const [selectedImage, setSelectedImage] = useState(0);
     const [searchQuery, setSearchQuery] = useState("");
     const { addToCart } = useCart();
+    const [selectedColor, setSelectedColor] = useState<string>("");
+    const [selectedSize, setSelectedSize] = useState<string>("");
 
     useEffect(() => {
         if (!id) return;
@@ -31,7 +33,29 @@ export const ProductDetail: React.FC = () => {
             setIsLoading(false);
         })();
     }, [id]);
+        // Extract available sizes from attributes
+        const availableSizes = React.useMemo(() => {
+            if (!product?.attributes) return [];
 
+            // Handle both array and object formats
+            if (Array.isArray(product.attributes)) {
+                const sizeAttr = product.attributes.find(
+                    (a: any) => (a.key || a.label || "").toLowerCase() === "size"
+                );
+                if (sizeAttr) {
+                    return sizeAttr.value.split(",").map((s: string) => s.trim()).filter(Boolean);
+                }
+            } else {
+                const sizeValue = product.attributes["size"] || product.attributes["Size"] || "";
+                if (sizeValue) {
+                    return sizeValue.split(",").map((s: string) => s.trim()).filter(Boolean);
+                }
+            }
+            return [];
+        }, [product]);
+
+        // Extract available colors from product
+        const availableColors = product?.colors || [];
     const isInStock = product?.isAvailable && (product?.stockQuantity || 0) > 0;
 
     const handleSearch = () => {
@@ -185,12 +209,107 @@ export const ProductDetail: React.FC = () => {
                             </Tag>
                         </div>
 
+                        {/* Size Selector */}
+                        {availableSizes.length > 0 && (
+                            <div style={{ marginBottom: 24 }}>
+                                <Title level={5} style={{ fontWeight: 700, marginBottom: 12 }}>
+                                    Select Size {selectedSize && <Tag color="#FF006E" style={{ marginLeft: 8 }}>{selectedSize}</Tag>}
+                                </Title>
+                                <Space size={12} wrap>
+                                    {availableSizes.map((size: string) => (
+                                        <div
+                                            key={size}
+                                            onClick={() => setSelectedSize(size)}
+                                            style={{
+                                                minWidth: 56,
+                                                height: 44,
+                                                borderRadius: 12,
+                                                display: "flex",
+                                                alignItems: "center",
+                                                justifyContent: "center",
+                                                cursor: "pointer",
+                                                background: selectedSize === size ? "#FF006E" : "#f5f5f5",
+                                                color: selectedSize === size ? "#fff" : "#333",
+                                                fontWeight: selectedSize === size ? 700 : 500,
+                                                border: selectedSize === size ? "2px solid #FF006E" : "2px solid #e0e0e0",
+                                                transition: "all 0.2s ease",
+                                                fontSize: 16,
+                                                userSelect: "none",
+                                            }}
+                                        >
+                                            {size}
+                                        </div>
+                                    ))}
+                                </Space>
+                            </div>
+                        )}
+
+                        {/* Color Selector */}
+                        {availableColors.length > 0 && (
+                            <div style={{ marginBottom: 24 }}>
+                                <Title level={5} style={{ fontWeight: 700, marginBottom: 12 }}>
+                                    Select Color {selectedColor && <Tag color="#FF006E" style={{ marginLeft: 8 }}>{selectedColor}</Tag>}
+                                </Title>
+                                <Space size={12} wrap>
+                                    {availableColors.map((c: any, i: number) => {
+                                        const colorName = typeof c === "string" ? c : (c.name || c.hex || "");
+                                        const colorHex = typeof c === "string" ? c : (c.hex || "");
+                                        const isSelected = selectedColor === colorHex || selectedColor === colorName;
+                                        return (
+                                            <Tooltip title={colorName} key={i}>
+                                                <div
+                                                    onClick={() => setSelectedColor(colorHex || colorName)}
+                                                    style={{
+                                                        width: 44,
+                                                        height: 44,
+                                                        borderRadius: "50%",
+                                                        backgroundColor: colorHex,
+                                                        cursor: "pointer",
+                                                        border: isSelected ? "3px solid #FF006E" : "3px solid #e0e0e0",
+                                                        boxShadow: isSelected ? "0 0 0 3px rgba(255,0,110,0.2)" : "0 2px 4px rgba(0,0,0,0.1)",
+                                                        transition: "all 0.2s ease",
+                                                        position: "relative",
+                                                    }}
+                                                >
+                                                    {isSelected && (
+                                                        <div style={{
+                                                            position: "absolute",
+                                                            top: -6, right: -6,
+                                                            width: 20, height: 20,
+                                                            borderRadius: "50%",
+                                                            background: "#FF006E",
+                                                            display: "flex",
+                                                            alignItems: "center",
+                                                            justifyContent: "center",
+                                                        }}>
+                                                            <span style={{ color: "#fff", fontSize: 12 }}>✓</span>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </Tooltip>
+                                        );
+                                    })}
+                                </Space>
+                            </div>
+                        )}
+
                         <Button
                             type="primary"
                             size="large"
                             block
                             icon={<ShoppingCartOutlined style={{ fontSize: 20 }} />}
-                            onClick={() => { addToCart(product, quantity); message.success(`${product.name} added to cart!`); }}
+                            onClick={() => {
+                                // Store selected size/color in the product before adding
+                                const productWithSelection = {
+                                    ...product,
+                                    selectedSize: selectedSize,
+                                    selectedColor: availableColors.find(
+                                        (c: any) => (typeof c === "string" ? c : c.hex) === selectedColor
+                                    ) || selectedColor,
+                                };
+                                addToCart(productWithSelection, quantity);
+                                message.success(`${product.name}${selectedSize ? ` (${selectedSize})` : ""} added to cart!`);
+                            }}
                             disabled={!isInStock}
                             style={{
                                 background: isInStock ? "#FF006E" : "#d9d9d9",

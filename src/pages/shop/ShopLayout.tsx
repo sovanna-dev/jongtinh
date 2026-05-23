@@ -751,6 +751,25 @@ export const ShopLayout: React.FC<ShopLayoutProps> = ({ children, searchQuery, s
                                             <div style={{ flex: 1 }}>
                                                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
                                                     <Text strong style={{ fontSize: 15, display: "block", width: "85%" }} ellipsis>{item.product.name}</Text>
+                                                    {item.product.selectedSize && (
+                                                        <Text style={{ fontSize: 12, color: "#FF006E", display: "block" }}>Size: {item.product.selectedSize}</Text>
+                                                    )}
+                                                    {item.product.selectedColor && (
+                                                        <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 2 }}>
+                                                            <div style={{
+                                                                width: 14, height: 14, borderRadius: "50%",
+                                                                backgroundColor: typeof item.product.selectedColor === "string"
+                                                                    ? item.product.selectedColor
+                                                                    : item.product.selectedColor?.hex || "#ccc",
+                                                                border: "1px solid #d9d9d9"
+                                                            }} />
+                                                            <Text style={{ fontSize: 12, color: "#666" }}>
+                                                                {typeof item.product.selectedColor === "string"
+                                                                    ? item.product.selectedColor
+                                                                    : item.product.selectedColor?.name || ""}
+                                                            </Text>
+                                                        </div>
+                                                    )}
                                                     <Button
                                                         type="text"
                                                         size="small"

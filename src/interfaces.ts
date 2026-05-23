@@ -71,6 +71,8 @@ export interface IProduct {
     filterTags: string[];
     isFeatured: boolean;
     variants?: IProductVariant[];
+    selectedColor?: string | IProductColor;
+    selectedSize?: string;
 }
 
 export type OrderStatus = "PENDING" | "PROCESSING" | "SHIPPING" | "DELIVERED" | "CANCELLED";
