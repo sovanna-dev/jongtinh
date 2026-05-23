@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Row, Col, Typography, Empty, Spin, Button, Breadcrumb } from "antd";
+import { Row, Col, Typography, Empty, Spin, Button, Breadcrumb, Space } from "antd";
 import { useNavigate } from "react-router";
 import { HomeOutlined, HeartOutlined } from "@ant-design/icons";
 import { collection, query, where, getDocs, documentId } from "firebase/firestore";

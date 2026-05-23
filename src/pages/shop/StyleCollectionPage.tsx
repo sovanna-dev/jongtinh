@@ -13,7 +13,7 @@ import { message, Tooltip } from "antd";
 
 const { Title, Text, Paragraph } = Typography;
 
-const GalleryItem: React.FC<{ img: string; slug?: string }> = ({ img, slug }) => {
+const GalleryItem: React.FC<{ img: string }> = ({ img }) => {
     const [hovered, setHovered] = useState(false);
     return (
         <div
@@ -146,10 +146,9 @@ export const StyleCollectionPage: React.FC = () => {
         >
             {/* ═══════ HERO BANNER ═══════ */}
             {styleMeta.bannerImage && (
-                <div style={{
+                <div className="style-hero-banner" style={{
                     position: "relative",
                     width: "100%",
-                    height: "450px",
                     borderRadius: 24,
                     overflow: "hidden",
                     marginBottom: 48,
@@ -158,7 +157,8 @@ export const StyleCollectionPage: React.FC = () => {
                     <Image
                         src={styleMeta.bannerImage}
                         preview={false}
-                        style={{ width: "100%", height: "450px", objectFit: "cover" }}
+                        className="style-hero-image"
+                        style={{ width: "100%", objectFit: "cover" }}
                     />
                     <div style={{
                         position: "absolute",
@@ -167,12 +167,11 @@ export const StyleCollectionPage: React.FC = () => {
                         display: "flex",
                         flexDirection: "column",
                         justifyContent: "flex-end",
-                        padding: "60px 48px"
-                    }}>
-                        <Title level={1} style={{ color: "#fff", margin: 0, fontSize: 56, fontWeight: 900, letterSpacing: -2 }}>
+                    }} className="style-hero-content">
+                        <Title level={1} className="style-hero-title" style={{ color: "#fff", margin: 0, fontWeight: 900, letterSpacing: -2 }}>
                             {styleMeta.title || styleMeta.name}
                         </Title>
-                        <Paragraph style={{ color: "rgba(255,255,255,0.9)", fontSize: 18, maxWidth: 700, margin: "16px 0 0" }}>
+                        <Paragraph className="style-hero-desc" style={{ color: "rgba(255,255,255,0.9)", fontSize: 18, maxWidth: 700, margin: "16px 0 0" }}>
                             {styleMeta.description}
                         </Paragraph>
                     </div>
@@ -180,9 +179,10 @@ export const StyleCollectionPage: React.FC = () => {
             )}
 
             {/* ═══════ BREADCRUMBS & TITLE ═══════ */}
-            <div style={{ padding: "0 8px", marginBottom: 32, display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
+            <div className="style-header-row" style={{ padding: "0 8px", marginBottom: 32, display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
                 <div>
                     <Breadcrumb
+                        className="style-breadcrumb"
                         separator={<RightOutlined style={{ fontSize: 10, color: "#ccc" }} />}
                         items={[
                             { title: <span onClick={() => navigate("/shop")} style={{ cursor: "pointer", color: "#888" }}>Homepage</span> },
@@ -190,7 +190,7 @@ export const StyleCollectionPage: React.FC = () => {
                         ]}
                         style={{ marginBottom: 12 }}
                     />
-                    <Title level={1} style={{ margin: 0, fontWeight: 800, fontSize: 42, letterSpacing: -1 }}>
+                    <Title level={1} className="style-main-title" style={{ margin: 0, fontWeight: 800, fontSize: 42, letterSpacing: -1 }}>
                         {styleMeta.name} Style
                     </Title>
                 </div>
@@ -198,6 +198,7 @@ export const StyleCollectionPage: React.FC = () => {
                     <Button
                         icon={<ShareAltOutlined />}
                         onClick={handleShare}
+                        className="style-share-btn"
                         style={{ borderRadius: "50%", width: 45, height: 45, display: "flex", alignItems: "center", justifyContent: "center", border: "1px solid #eee", boxShadow: "0 2px 8px rgba(0,0,0,0.05)" }}
                     />
                 </Tooltip>
@@ -212,14 +213,13 @@ export const StyleCollectionPage: React.FC = () => {
                         </Text>
                     </div>
 
-                    <div style={{
+                    <div className="lifestyle-grid" style={{
                         display: "grid",
-                        gridTemplateColumns: "repeat(5, 1fr)",
                         gap: "2px",
                         marginBottom: 32
                     }}>
                         {styleMeta.gallery.map((img, idx) => (
-                            <GalleryItem key={idx} img={img} slug={styleMeta.slug} />
+                            <GalleryItem key={idx} img={img} />
                         ))}
                     </div>
 
@@ -274,7 +274,19 @@ export const StyleCollectionPage: React.FC = () => {
                 </div>
             )}
 
-            <FilterDrawer visible={isFilterOpen} onClose={() => setIsFilterOpen(false)} filters={activeFilters} onFilterChange={setActiveFilters} isDark={false} />
+            <FilterDrawer
+                visible={isFilterOpen}
+                onClose={() => setIsFilterOpen(false)}
+                filters={activeFilters}
+                onFilterChange={setActiveFilters}
+                onReset={() => setActiveFilters({
+                    priceRange: [0, 5000],
+                    brands: [],
+                    inStock: false,
+                    minRating: 0,
+                })}
+                isDark={false}
+            />
 
             {/* Infinite Scroll Load More */}
             {hasMore && (
@@ -288,6 +300,28 @@ export const StyleCollectionPage: React.FC = () => {
                     </Button>
                 </div>
             )}
+
+            <style>{`
+                .style-hero-banner, .style-hero-image { height: 450px; }
+                .style-hero-content { padding: 60px 48px; }
+                .style-hero-title { font-size: 56px !important; }
+                .lifestyle-grid { grid-template-columns: repeat(5, 1fr); }
+
+                @media (max-width: 992px) {
+                    .lifestyle-grid { grid-template-columns: repeat(3, 1fr); }
+                }
+
+                @media (max-width: 768px) {
+                    .style-hero-banner, .style-hero-image { height: 320px; }
+                    .style-hero-content { padding: 32px 24px; }
+                    .style-hero-title { font-size: 32px !important; }
+                    .style-hero-desc { font-size: 14px !important; margin-top: 8px !important; }
+                    .style-main-title { font-size: 28px !important; }
+                    .style-header-row { flex-direction: column; align-items: flex-start !important; gap: 16px; }
+                    .style-share-btn { width: 40px !important; height: 40px !important; }
+                    .lifestyle-grid { grid-template-columns: repeat(2, 1fr); }
+                }
+            `}</style>
         </ShopLayout>
     );
 };

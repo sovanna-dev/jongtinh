@@ -4,15 +4,19 @@ import { Typography, Form, Input, Button, Radio, Space, Divider, message, Steps,
 import { CreditCardOutlined, BankOutlined, DollarOutlined, ShoppingOutlined, ArrowLeftOutlined, SafetyCertificateOutlined } from "@ant-design/icons";
 import { collection, doc, setDoc, addDoc, runTransaction, getDoc } from "firebase/firestore";
 import { db, auth } from "../../firebase";
+import { ICategory, IPromotionBanner, INotification, IProduct, IStyle } from "../../interfaces";
 import { ShopLayout } from "./ShopLayout";
 import { useCart } from "../../contexts/CartContext";
 import { useCustomerAuth } from "../../contexts/CustomerAuthContext";
 import { AuthModal } from "../../components/shop/AuthModal";
+import { ColorModeContext } from "../../contexts/color-mode";
 
 const { Title, Text } = Typography;
 
 export const CheckoutPage: React.FC = () => {
     const navigate = useNavigate();
+    const { mode } = React.useContext(ColorModeContext);
+    const isDark = mode === "dark";
     const [form] = Form.useForm();
     const [searchQuery, setSearchQuery] = useState("");
     const [paymentMethod, setPaymentMethod] = useState("cod");
@@ -147,9 +151,16 @@ export const CheckoutPage: React.FC = () => {
         return (
             <ShopLayout searchQuery={searchQuery} setSearchQuery={setSearchQuery} onSearch={() => {}}>
                 <div style={{ textAlign: "center", padding: "100px 0" }}>
-                    <Card style={{ maxWidth: 500, margin: "0 auto", borderRadius: 24, border: "none", boxShadow: "0 8px 32px rgba(0,0,0,0.05)" }}>
+                    <Card style={{
+                        maxWidth: 500,
+                        margin: "0 auto",
+                        borderRadius: 24,
+                        border: "none",
+                        boxShadow: isDark ? "0 8px 32px rgba(0,0,0,0.4)" : "0 8px 32px rgba(0,0,0,0.05)",
+                        background: isDark ? "#141414" : "#fff"
+                    }}>
                         <Empty
-                            image={<ShoppingOutlined style={{ fontSize: 64, color: "#d9d9d9" }} />}
+                            image={<ShoppingOutlined style={{ fontSize: 64, color: isDark ? "#444" : "#d9d9d9" }} />}
                             description={<Text type="secondary" style={{ fontSize: 18 }}>Your cart is empty</Text>}
                         >
                             <Button type="primary" size="large" onClick={() => navigate("/shop")} style={{ background: "#FF006E", borderRadius: 12, border: "none", height: 48 }}>
@@ -168,12 +179,18 @@ export const CheckoutPage: React.FC = () => {
         return (
             <ShopLayout searchQuery={searchQuery} setSearchQuery={setSearchQuery} onSearch={() => {}}>
                 <div style={{ maxWidth: 700, margin: "40px auto" }}>
-                    <Card style={{ borderRadius: 32, border: "none", boxShadow: "0 12px 48px rgba(0,0,0,0.08)", overflow: "hidden" }}>
+                    <Card style={{
+                        borderRadius: 32,
+                        border: "none",
+                        boxShadow: isDark ? "0 12px 48px rgba(0,0,0,0.5)" : "0 12px 48px rgba(0,0,0,0.08)",
+                        overflow: "hidden",
+                        background: isDark ? "#141414" : "#fff"
+                    }}>
                         <Result
                             status="success"
                             title={<Title level={2} style={{ fontWeight: 800 }}>Order Placed Successfully!</Title>}
                             subTitle={
-                                <div style={{ background: "#f9f9f9", padding: 24, borderRadius: 16, marginTop: 24 }}>
+                                <div style={{ background: isDark ? "#1f1f1f" : "#f9f9f9", padding: 24, borderRadius: 16, marginTop: 24 }}>
                                     <Text style={{ fontSize: 16 }}>Your order <Text strong style={{ color: "#FF006E" }}>#{orderId}</Text> has been received and is being processed.</Text>
                                     <br />
                                     <Text type="secondary">We will notify you once it's shipped.</Text>
@@ -212,7 +229,12 @@ export const CheckoutPage: React.FC = () => {
         return (
             <ShopLayout searchQuery={searchQuery} setSearchQuery={setSearchQuery} onSearch={() => {}}>
                 <div style={{ maxWidth: 600, margin: "0 auto", padding: "20px 0" }}>
-                    <Button type="link" icon={<ArrowLeftOutlined />} onClick={() => setCurrentStep("address")} style={{ paddingLeft: 0, marginBottom: 16, color: "#555" }}>
+                    <Button
+                        type="link"
+                        icon={<ArrowLeftOutlined />}
+                        onClick={() => setCurrentStep("address")}
+                        style={{ paddingLeft: 0, marginBottom: 16, color: isDark ? "rgba(255,255,255,0.65)" : "#555" }}
+                    >
                         Back to Information
                     </Button>
 
@@ -222,7 +244,13 @@ export const CheckoutPage: React.FC = () => {
                         style={{ marginBottom: 40 }}
                     />
 
-                    <Card style={{ borderRadius: 24, border: "none", boxShadow: "0 8px 32px rgba(0,0,0,0.08)", textAlign: "center" }}>
+                    <Card style={{
+                        borderRadius: 24,
+                        border: "none",
+                        boxShadow: isDark ? "0 8px 32px rgba(0,0,0,0.4)" : "0 8px 32px rgba(0,0,0,0.08)",
+                        textAlign: "center",
+                        background: isDark ? "#141414" : "#fff"
+                    }}>
                         <div style={{ marginBottom: 24 }}>
                             <Title level={3} style={{ margin: 0 }}>Scan to Pay with {paymentName}</Title>
                             <Text type="secondary">Amount to pay: <Text strong style={{ color: "#FF006E", fontSize: 18 }}>${total.toFixed(2)}</Text></Text>
@@ -234,9 +262,9 @@ export const CheckoutPage: React.FC = () => {
                             margin: "0 auto 32px auto",
                             borderRadius: 24,
                             padding: 20,
-                            background: "#fff",
+                            background: isDark ? "#fff" : "#fff", // Keep QR white for scanning reliability
                             boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
-                            border: "1px solid #f0f0f0",
+                            border: isDark ? "1px solid #333" : "1px solid #f0f0f0",
                             display: "flex",
                             flexDirection: "column",
                             alignItems: "center",
@@ -265,7 +293,13 @@ export const CheckoutPage: React.FC = () => {
                             </div>
                         </div>
 
-                        <div style={{ background: "#FFFBE6", padding: "12px 16px", borderRadius: 12, border: "1px solid #FFE58F", marginBottom: 32 }}>
+                        <div style={{
+                            background: isDark ? "#1d1b16" : "#FFFBE6",
+                            padding: "12px 16px",
+                            borderRadius: 12,
+                            border: isDark ? "1px solid #443b11" : "1px solid #FFE58F",
+                            marginBottom: 32
+                        }}>
                             <Text type="warning" style={{ fontSize: 13, fontWeight: 600 }}>
                                 ℹ️ This is a demo payment. Please click the button below to simulate a successful payment.
                             </Text>
@@ -310,7 +344,13 @@ export const CheckoutPage: React.FC = () => {
                         <Form form={form} layout="vertical" onFinish={handleAddressSubmit} initialValues={addressValues} requiredMark={false}>
                             <Card
                                 title={<Title level={4} style={{ margin: 0 }}>Shipping Information</Title>}
-                                style={{ borderRadius: 24, border: "none", boxShadow: "0 4px 20px rgba(0,0,0,0.05)", marginBottom: 32 }}
+                                style={{
+                                    borderRadius: 24,
+                                    border: "none",
+                                    boxShadow: isDark ? "0 4px 20px rgba(0,0,0,0.4)" : "0 4px 20px rgba(0,0,0,0.05)",
+                                    marginBottom: 32,
+                                    background: isDark ? "#141414" : "#fff"
+                                }}
                                 styles={{ body: { padding: 24 } }}
                             >
                                 <Row gutter={16}>
@@ -344,7 +384,12 @@ export const CheckoutPage: React.FC = () => {
 
                             <Card
                                 title={<Title level={4} style={{ margin: 0 }}>Payment Method</Title>}
-                                style={{ borderRadius: 24, border: "none", boxShadow: "0 4px 20px rgba(0,0,0,0.05)" }}
+                                style={{
+                                    borderRadius: 24,
+                                    border: "none",
+                                    boxShadow: isDark ? "0 4px 20px rgba(0,0,0,0.4)" : "0 4px 20px rgba(0,0,0,0.05)",
+                                    background: isDark ? "#141414" : "#fff"
+                                }}
                                 styles={{ body: { padding: 24 } }}
                             >
                                 <Radio.Group
@@ -358,8 +403,8 @@ export const CheckoutPage: React.FC = () => {
                                             size="small"
                                             style={{
                                                 borderRadius: 12,
-                                                border: paymentMethod === 'cod' ? "2px solid #FF006E" : "1px solid #f0f0f0",
-                                                background: paymentMethod === 'cod' ? "rgba(255, 0, 110, 0.02)" : "#fff"
+                                                border: paymentMethod === 'cod' ? "2px solid #FF006E" : (isDark ? "1px solid #333" : "1px solid #f0f0f0"),
+                                                background: paymentMethod === 'cod' ? (isDark ? "rgba(255, 0, 110, 0.1)" : "rgba(255, 0, 110, 0.02)") : (isDark ? "#1f1f1f" : "#fff")
                                             }}
                                             onClick={() => setPaymentMethod('cod')}
                                         >
@@ -379,8 +424,8 @@ export const CheckoutPage: React.FC = () => {
                                             size="small"
                                             style={{
                                                 borderRadius: 12,
-                                                border: paymentMethod === 'aba' ? "2px solid #FF006E" : "1px solid #f0f0f0",
-                                                background: paymentMethod === 'aba' ? "rgba(255, 0, 110, 0.02)" : "#fff"
+                                                border: paymentMethod === 'aba' ? "2px solid #FF006E" : (isDark ? "1px solid #333" : "1px solid #f0f0f0"),
+                                                background: paymentMethod === 'aba' ? (isDark ? "rgba(255, 0, 110, 0.1)" : "rgba(255, 0, 110, 0.02)") : (isDark ? "#1f1f1f" : "#fff")
                                             }}
                                             onClick={() => setPaymentMethod('aba')}
                                         >
@@ -400,8 +445,8 @@ export const CheckoutPage: React.FC = () => {
                                             size="small"
                                             style={{
                                                 borderRadius: 12,
-                                                border: paymentMethod === 'wing' ? "2px solid #FF006E" : "1px solid #f0f0f0",
-                                                background: paymentMethod === 'wing' ? "rgba(255, 0, 110, 0.02)" : "#fff"
+                                                border: paymentMethod === 'wing' ? "2px solid #FF006E" : (isDark ? "1px solid #333" : "1px solid #f0f0f0"),
+                                                background: paymentMethod === 'wing' ? (isDark ? "rgba(255, 0, 110, 0.1)" : "rgba(255, 0, 110, 0.02)") : (isDark ? "#1f1f1f" : "#fff")
                                             }}
                                             onClick={() => setPaymentMethod('wing')}
                                         >
@@ -445,9 +490,10 @@ export const CheckoutPage: React.FC = () => {
                             style={{
                                 borderRadius: 24,
                                 border: "none",
-                                boxShadow: "0 8px 32px rgba(0,0,0,0.08)",
+                                boxShadow: isDark ? "0 8px 32px rgba(0,0,0,0.4)" : "0 8px 32px rgba(0,0,0,0.08)",
                                 position: "sticky",
-                                top: 100
+                                top: 100,
+                                background: isDark ? "#141414" : "#fff"
                             }}
                             title={<Title level={4} style={{ margin: 0 }}>Order Summary</Title>}
                         >
@@ -457,7 +503,7 @@ export const CheckoutPage: React.FC = () => {
                                     return (
                                         <div key={item.product.id} style={{ display: "flex", gap: 12, marginBottom: 16 }}>
                                             <Badge count={item.quantity} color="#FF006E">
-                                                <img src={item.product.images?.[0]} style={{ width: 50, height: 50, borderRadius: 8, objectFit: "cover", border: "1px solid #eee" }} />
+                                                <img src={item.product.images?.[0]} style={{ width: 50, height: 50, borderRadius: 8, objectFit: "cover", border: isDark ? "1px solid #333" : "1px solid #eee" }} />
                                             </Badge>
                                             <div style={{ flex: 1 }}>
                                                 <Text strong style={{ display: "block", fontSize: 13 }} ellipsis>{item.product.name}</Text>
@@ -487,9 +533,17 @@ export const CheckoutPage: React.FC = () => {
                                 <Title level={3} style={{ margin: 0, color: "#FF006E" }}>${total.toFixed(2)}</Title>
                             </div>
 
-                            <div style={{ background: "#f6ffed", padding: "12px 16px", borderRadius: 12, border: "1px solid #b7eb8f", display: "flex", gap: 10, alignItems: "center" }}>
+                            <div style={{
+                                background: isDark ? "#162312" : "#f6ffed",
+                                padding: "12px 16px",
+                                borderRadius: 12,
+                                border: isDark ? "1px solid #274916" : "1px solid #b7eb8f",
+                                display: "flex",
+                                gap: 10,
+                                alignItems: "center"
+                            }}>
                                 <SafetyCertificateOutlined style={{ color: "#52c41a", fontSize: 20 }} />
-                                <Text style={{ fontSize: 12, color: "#389e0d" }}>Your payment is secured with industry-standard encryption.</Text>
+                                <Text style={{ fontSize: 12, color: isDark ? "#73d13d" : "#389e0d" }}>Your payment is secured with industry-standard encryption.</Text>
                             </div>
                         </Card>
                     </Col>

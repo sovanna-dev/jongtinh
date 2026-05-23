@@ -17,9 +17,10 @@ interface CategoryChipProps {
     cat: ICategory | null;
     isSelected: boolean;
     onClick: () => void;
+    isDark?: boolean;
 }
 
-export const CategoryChip: React.FC<CategoryChipProps> = ({ cat, isSelected, onClick }) => {
+export const CategoryChip: React.FC<CategoryChipProps> = ({ cat, isSelected, onClick, isDark }) => {
     const [animationData, setAnimationData] = useState<any>(null);
 
     useEffect(() => {
@@ -31,19 +32,29 @@ export const CategoryChip: React.FC<CategoryChipProps> = ({ cat, isSelected, onC
         }
     }, [cat]);
 
+    const getBgColor = () => {
+        if (isSelected) return "#FF006E";
+        return isDark ? "rgba(255, 255, 255, 0.05)" : "rgba(0, 0, 0, 0.04)";
+    };
+
+    const getTextColor = () => {
+        if (isSelected) return "#fff";
+        return isDark ? "rgba(255, 255, 255, 0.7)" : "#666";
+    };
+
     return (
         <div
             onClick={onClick}
             style={{
                 display: "inline-flex", alignItems: "center", gap: 8,
                 padding: "10px 24px", borderRadius: "25px", cursor: "pointer",
-                background: isSelected ? "#FF006E" : "rgba(255, 255, 255, 0.8)",
-                color: isSelected ? "#fff" : "#555",
+                background: getBgColor(),
+                color: getTextColor(),
                 fontWeight: 600,
                 boxShadow: isSelected ? "0 4px 12px rgba(255, 0, 110, 0.3)" : "0 2px 8px rgba(0,0,0,0.05)",
                 transition: "all 0.3s ease",
                 border: "1px solid",
-                borderColor: isSelected ? "#FF006E" : "rgba(0,0,0,0.05)",
+                borderColor: isSelected ? "#FF006E" : (isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.05)"),
                 whiteSpace: "nowrap", flexShrink: 0, userSelect: "none",
             }}
         >
@@ -54,8 +65,18 @@ export const CategoryChip: React.FC<CategoryChipProps> = ({ cat, isSelected, onC
                             <Lottie animationData={animationData} loop={true} style={{ width: "100%", height: "100%" }} />
                         </div>
                     ) : cat.icon ? (
-                        <Image src={cat.icon} width={20} preview={false}
-                            style={{ filter: isSelected ? "brightness(0) invert(1)" : "none" }} />
+                        <div style={{ width: 20, height: 20, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                            <img
+                                src={cat.icon}
+                                alt=""
+                                style={{
+                                    width: "100%",
+                                    height: "100%",
+                                    objectFit: "contain",
+                                    borderRadius: "4px"
+                                }}
+                            />
+                        </div>
                     ) : null}
                     {cat.name}
                 </>

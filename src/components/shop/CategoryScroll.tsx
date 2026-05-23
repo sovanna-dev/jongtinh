@@ -24,9 +24,10 @@ export const CategoryScroll: React.FC<CategoryScrollProps> = ({
     return (
         <div style={{
             marginBottom: 32, display: "flex", alignItems: "center", gap: 8,
-            background: isDark ? "rgba(255,255,255,0.05)" : "rgba(255, 255, 255, 0.5)",
+            background: isDark ? "#1a1a1a" : "#fff",
             padding: "12px 8px", borderRadius: "30px",
-            boxShadow: isDark ? "0 4px 15px rgba(0,0,0,0.2)" : "0 4px 15px rgba(0,0,0,0.03)",
+            border: isDark ? "1px solid #333" : "1px solid #eee",
+            boxShadow: isDark ? "0 4px 15px rgba(0,0,0,0.3)" : "0 4px 15px rgba(0,0,0,0.03)",
         }}>
             <Button
                 icon={<LeftOutlined />}
@@ -41,9 +42,9 @@ export const CategoryScroll: React.FC<CategoryScrollProps> = ({
                 scrollbarWidth: "none", msOverflowStyle: "none",
                 display: "flex", gap: 8, padding: "4px 0", cursor: "grab", scrollBehavior: "smooth",
             }}>
-                <CategoryChip cat={null} isSelected={selectedCategory === null} onClick={() => onSelectCategory(null)} />
+                <CategoryChip cat={null} isSelected={selectedCategory === null} onClick={() => onSelectCategory(null)} isDark={isDark} />
                 {categories.map((cat) => (
-                    <CategoryChip key={cat.id} cat={cat} isSelected={selectedCategory === cat.id} onClick={() => onSelectCategory(cat.id)} />
+                    <CategoryChip key={cat.id} cat={cat} isSelected={selectedCategory === cat.id} onClick={() => onSelectCategory(cat.id)} isDark={isDark} />
                 ))}
             </div>
 
