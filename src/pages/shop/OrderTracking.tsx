@@ -58,7 +58,32 @@ export const OrderTracking: React.FC = () => {
                         <Descriptions.Item label="Total"><Text strong style={{ color: "#FF006E" }}>${order.total?.toFixed(2)}</Text></Descriptions.Item>
                     </Descriptions>
                     <Title level={4} style={{ marginTop: 24 }}>Items</Title>
-                    {order.items?.map((item, i) => <div key={i} style={{ display: "flex", justifyContent: "space-between", padding: "8px 0", borderBottom: "1px solid #f0f0f0" }}><Text>{item.productName} x {item.quantity}</Text><Text>${(item.price * item.quantity).toFixed(2)}</Text></div>)}
+                    {order.items?.map((item, i) => (
+                        <div key={i} style={{ display: "flex", justifyContent: "space-between", padding: "12px 0", borderBottom: "1px solid #f0f0f0" }}>
+                            <div>
+                                <Text strong>{item.productName}</Text>
+                                <div style={{ fontSize: 12, marginTop: 4 }}>
+                                    {item.selectedSize && <Tag color="blue">Size: {item.selectedSize}</Tag>}
+                                    {item.selectedColor && (
+                                        <Tag
+                                            color={typeof item.selectedColor === 'string' ? 'default' : 'default'}
+                                            style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}
+                                        >
+                                            Color:
+                                            <div style={{
+                                                width: 10, height: 10, borderRadius: '50%',
+                                                backgroundColor: typeof item.selectedColor === 'string' ? item.selectedColor : item.selectedColor.hex,
+                                                border: '1px solid #d9d9d9'
+                                            }} />
+                                            {typeof item.selectedColor === 'string' ? item.selectedColor : item.selectedColor.name}
+                                        </Tag>
+                                    )}
+                                    <Text type="secondary" style={{ marginLeft: 8 }}>x {item.quantity}</Text>
+                                </div>
+                            </div>
+                            <Text strong>${(item.price * item.quantity).toFixed(2)}</Text>
+                        </div>
+                    ))}
                 </Card>
             </div>
         </ShopLayout>

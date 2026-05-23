@@ -775,7 +775,7 @@ export const ShopLayout: React.FC<ShopLayoutProps> = ({ children, searchQuery, s
                                                         size="small"
                                                         danger
                                                         icon={<DeleteOutlined />}
-                                                        onClick={() => removeFromCart(item.product.id)}
+                                                        onClick={() => removeFromCart(item.product.id, item.product.selectedColor, item.product.selectedSize)}
                                                         style={{ marginTop: -4 }}
                                                     />
                                                 </div>
@@ -795,14 +795,14 @@ export const ShopLayout: React.FC<ShopLayoutProps> = ({ children, searchQuery, s
                                                         <Button
                                                             type="text"
                                                             size="small"
-                                                            onClick={() => updateQuantity(item.product.id, item.quantity - 1)}
+                                                            onClick={() => updateQuantity(item.product.id, item.quantity - 1, item.product.selectedColor, item.product.selectedSize)}
                                                             style={{ padding: 0, width: 24 }}
                                                         ><b>-</b></Button>
                                                         <Text strong style={{ minWidth: 20, textAlign: "center" }}>{item.quantity}</Text>
                                                         <Button
                                                             type="text"
                                                             size="small"
-                                                            onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
+                                                            onClick={() => updateQuantity(item.product.id, item.quantity + 1, item.product.selectedColor, item.product.selectedSize)}
                                                             disabled={item.quantity >= (item.product.stockQuantity || 99)}
                                                             style={{ padding: 0, width: 24 }}
                                                         ><b>+</b></Button>

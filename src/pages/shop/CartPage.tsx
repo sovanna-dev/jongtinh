@@ -112,16 +112,16 @@ export const CartPage: React.FC = () => {
                                             </Col>
                                             <Col xs={14} sm={6} style={{ textAlign: "center" }}>
                                                 <div style={{ display: "inline-flex", alignItems: "center", border: "1px solid #f0f0f0", borderRadius: 10, padding: "2px 8px" }}>
-                                                    <Button type="text" size="small" onClick={() => updateQuantity(item.product.id, item.quantity - 1)}><b>-</b></Button>
+                                                    <Button type="text" size="small" onClick={() => updateQuantity(item.product.id, item.quantity - 1, item.product.selectedColor, item.product.selectedSize)}><b>-</b></Button>
                                                     <Text strong style={{ margin: "0 12px", minWidth: 20 }}>{item.quantity}</Text>
-                                                    <Button type="text" size="small" onClick={() => updateQuantity(item.product.id, item.quantity + 1)} disabled={item.quantity >= (item.product.stockQuantity || 99)}><b>+</b></Button>
+                                                    <Button type="text" size="small" onClick={() => updateQuantity(item.product.id, item.quantity + 1, item.product.selectedColor, item.product.selectedSize)} disabled={item.quantity >= (item.product.stockQuantity || 99)}><b>+</b></Button>
                                                 </div>
                                             </Col>
                                             <Col xs={6} sm={3} style={{ textAlign: "right" }}>
                                                 <Text strong style={{ fontSize: 16 }}>${(price * item.quantity).toFixed(2)}</Text>
                                             </Col>
                                             <Col xs={4} sm={1} style={{ textAlign: "right" }}>
-                                                <Button type="text" danger icon={<DeleteOutlined />} onClick={() => removeFromCart(item.product.id)} />
+                                                <Button type="text" danger icon={<DeleteOutlined />} onClick={() => removeFromCart(item.product.id, item.product.selectedColor, item.product.selectedSize)} />
                                             </Col>
                                         </Row>
                                     </Card>

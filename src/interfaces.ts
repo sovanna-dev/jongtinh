@@ -95,6 +95,8 @@ export interface ICartItem {
     quantity: number;
     userId: string;
     totalPrice: number;
+    selectedColor?: string | IProductColor;
+    selectedSize?: string;
 }
 
 export interface ITrackingStep {

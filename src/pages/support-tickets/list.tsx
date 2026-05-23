@@ -8,7 +8,9 @@ export const TicketList = () => {
     const isAdmin = identity?.role && identity.role !== "viewer" && identity.role !== "customer";
 
     const { tableProps, setFilters } = useTable<ISupportTicket>({
-        initialSorter: [{ field: "createdAt", order: "desc" }],
+        sorters: {
+            initial: [{ field: "createdAt", order: "desc" }],
+        },
         // 🔥 Customers can only see their own tickets
         permanentFilter: isAdmin ? [] : [
             { field: "userId", operator: "eq", value: identity?.id || "" },

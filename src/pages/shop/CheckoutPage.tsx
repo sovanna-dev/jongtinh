@@ -58,7 +58,7 @@ export const CheckoutPage: React.FC = () => {
                     if (!snap.exists()) {
                         throw new Error(`Product ${item.product.name} no longer exists.`);
                     }
-                    const currentStock = snap.data().stockQuantity || 0;
+                    const currentStock = snap.data()?.stockQuantity || 0;
                     if (currentStock < item.quantity) {
                         throw new Error(`Insufficient stock for ${item.product.name}. Available: ${currentStock}`);
                     }
@@ -67,7 +67,7 @@ export const CheckoutPage: React.FC = () => {
                 // 3. Perform updates (Write operations)
                 cart.forEach((item, index) => {
                     const snap = productSnapshots[index];
-                    const currentStock = snap.data().stockQuantity || 0;
+                    const currentStock = snap.data()?.stockQuantity || 0;
                     transaction.update(doc(db, "products", item.product.id), {
                         stockQuantity: currentStock - item.quantity
                     });
@@ -88,6 +88,8 @@ export const CheckoutPage: React.FC = () => {
                             quantity: item.quantity,
                             userId: user.uid,
                             totalPrice: p * item.quantity,
+                            selectedColor: item.product.selectedColor || null,
+                            selectedSize: item.product.selectedSize || null,
                         };
                     }),
                     shippingAddress: addressValues,

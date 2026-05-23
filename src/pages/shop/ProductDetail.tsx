@@ -46,8 +46,9 @@ export const ProductDetail: React.FC = () => {
                     return sizeAttr.value.split(",").map((s: string) => s.trim()).filter(Boolean);
                 }
             } else {
-                const sizeValue = product.attributes["size"] || product.attributes["Size"] || "";
-                if (sizeValue) {
+                const attrs = product.attributes as any;
+                const sizeValue = attrs["size"] || attrs["Size"] || "";
+                if (sizeValue && typeof sizeValue === "string") {
                     return sizeValue.split(",").map((s: string) => s.trim()).filter(Boolean);
                 }
             }
