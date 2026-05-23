@@ -12,9 +12,11 @@ export const TicketList = () => {
             initial: [{ field: "createdAt", order: "desc" }],
         },
         // 🔥 Customers can only see their own tickets
-        permanentFilter: isAdmin ? [] : [
-            { field: "userId", operator: "eq", value: identity?.id || "" },
-        ],
+        filters: {
+            permanent: isAdmin ? [] : [
+                { field: "userId", operator: "eq", value: identity?.id || "" },
+            ],
+        },
         queryOptions: {
             enabled: !!identity?.id, // Don't query until we have user identity
         },
