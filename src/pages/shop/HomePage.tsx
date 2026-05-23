@@ -14,6 +14,7 @@ import { NotificationBanner } from "../../components/shop/NotificationBanner";
 import { ProductCard } from "../../components/shop/ProductCard";
 import { FilterDrawer } from "../../components/shop/FilterDrawer";
 import { useLanguage } from "../../contexts/LanguageContext";
+import { useProducts } from "../../hooks/useProducts";
 
 const { Title, Text } = Typography;
 
@@ -72,7 +73,7 @@ export const ShopHomePage: React.FC = () => {
     // --- Derived Data ---
     const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
     const newThisWeek = useMemo(() =>
-        products.filter(p => (p.createdAt || 0) > sevenDaysAgo).slice(0, 8),
+        products.filter((p: IProduct) => (p.createdAt || 0) > sevenDaysAgo).slice(0, 8),
     [products]);
 
     const bestsellers = useMemo(() =>
@@ -265,7 +266,7 @@ export const ShopHomePage: React.FC = () => {
                         </Button>
                     </div>
                     <Row gutter={[16, 16]}>
-                        {newThisWeek.map((product) => (
+                        {newThisWeek.map((product: IProduct) => (
                             <Col xs={24} sm={12} md={8} lg={6} key={product.id}>
                                 <ProductCard product={product} isDark={isDark} />
                             </Col>
@@ -347,7 +348,7 @@ export const ShopHomePage: React.FC = () => {
                 <>
                     {products.length > 0 ? (
                         <Row gutter={[24, 32]}>
-                            {products.map((product) => (
+                            {products.map((product: IProduct) => (
                                 <Col xs={24} sm={12} md={8} lg={6} key={product.id}>
                                     <ProductCard product={product} isDark={isDark} />
                                 </Col>

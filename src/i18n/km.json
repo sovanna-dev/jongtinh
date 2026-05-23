@@ -434,12 +434,14 @@
     "runBot": "ដំណើរការជំនួយការ Bot",
     "closeTicket": "បិទសំបុត្រ",
     "status": {
+      "title": "ស្ថានភាព",
       "OPEN": "បើក",
       "IN_PROGRESS": "កំពុងដំណើរការ",
       "RESOLVED": "ដោះស្រាយរួច",
       "CLOSED": "បិទ"
     },
     "priority": {
+      "title": "អាទិភាព",
       "LOW": "ទាប",
       "MEDIUM": "មធ្យម",
       "HIGH": "ខ្ពស់"

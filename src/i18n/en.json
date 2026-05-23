@@ -433,12 +433,14 @@
     "runBot": "Run Bot Assistant",
     "closeTicket": "Close Ticket",
     "status": {
+      "title": "Status",
       "OPEN": "OPEN",
       "IN_PROGRESS": "IN PROGRESS",
       "RESOLVED": "RESOLVED",
       "CLOSED": "CLOSED"
     },
     "priority": {
+      "title": "Priority",
       "LOW": "LOW",
       "MEDIUM": "MEDIUM",
       "HIGH": "HIGH"
