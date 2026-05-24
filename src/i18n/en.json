@@ -648,7 +648,8 @@
         "product_manager": "Product Manager — Products, Categories, Banners",
         "order_manager": "Order Manager — Orders, Notifications",
         "support_agent": "Support Agent — Tickets, FAQs",
-        "viewer": "Viewer — Dashboard Only (Read-Only)"
+        "viewer": "Viewer (Admin) — Dashboard Only (Read-Only)",
+        "customer": "Customer — No Admin Access"
       }
     },
     "adminFaq": {

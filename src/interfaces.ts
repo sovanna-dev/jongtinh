@@ -133,7 +133,7 @@ export interface IUser {
     profileImage?: string;
     photoUrl?: string;
     isAdmin: boolean;
-    role?: "super_admin" | "product_manager" | "order_manager" | "support_agent" | "viewer";
+    role?: "super_admin" | "product_manager" | "order_manager" | "support_agent" | "viewer" | "customer";
     phoneNumber?: string;
     createdAt?: number;
 }

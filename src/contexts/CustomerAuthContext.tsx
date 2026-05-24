@@ -57,7 +57,7 @@ export const CustomerAuthProvider: React.FC<{ children: React.ReactNode }> = ({ 
                 phoneNumber: "",
                 photoUrl: "",
                 isAdmin: false,
-                role: "viewer",
+                role: "customer",
                 fcmToken: "",
                 createdAt: Date.now(),
             });

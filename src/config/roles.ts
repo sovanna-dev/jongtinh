@@ -1,5 +1,7 @@
 export type AdminRole = "super_admin" | "product_manager" | "order_manager" | "support_agent" | "viewer";
 
+export type UserRole = AdminRole | "customer";
+
 export interface RoleConfig {
     label: string;
     color: string;
@@ -68,20 +70,22 @@ export const ROLE_CONFIG: Record<AdminRole, RoleConfig> = {
         canDelete: false,
     },
     viewer: {
-        label: "Viewer",
+        label: "Viewer (Admin)",
         color: "default",
-        resources: [],
+        resources: ["dashboard"],
         canCreate: false,
         canEdit: false,
         canDelete: false,
     },
 };
 
-export const getRoleConfig = (role?: AdminRole | string): RoleConfig => {
-    return ROLE_CONFIG[role as AdminRole] || ROLE_CONFIG.viewer;
+export const getRoleConfig = (role?: UserRole | string): RoleConfig | null => {
+    if (role === "customer") return null;
+    return ROLE_CONFIG[role as AdminRole] || null;
 };
 
-export const hasAccess = (role: AdminRole | string | undefined, resource: string): boolean => {
-    const config = getRoleConfig(role as AdminRole);
-    return config.resources.includes(resource);
+export const hasAccess = (role: UserRole | string | undefined, resource: string): boolean => {
+    if (role === "customer") return false;
+    const config = getRoleConfig(role as UserRole);
+    return config ? config.resources.includes(resource) : false;
 };

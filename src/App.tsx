@@ -108,18 +108,18 @@ function AppContent() {
         return null;
     }
 
-    const allResources = [
-        { name: "dashboard", list: "/admin", meta: { label: "Dashboard" } },
-        { name: "promotion_banners", list: "/admin/promotion-banners", create: "/admin/promotion-banners/create", edit: "/admin/promotion-banners/edit/:id", meta: { canDelete: roleConfig.canDelete, label: "Promotion Banners" } },
-        { name: "categories", list: "/admin/categories", create: "/admin/categories/create", edit: "/admin/categories/edit/:id", meta: { canDelete: roleConfig.canDelete, label: "Categories" } },
-        { name: "products", list: "/admin/products", create: "/admin/products/create", edit: "/admin/products/edit/:id", meta: { canDelete: roleConfig.canDelete, label: "Products" } },
-        { name: "orders", list: "/admin/orders", edit: "/admin/orders/edit/:id", meta: { canDelete: roleConfig.canDelete, label: "Orders" } },
-        { name: "users", list: "/admin/users", edit: "/admin/users/edit/:id", meta: { label: "Users" } },
-        { name: "support_tickets", list: "/admin/support-tickets", show: "/admin/support-tickets/show/:id", meta: { label: "Support Tickets" } },
-        { name: "notifications", list: "/admin/notifications", create: "/admin/notifications/create", meta: { label: "Notifications" } },
-        { name: "faqs", list: "/admin/faqs", create: "/admin/faqs/create", edit: "/admin/faqs/edit/:id", meta: { canDelete: roleConfig.canDelete, label: "FAQs" } },
-        { name: "styles", list: "/admin/styles", create: "/admin/styles/create", edit: "/admin/styles/edit/:id", meta: { canDelete: roleConfig.canDelete, label: "Style Trends" } },
-    ];
+        const allResources = [
+            { name: "dashboard", list: "/admin", meta: { label: "Dashboard" } },
+            { name: "promotion_banners", list: "/admin/promotion-banners", create: "/admin/promotion-banners/create", edit: "/admin/promotion-banners/edit/:id", meta: { canDelete: roleConfig?.canDelete ?? false, label: "Promotion Banners" } },
+            { name: "categories", list: "/admin/categories", create: "/admin/categories/create", edit: "/admin/categories/edit/:id", meta: { canDelete: roleConfig?.canDelete ?? false, label: "Categories" } },
+            { name: "products", list: "/admin/products", create: "/admin/products/create", edit: "/admin/products/edit/:id", meta: { canDelete: roleConfig?.canDelete ?? false, label: "Products" } },
+            { name: "orders", list: "/admin/orders", edit: "/admin/orders/edit/:id", meta: { canDelete: roleConfig?.canDelete ?? false, label: "Orders" } },
+            { name: "users", list: "/admin/users", edit: "/admin/users/edit/:id", meta: { label: "Users" } },
+            { name: "support_tickets", list: "/admin/support-tickets", show: "/admin/support-tickets/show/:id", meta: { label: "Support Tickets" } },
+            { name: "notifications", list: "/admin/notifications", create: "/admin/notifications/create", meta: { label: "Notifications" } },
+            { name: "faqs", list: "/admin/faqs", create: "/admin/faqs/create", edit: "/admin/faqs/edit/:id", meta: { canDelete: roleConfig?.canDelete ?? false, label: "FAQs" } },
+            { name: "styles", list: "/admin/styles", create: "/admin/styles/create", edit: "/admin/styles/edit/:id", meta: { canDelete: roleConfig?.canDelete ?? false, label: "Style Trends" } },
+        ];
 
     const filteredResources = allResources.filter((r) => hasAccess(r.name));
 
@@ -167,28 +167,28 @@ function AppContent() {
                     {hasAccess("promotion_banners") && (
                         <Route path="/admin/promotion-banners">
                             <Route index element={<BannerList />} />
-                            {roleConfig.canCreate && <Route path="create" element={<BannerCreate />} />}
-                            {roleConfig.canEdit && <Route path="edit/:id" element={<BannerEdit />} />}
+                            {roleConfig?.canCreate && <Route path="create" element={<BannerCreate />} />}
+                            {roleConfig?.canEdit && <Route path="edit/:id" element={<BannerEdit />} />}
                         </Route>
                     )}
                     {hasAccess("categories") && (
                         <Route path="/admin/categories">
                             <Route index element={<CategoryList />} />
-                            {roleConfig.canCreate && <Route path="create" element={<CategoryCreate />} />}
-                            {roleConfig.canEdit && <Route path="edit/:id" element={<CategoryEdit />} />}
+                            {roleConfig?.canCreate && <Route path="create" element={<CategoryCreate />} />}
+                            {roleConfig?.canEdit && <Route path="edit/:id" element={<CategoryEdit />} />}
                         </Route>
                     )}
                     {hasAccess("products") && (
                         <Route path="/admin/products">
                             <Route index element={<ProductList />} />
-                            {roleConfig.canCreate && <Route path="create" element={<ProductCreate />} />}
-                            {roleConfig.canEdit && <Route path="edit/:id" element={<ProductEdit />} />}
+                            {roleConfig?.canCreate && <Route path="create" element={<ProductCreate />} />}
+                            {roleConfig?.canEdit && <Route path="edit/:id" element={<ProductEdit />} />}
                         </Route>
                     )}
                     {hasAccess("orders") && (
                         <Route path="/admin/orders">
                             <Route index element={<OrderList />} />
-                            {roleConfig.canEdit && <Route path="edit/:id" element={<OrderEdit />} />}
+                            {roleConfig?.canEdit && <Route path="edit/:id" element={<OrderEdit />} />}
                         </Route>
                     )}
                     {hasAccess("users") && (
@@ -206,21 +206,21 @@ function AppContent() {
                     {hasAccess("faqs") && (
                         <Route path="/admin/faqs">
                             <Route index element={<FaqList />} />
-                            {roleConfig.canCreate && <Route path="create" element={<FaqCreate />} />}
-                            {roleConfig.canEdit && <Route path="edit/:id" element={<FaqEdit />} />}
+                            {roleConfig?.canCreate && <Route path="create" element={<FaqCreate />} />}
+                            {roleConfig?.canEdit && <Route path="edit/:id" element={<FaqEdit />} />}
                         </Route>
                     )}
                     {hasAccess("notifications") && (
                         <Route path="/admin/notifications">
                             <Route index element={<NotificationList />} />
-                            {roleConfig.canCreate && <Route path="create" element={<NotificationCreate />} />}
+                            {roleConfig?.canCreate && <Route path="create" element={<NotificationCreate />} />}
                         </Route>
                     )}
                     {hasAccess("styles") && (
                         <Route path="/admin/styles">
                             <Route index element={<StyleList />} />
-                            {roleConfig.canCreate && <Route path="create" element={<StyleCreate />} />}
-                            {roleConfig.canEdit && <Route path="edit/:id" element={<StyleEdit />} />}
+                            {roleConfig?.canCreate && <Route path="create" element={<StyleCreate />} />}
+                            {roleConfig?.canEdit && <Route path="edit/:id" element={<StyleEdit />} />}
                         </Route>
                     )}
                 </Route>

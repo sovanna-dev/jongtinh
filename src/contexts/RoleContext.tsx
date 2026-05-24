@@ -2,24 +2,24 @@ import React, { createContext, useContext, useState, useEffect, useCallback } fr
 import { doc, getDoc } from "firebase/firestore";
 import { auth, db } from "../firebase";
 import { onAuthStateChanged } from "firebase/auth";
-import { getRoleConfig, type AdminRole, type RoleConfig } from "../config/roles";
+import { getRoleConfig, type UserRole, type RoleConfig } from "../config/roles";
 
 interface RoleContextType {
-    role: AdminRole | undefined;
-    roleConfig: RoleConfig;
+    role: UserRole | undefined;
+    roleConfig: RoleConfig | null;
     loading: boolean;
     hasAccess: (resource: string) => boolean;
 }
 
 const RoleContext = createContext<RoleContextType>({
     role: undefined,
-    roleConfig: getRoleConfig("viewer"),
+    roleConfig: null,
     loading: true,
     hasAccess: () => false,
 });
 
 export const RoleProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const [role, setRole] = useState<AdminRole | undefined>();
+    const [role, setRole] = useState<UserRole | undefined>();
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -30,12 +30,12 @@ export const RoleProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 try {
                     const userDoc = await getDoc(doc(db, "users", user.uid));
                     const userData = userDoc.data();
-                    setRole(userData?.role || "viewer");
+                    setRole(userData?.role || "customer");
                 } catch {
-                    setRole("viewer");
+                    setRole("customer");
                 }
             } else {
-                setRole("viewer");
+                setRole(undefined);
             }
             setLoading(false);
         });
@@ -46,7 +46,10 @@ export const RoleProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const roleConfig = getRoleConfig(role);
 
     const checkAccess = useCallback(
-        (resource: string) => roleConfig.resources.includes(resource),
+        (resource: string) => {
+            if (!roleConfig) return false;
+            return roleConfig.resources.includes(resource);
+        },
         [roleConfig]
     );
 

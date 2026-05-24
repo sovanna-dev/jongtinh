@@ -180,7 +180,7 @@ export const authProvider: AuthProvider = {
             const role = userData?.role?.toString().toLowerCase().trim();
             const isAdminBool = userData?.isAdmin === true;
             const isAdminRole = isAdminBool ||
-                ['super_admin', 'product_manager', 'order_manager', 'support_agent'].includes(role);
+                ['super_admin', 'product_manager', 'order_manager', 'support_agent', 'viewer'].includes(role);
 
             if (userData && isAdminRole) {
                 return { success: true, redirectTo: "/admin" };
@@ -229,8 +229,8 @@ export const authProvider: AuthProvider = {
                     const role = userData?.role?.toString().toLowerCase().trim();
                     const isAdminBool = userData?.isAdmin === true;
                     const isAdminRole = isAdminBool ||
-                        ['super_admin', 'product_manager', 'order_manager', 'support_agent'].includes(role);
-                    const isCustomer = role === "viewer" || role === "customer" || (!role && !isAdminBool);
+                        ['super_admin', 'product_manager', 'order_manager', 'support_agent', 'viewer'].includes(role);
+                    const isCustomer = role === "customer" || (!role && !isAdminBool);
 
                     if (isAdminRole) {
                         resolve({ authenticated: true });
@@ -278,7 +278,7 @@ export const authProvider: AuthProvider = {
                 id: user.uid,
                 name: userData?.displayName || userData?.fullName || user.displayName || user.email,
                 avatar: userData?.photoUrl || userData?.profileImage || user.photoURL,
-                role: userData?.role || "viewer",
+                role: userData?.role || "customer",
             };
         }
         return null;

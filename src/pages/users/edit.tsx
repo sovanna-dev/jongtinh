@@ -74,6 +74,7 @@ export const UserEdit = () => {
                         <Select.Option value="order_manager">{t.admin.users.roles.order_manager}</Select.Option>
                         <Select.Option value="support_agent">{t.admin.users.roles.support_agent}</Select.Option>
                         <Select.Option value="viewer">{t.admin.users.roles.viewer}</Select.Option>
+                        <Select.Option value="customer">Customer</Select.Option>
                     </Select>
                 </Form.Item>
             </Form>
