@@ -49,7 +49,9 @@ export const Header: React.FC<RefineThemedLayoutHeaderProps> = ({
   return (
     <AntdLayout.Header style={headerStyles}>
       <Space>
-        <Tag color={roleConfig.color}>{roleConfig.label}</Tag>
+        {roleConfig && (
+            <Tag color={roleConfig.color}>{roleConfig.label}</Tag>
+        )}
         <Switch
           checkedChildren="🌛"
           unCheckedChildren="🔆"
