@@ -1,7 +1,7 @@
 import { Edit, useForm } from "@refinedev/antd";
 import { collection, addDoc } from "firebase/firestore";
-import { db } from "../../firebase";
-import { Form, Select, Descriptions, Table, Typography, Card, Divider, Tag, Space } from "antd";
+import { db, auth } from "../../firebase";
+import { Form, Select, Descriptions, Table, Typography, Card, Divider, Tag, Space, Image, message, Button } from "antd";
 import { IOrder, ICartItem, OrderStatus } from "../../interfaces";
 import dayjs from "dayjs";
 import { useLanguage } from "../../contexts/LanguageContext";
@@ -75,6 +75,99 @@ export const OrderEdit = () => {
                         />
                     </Form.Item>
                 </Card>
+
+                {/* Payment Verification Section */}
+                {orderData?.paymentReceiptUrl && (
+                    <Card
+                        title={
+                            <Space>
+                                <Text strong>📎 Payment Verification</Text>
+                                <Tag color={
+                                    orderData.paymentStatus === "verified" ? "green" :
+                                        orderData.paymentStatus === "rejected" ? "red" : "orange"
+                                }>
+                                    {orderData.paymentStatus === "verified" ? "VERIFIED" :
+                                        orderData.paymentStatus === "rejected" ? "REJECTED" : "PENDING"}
+                                </Tag>
+                            </Space>
+                        }
+                        style={{ marginBottom: 24 }}
+                    >
+                        <Image
+                            src={orderData.paymentReceiptUrl}
+                            alt="Payment Receipt"
+                            style={{ maxWidth: 400, borderRadius: 12, marginBottom: 16 }}
+                            fallback="https://via.placeholder.com/400?text=Receipt+Not+Found"
+                        />
+
+                        <Divider />
+
+                        <Text strong style={{ display: "block", marginBottom: 8 }}>
+                            Verification Steps:
+                        </Text>
+                        <ol style={{ marginBottom: 16, paddingLeft: 20 }}>
+                            <li>Check the ABA/ACLEDA bank account for the transfer amount of <Text strong>${orderData.total?.toFixed(2)}</Text></li>
+                            <li>Match the transaction details with this receipt screenshot</li>
+                            <li>Click "Verify Payment" to move order to PROCESSING</li>
+                        </ol>
+
+                        {orderData.paymentStatus !== "verified" && (
+                            <Space>
+                                <Button
+                                    type="primary"
+                                    size="large"
+                                    style={{
+                                        background: "#4CAF50",
+                                        border: "none",
+                                        borderRadius: 12,
+                                        height: 44,
+                                        color: "white"
+                                    }}
+                                    onClick={() => {
+                                        handleOnFinish({
+                                            ...orderData,
+                                            orderStatus: "PROCESSING",
+                                            paymentStatus: "verified",
+                                            paymentVerifiedAt: Date.now(),
+                                            paymentVerifiedBy: auth.currentUser?.uid || "admin",
+                                        });
+                                        message.success("✅ Payment verified! Order moved to PROCESSING.");
+                                    }}
+                                >
+                                    ✅ Verify Payment & Process
+                                </Button>
+
+                                <Button
+                                    danger
+                                    size="large"
+                                    style={{ borderRadius: 12, height: 44 }}
+                                    onClick={() => {
+                                        handleOnFinish({
+                                            ...orderData,
+                                            paymentStatus: "rejected",
+                                        });
+                                        message.warning("Payment rejected. Contact customer for correct payment.");
+                                    }}
+                                >
+                                    ❌ Reject Payment
+                                </Button>
+                            </Space>
+                        )}
+
+                        {orderData.paymentStatus === "verified" && (
+                            <div style={{
+                                padding: "12px 16px",
+                                background: "#f6ffed",
+                                border: "1px solid #b7eb8f",
+                                borderRadius: 8,
+                            }}>
+                                <Text style={{ color: "#52c41a" }}>
+                                    ✅ Verified by admin on {orderData.paymentVerifiedAt ? new Date(orderData.paymentVerifiedAt).toLocaleString() : "Unknown date"}
+                                </Text>
+                            </div>
+                        )}
+                    </Card>
+                )}
 
                 <Card title={t.admin.orders.details} loading={queryResult?.isLoading}>
                     <Descriptions column={2} bordered>

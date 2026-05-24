@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router";
-import { Typography, Form, Input, Button, Radio, Space, Divider, message, Steps, Card, Result, Row, Col, Badge, Empty } from "antd";
-import { CreditCardOutlined, BankOutlined, DollarOutlined, ShoppingOutlined, ArrowLeftOutlined, SafetyCertificateOutlined } from "@ant-design/icons";
+import { Typography, Form, Input, Button, Radio, Space, Divider, message, Steps, Card, Result, Row, Col, Badge, Empty, Upload, Image } from "antd";
+import { CreditCardOutlined, BankOutlined, DollarOutlined, ShoppingOutlined, ArrowLeftOutlined, SafetyCertificateOutlined, UploadOutlined, CameraOutlined } from "@ant-design/icons";
 import { collection, doc, setDoc, addDoc, runTransaction, getDoc } from "firebase/firestore";
 import { db, auth } from "../../firebase";
 import { ICategory, IPromotionBanner, INotification, IProduct, IStyle } from "../../interfaces";
@@ -25,6 +25,8 @@ export const CheckoutPage: React.FC = () => {
     const [currentStep, setCurrentStep] = useState<"address" | "payment" | "success">("address");
     const [orderId, setOrderId] = useState("");
     const [isCreating, setIsCreating] = useState(false);
+    const [receiptUrl, setReceiptUrl] = useState("");
+    const [receiptUploading, setReceiptUploading] = useState(false);
     const [authModalOpen, setAuthModalOpen] = useState(false);
     const [addressValues, setAddressValues] = useState({ fullName: "", phoneNumber: "", streetAddress: "", city: "", province: "", postalCode: "" });
     const { cart, clearCart, cartTotal } = useCart();
@@ -103,6 +105,10 @@ export const CheckoutPage: React.FC = () => {
                     subtotal: subtotal,
                     shippingCost: shippingCost,
                     total: total,
+                    paymentReceiptUrl: receiptUrl || "",
+                    paymentStatus: "pending",
+                    paymentVerifiedAt: null,
+                    paymentVerifiedBy: null,
                     orderStatus: paymentMethod === "cod" ? "PROCESSING" : "PENDING",
                     createdAt: Date.now(),
                     updatedAt: Date.now(),
@@ -197,6 +203,11 @@ export const CheckoutPage: React.FC = () => {
                                         {t.checkout.orderReceived.split("{id}")[0]}
                                         <Text strong style={{ color: "#FF006E" }}>#{orderId}</Text>
                                         {t.checkout.orderReceived.split("{id}")[1]}
+                                    </Text>
+                                    <br />
+                                    <Text>
+                                        Your payment is being verified. Once confirmed, your order will be processed.
+                                        You'll receive a notification when the status updates.
                                     </Text>
                                     <br />
                                     <Text type="secondary">{t.checkout.shippingNotify}</Text>
@@ -311,16 +322,93 @@ export const CheckoutPage: React.FC = () => {
                             </Text>
                         </div>
 
+                        {/* Upload Receipt */}
+                        <div style={{ marginBottom: 16, textAlign: "left" }}>
+                            <Text strong style={{ display: "block", marginBottom: 8 }}>
+                                📎 Upload Payment Screenshot
+                            </Text>
+                            <Text type="secondary" style={{ display: "block", marginBottom: 12, fontSize: 12 }}>
+                                Please upload a screenshot of your completed payment for verification.
+                            </Text>
+
+                            <Upload
+                                accept="image/*"
+                                showUploadList={true}
+                                maxCount={1}
+                                listType="picture-card"
+                                customRequest={async ({ file, onSuccess, onError }: any) => {
+                                    setReceiptUploading(true);
+                                    try {
+                                        const formData = new FormData();
+                                        formData.append("file", file);
+                                        formData.append("upload_preset", import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET || "jongtinh_upload");
+                                        formData.append("folder", "payment_receipts");
+
+                                        const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
+                                        const response = await fetch(
+                                            `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
+                                            { method: "POST", body: formData }
+                                        );
+                                        const data = await response.json();
+                                        if (data.secure_url) {
+                                            setReceiptUrl(data.secure_url);
+                                            onSuccess(data, file);
+                                            message.success("Receipt uploaded successfully!");
+                                        } else {
+                                            throw new Error("Upload failed");
+                                        }
+                                    } catch (error) {
+                                        onError(error);
+                                        message.error("Failed to upload receipt. Please try again.");
+                                    }
+                                    setReceiptUploading(false);
+                                }}
+                                onRemove={() => {
+                                    setReceiptUrl("");
+                                }}
+                            >
+                                {!receiptUrl && (
+                                    <div>
+                                        <CameraOutlined style={{ fontSize: 24 }} />
+                                        <div style={{ marginTop: 8 }}>Upload Receipt</div>
+                                    </div>
+                                )}
+                            </Upload>
+
+                            {receiptUrl && (
+                                <div style={{
+                                    marginTop: 8,
+                                    padding: "8px 12px",
+                                    background: "#f6ffed",
+                                    border: "1px solid #b7eb8f",
+                                    borderRadius: 8,
+                                }}>
+                                    <Text style={{ color: "#52c41a", fontSize: 13 }}>
+                                        ✅ Receipt uploaded. Our team will verify your payment.
+                                    </Text>
+                                </div>
+                            )}
+                        </div>
+
                         <Space direction="vertical" style={{ width: "100%" }} size={16}>
                             <Button
                                 type="primary"
                                 size="large"
                                 block
-                                loading={isCreating}
+                                loading={isCreating || receiptUploading}
                                 onClick={handlePlaceOrder}
-                                style={{ background: "#4CAF50", border: "none", height: 56, fontSize: 18, fontWeight: 700, borderRadius: 16, boxShadow: "0 8px 16px rgba(76, 175, 80, 0.2)" }}
+                                disabled={!receiptUrl}
+                                style={{
+                                    background: receiptUrl ? "#4CAF50" : "#d9d9d9",
+                                    border: "none",
+                                    height: 56,
+                                    fontSize: 18,
+                                    fontWeight: 700,
+                                    borderRadius: 16,
+                                    boxShadow: receiptUrl ? "0 8px 16px rgba(76, 175, 80, 0.2)" : "none",
+                                }}
                             >
-                                {t.checkout.completedPayment}
+                                {receiptUrl ? "✅ Submit Payment for Verification" : "📎 Please Upload Receipt First"}
                             </Button>
                             <Button type="text" onClick={() => setCurrentStep("address")} style={{ fontWeight: 600 }}>
                                 {t.checkout.cancelPayment}

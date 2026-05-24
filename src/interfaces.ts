@@ -120,6 +120,10 @@ export interface IOrder {
     createdAt: number;
     updatedAt: number;
     trackingSteps: ITrackingStep[];
+    paymentReceiptUrl?: string;
+    paymentStatus?: "pending" | "verified" | "rejected";
+    paymentVerifiedAt?: number;
+    paymentVerifiedBy?: string;
 }
 
 export interface IUser {
