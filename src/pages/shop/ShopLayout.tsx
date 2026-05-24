@@ -570,35 +570,35 @@ export const ShopLayout: React.FC<ShopLayoutProps> = ({ children, searchQuery, s
                             {t.footer.quickLinks}
                         </Title>
                         <Space direction="vertical" size={12}>
-                            <a href="/shop" style={{ color: isDark ? "#aaa" : "#ccc", fontSize: 14, textDecoration: "none", transition: "color 0.3s" }}
+                            <a href="#/shop" style={{ color: isDark ? "#aaa" : "#ccc", fontSize: 14, textDecoration: "none", transition: "color 0.3s" }}
                                 onMouseEnter={(e) => { e.currentTarget.style.color = "#FF006E"; }}
                                 onMouseLeave={(e) => { e.currentTarget.style.color = isDark ? "#aaa" : "#ccc"; }}
                             >{t.footer.home}</a>
-                            <a href="/shop/orders" style={{ color: isDark ? "#aaa" : "#ccc", fontSize: 14, textDecoration: "none", transition: "color 0.3s" }}
+                            <a href="#/shop/orders" style={{ color: isDark ? "#aaa" : "#ccc", fontSize: 14, textDecoration: "none", transition: "color 0.3s" }}
                                 onMouseEnter={(e) => { e.currentTarget.style.color = "#FF006E"; }}
                                 onMouseLeave={(e) => { e.currentTarget.style.color = isDark ? "#aaa" : "#ccc"; }}
                             >{t.footer.orders}</a>
-                            <a href="/shop/wishlist" style={{ color: isDark ? "#aaa" : "#ccc", fontSize: 14, textDecoration: "none", transition: "color 0.3s" }}
+                            <a href="#/shop/wishlist" style={{ color: isDark ? "#aaa" : "#ccc", fontSize: 14, textDecoration: "none", transition: "color 0.3s" }}
                                 onMouseEnter={(e) => { e.currentTarget.style.color = "#FF006E"; }}
                                 onMouseLeave={(e) => { e.currentTarget.style.color = isDark ? "#aaa" : "#ccc"; }}
                             >{t.footer.wishlist}</a>
-                            <a href="/shop/cart" style={{ color: isDark ? "#aaa" : "#ccc", fontSize: 14, textDecoration: "none", transition: "color 0.3s" }}
+                            <a href="#/shop/cart" style={{ color: isDark ? "#aaa" : "#ccc", fontSize: 14, textDecoration: "none", transition: "color 0.3s" }}
                                 onMouseEnter={(e) => { e.currentTarget.style.color = "#FF006E"; }}
                                 onMouseLeave={(e) => { e.currentTarget.style.color = isDark ? "#aaa" : "#ccc"; }}
                             >{t.footer.cart}</a>
-                            <a href="/shop/profile" style={{ color: isDark ? "#aaa" : "#ccc", fontSize: 14, textDecoration: "none", transition: "color 0.3s" }}
+                            <a href="#/shop/profile" style={{ color: isDark ? "#aaa" : "#ccc", fontSize: 14, textDecoration: "none", transition: "color 0.3s" }}
                                 onMouseEnter={(e) => { e.currentTarget.style.color = "#FF006E"; }}
                                 onMouseLeave={(e) => { e.currentTarget.style.color = isDark ? "#aaa" : "#ccc"; }}
                             >{t.footer.profile}</a>
-                            <a href="/shop/faq" style={{ color: isDark ? "#aaa" : "#ccc", fontSize: 14, textDecoration: "none", transition: "color 0.3s" }}
+                            <a href="#/shop/faq" style={{ color: isDark ? "#aaa" : "#ccc", fontSize: 14, textDecoration: "none", transition: "color 0.3s" }}
                                 onMouseEnter={(e) => { e.currentTarget.style.color = "#FF006E"; }}
                                 onMouseLeave={(e) => { e.currentTarget.style.color = isDark ? "#aaa" : "#ccc"; }}
                             >{t.footer.faq}</a>
-                            <a href="#" style={{ color: isDark ? "#aaa" : "#ccc", fontSize: 14, textDecoration: "none", transition: "color 0.3s" }}
+                            <a href="#/shop/faq" style={{ color: isDark ? "#aaa" : "#ccc", fontSize: 14, textDecoration: "none", transition: "color 0.3s" }}
                                 onMouseEnter={(e) => { e.currentTarget.style.color = "#FF006E"; }}
                                 onMouseLeave={(e) => { e.currentTarget.style.color = isDark ? "#aaa" : "#ccc"; }}
                             >{t.footer.about}</a>
-                            <a href="#" style={{ color: isDark ? "#aaa" : "#ccc", fontSize: 14, textDecoration: "none", transition: "color 0.3s" }}
+                            <a href="#/shop/profile" style={{ color: isDark ? "#aaa" : "#ccc", fontSize: 14, textDecoration: "none", transition: "color 0.3s" }}
                                 onMouseEnter={(e) => { e.currentTarget.style.color = "#FF006E"; }}
                                 onMouseLeave={(e) => { e.currentTarget.style.color = isDark ? "#aaa" : "#ccc"; }}
                             >{t.footer.contact}</a>

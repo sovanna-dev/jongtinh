@@ -1,7 +1,8 @@
 {
   "common": {
     "all": "All",
-    "required": "Required"
+    "required": "Required",
+    "backToProfile": "Back to Profile"
   },
   "categories": {
     "Electronics": "Electronics",
@@ -167,6 +168,7 @@
     "orderSuccess": "Order Placed Successfully!",
     "orderReceived": "Your order {id} has been received and is being processed.",
     "shippingNotify": "We will notify you once it's shipped.",
+    "orderStatusPendingMessage": "Your payment is being verified. Once confirmed, your order will be processed. You'll receive a notification when the status updates.",
     "trackOrder": "Track Order",
     "continueShopping": "Continue Shopping",
     "emptyCart": "Your cart is empty",
@@ -175,6 +177,18 @@
       "productNotExists": "Product {name} no longer exists.",
       "insufficientStock": "Insufficient stock for {name}. Available: {count}",
       "failed": "Failed: {message}"
+    },
+    "uploadReceipt": {
+      "title": "📎 Upload Payment Screenshot",
+      "subtitle": "Please upload a screenshot of your completed payment for verification.",
+      "button": "Upload Receipt",
+      "successMessage": "✅ Receipt uploaded. Our team will verify your payment.",
+      "submitButton": "✅ Submit Payment for Verification",
+      "uploadFirst": "📎 Please Upload Receipt First",
+      "messages": {
+        "success": "Receipt uploaded successfully!",
+        "error": "Failed to upload receipt. Please try again."
+      }
     },
     "tracking": {
       "pending": {
@@ -419,6 +433,14 @@
     "subject": "Subject",
     "message": "Message",
     "category": "Category",
+    "categoryLabel": "Support Category",
+    "categories": {
+      "order": "Order Inquiry",
+      "payment": "Payment Issue",
+      "delivery": "Delivery",
+      "refund": "Returns & Refunds",
+      "general": "General Inquiry"
+    },
     "relatedOrder": "Related Order",
     "userInfo": "User Information",
     "name": "Name",
@@ -453,7 +475,17 @@
       "loginToReply": "You must be logged in to reply",
       "replySent": "Reply sent successfully",
       "botTriggered": "Bot analysis triggered",
-      "ticketClosed": "Ticket closed"
+      "ticketClosed": "Ticket closed",
+      "accessDenied": "Access Denied",
+      "notFound": "Ticket not found",
+      "loadFailed": "Failed to load ticket details",
+      "sendFailed": "Failed to send reply"
+    },
+    "notifications": {
+      "autoReplyTitle": "Support Ticket Auto-Reply",
+      "autoReplyMessage": "Our bot has automatically replied to your ticket: \"{subject}\"",
+      "adminReplyTitle": "Support Ticket Reply",
+      "adminReplyMessage": "Admin has replied to your ticket: \"{subject}\""
     },
     "autoReplies": {
       "order": "Hello! If you're inquiring about an order, please ensure you've provided the order ID. You can track your order status in the 'Orders' section of your profile.",
@@ -526,6 +558,26 @@
       "price": "Price",
       "qty": "Qty",
       "subtotal": "Subtotal",
+      "paymentVerification": {
+        "title": "📎 Payment Verification",
+        "verified": "VERIFIED",
+        "rejected": "REJECTED",
+        "pending": "PENDING",
+        "steps": {
+          "title": "Verification Steps:",
+          "checkAccount": "Check the ABA/ACLEDA bank account for the transfer amount of {amount}",
+          "matchDetails": "Match the transaction details with this receipt screenshot",
+          "clickVerify": "Click \"Verify Payment\" to move order to PROCESSING"
+        },
+        "verifyButton": "✅ Verify Payment & Process",
+        "rejectButton": "❌ Reject Payment",
+        "verifiedOn": "✅ Verified by admin on {date}",
+        "unknownDate": "Unknown date",
+        "messages": {
+          "verified": "✅ Payment verified! Order moved to PROCESSING.",
+          "rejected": "Payment rejected. Contact customer for correct payment."
+        }
+      },
       "notifications": {
         "statusUpdated": "Order Status Updated",
         "processing": "Your order #{id} is now being processed.",

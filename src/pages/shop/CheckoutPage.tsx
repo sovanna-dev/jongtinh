@@ -206,8 +206,7 @@ export const CheckoutPage: React.FC = () => {
                                     </Text>
                                     <br />
                                     <Text>
-                                        Your payment is being verified. Once confirmed, your order will be processed.
-                                        You'll receive a notification when the status updates.
+                                        {t.checkout.orderStatusPendingMessage}
                                     </Text>
                                     <br />
                                     <Text type="secondary">{t.checkout.shippingNotify}</Text>
@@ -325,10 +324,10 @@ export const CheckoutPage: React.FC = () => {
                         {/* Upload Receipt */}
                         <div style={{ marginBottom: 16, textAlign: "left" }}>
                             <Text strong style={{ display: "block", marginBottom: 8 }}>
-                                📎 Upload Payment Screenshot
+                                {t.checkout.uploadReceipt.title}
                             </Text>
                             <Text type="secondary" style={{ display: "block", marginBottom: 12, fontSize: 12 }}>
-                                Please upload a screenshot of your completed payment for verification.
+                                {t.checkout.uploadReceipt.subtitle}
                             </Text>
 
                             <Upload
@@ -353,13 +352,13 @@ export const CheckoutPage: React.FC = () => {
                                         if (data.secure_url) {
                                             setReceiptUrl(data.secure_url);
                                             onSuccess(data, file);
-                                            message.success("Receipt uploaded successfully!");
+                                            message.success(t.checkout.uploadReceipt.messages.success);
                                         } else {
                                             throw new Error("Upload failed");
                                         }
                                     } catch (error) {
                                         onError(error);
-                                        message.error("Failed to upload receipt. Please try again.");
+                                        message.error(t.checkout.uploadReceipt.messages.error);
                                     }
                                     setReceiptUploading(false);
                                 }}
@@ -370,7 +369,7 @@ export const CheckoutPage: React.FC = () => {
                                 {!receiptUrl && (
                                     <div>
                                         <CameraOutlined style={{ fontSize: 24 }} />
-                                        <div style={{ marginTop: 8 }}>Upload Receipt</div>
+                                        <div style={{ marginTop: 8 }}>{t.checkout.uploadReceipt.button}</div>
                                     </div>
                                 )}
                             </Upload>
@@ -384,7 +383,7 @@ export const CheckoutPage: React.FC = () => {
                                     borderRadius: 8,
                                 }}>
                                     <Text style={{ color: "#52c41a", fontSize: 13 }}>
-                                        ✅ Receipt uploaded. Our team will verify your payment.
+                                        {t.checkout.uploadReceipt.successMessage}
                                     </Text>
                                 </div>
                             )}
@@ -408,7 +407,7 @@ export const CheckoutPage: React.FC = () => {
                                     boxShadow: receiptUrl ? "0 8px 16px rgba(76, 175, 80, 0.2)" : "none",
                                 }}
                             >
-                                {receiptUrl ? "✅ Submit Payment for Verification" : "📎 Please Upload Receipt First"}
+                                {receiptUrl ? t.checkout.uploadReceipt.submitButton : t.checkout.uploadReceipt.uploadFirst}
                             </Button>
                             <Button type="text" onClick={() => setCurrentStep("address")} style={{ fontWeight: 600 }}>
                                 {t.checkout.cancelPayment}

@@ -4,6 +4,7 @@ import { db, auth } from "../../firebase";
 import { Form, Select, Descriptions, Table, Typography, Card, Divider, Tag, Space, Image, message, Button } from "antd";
 import { IOrder, ICartItem, OrderStatus } from "../../interfaces";
 import dayjs from "dayjs";
+import "dayjs/locale/km";
 import { useLanguage } from "../../contexts/LanguageContext";
 
 
@@ -81,13 +82,13 @@ export const OrderEdit = () => {
                     <Card
                         title={
                             <Space>
-                                <Text strong>📎 Payment Verification</Text>
+                                <Text strong>{t.admin.orders.paymentVerification.title}</Text>
                                 <Tag color={
                                     orderData.paymentStatus === "verified" ? "green" :
                                         orderData.paymentStatus === "rejected" ? "red" : "orange"
                                 }>
-                                    {orderData.paymentStatus === "verified" ? "VERIFIED" :
-                                        orderData.paymentStatus === "rejected" ? "REJECTED" : "PENDING"}
+                                    {orderData.paymentStatus === "verified" ? t.admin.orders.paymentVerification.verified :
+                                        orderData.paymentStatus === "rejected" ? t.admin.orders.paymentVerification.rejected : t.admin.orders.paymentVerification.pending}
                                 </Tag>
                             </Space>
                         }
@@ -102,13 +103,13 @@ export const OrderEdit = () => {
 
                         <Divider />
 
-                        <Text strong style={{ display: "block", marginBottom: 8 }}>
-                            Verification Steps:
+                        <Text strong style={{ block: "block", marginBottom: 8 }}>
+                            {t.admin.orders.paymentVerification.steps.title}
                         </Text>
                         <ol style={{ marginBottom: 16, paddingLeft: 20 }}>
-                            <li>Check the ABA/ACLEDA bank account for the transfer amount of <Text strong>${orderData.total?.toFixed(2)}</Text></li>
-                            <li>Match the transaction details with this receipt screenshot</li>
-                            <li>Click "Verify Payment" to move order to PROCESSING</li>
+                            <li>{t.admin.orders.paymentVerification.steps.checkAccount.replace("{amount}", `$${orderData.total?.toFixed(2)}`)}</li>
+                            <li>{t.admin.orders.paymentVerification.steps.matchDetails}</li>
+                            <li>{t.admin.orders.paymentVerification.steps.clickVerify}</li>
                         </ol>
 
                         {orderData.paymentStatus !== "verified" && (
@@ -131,10 +132,10 @@ export const OrderEdit = () => {
                                             paymentVerifiedAt: Date.now(),
                                             paymentVerifiedBy: auth.currentUser?.uid || "admin",
                                         });
-                                        message.success("✅ Payment verified! Order moved to PROCESSING.");
+                                        message.success(t.admin.orders.paymentVerification.messages.verified);
                                     }}
                                 >
-                                    ✅ Verify Payment & Process
+                                    {t.admin.orders.paymentVerification.verifyButton}
                                 </Button>
 
                                 <Button
@@ -146,10 +147,10 @@ export const OrderEdit = () => {
                                             ...orderData,
                                             paymentStatus: "rejected",
                                         });
-                                        message.warning("Payment rejected. Contact customer for correct payment.");
+                                        message.warning(t.admin.orders.paymentVerification.messages.rejected);
                                     }}
                                 >
-                                    ❌ Reject Payment
+                                    {t.admin.orders.paymentVerification.rejectButton}
                                 </Button>
                             </Space>
                         )}
@@ -162,7 +163,7 @@ export const OrderEdit = () => {
                                 borderRadius: 8,
                             }}>
                                 <Text style={{ color: "#52c41a" }}>
-                                    ✅ Verified by admin on {orderData.paymentVerifiedAt ? new Date(orderData.paymentVerifiedAt).toLocaleString() : "Unknown date"}
+                                    {t.admin.orders.paymentVerification.verifiedOn.replace("{date}", orderData.paymentVerifiedAt ? dayjs(orderData.paymentVerifiedAt).locale(language === 'km' ? 'km' : 'en').format("LLL") : t.admin.orders.paymentVerification.unknownDate)}
                                 </Text>
                             </div>
                         )}

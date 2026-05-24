@@ -52,6 +52,7 @@ import { FlashSalePage } from "./pages/shop/FlashSalePage";
 import { FaqPage as ShopFaqPage } from "./pages/shop/FaqPage";
 import { StyleCollectionPage } from "./pages/shop/StyleCollectionPage";
 import { WishlistPage } from "./pages/shop/WishlistPage";
+import { TicketDetailPage } from "./pages/shop/TicketDetailPage";
 // ──────────────────────────────────────────────────────────────
 // Redirect based on role
 // ──────────────────────────────────────────────────────────────
@@ -147,6 +148,7 @@ function AppContent() {
                 <Route path="/shop/flash-sale" element={<FlashSalePage />} />
                 <Route path="/shop/faq" element={<ShopFaqPage />} />
                 <Route path="/shop/style/:style" element={<StyleCollectionPage />} />
+                <Route path="/shop/ticket/:id" element={<TicketDetailPage />} />
 
                 {/* ═══════ 2. ADMIN ROUTES (Protected) ═══════ */}
                 <Route

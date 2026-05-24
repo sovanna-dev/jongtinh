@@ -2,7 +2,8 @@ import { Show, ListButton } from "@refinedev/antd";
 import { Typography, Card, Divider, List, Avatar, Form, Input, Button, message, Space } from "antd";
 import { ISupportTicket, ITicketReply, IUser } from "../../interfaces";
 import { useShow, useOne, useList, useCreate, useUpdate } from "@refinedev/core";
-import { auth } from "../../firebase";
+import { collection, addDoc } from "firebase/firestore";
+import { db, auth } from "../../firebase";
 import { useLanguage } from "../../contexts/LanguageContext";
 
 const { Title, Text, Paragraph } = Typography;
@@ -65,7 +66,24 @@ export const TicketShow = () => {
                        createdAt: Date.now() + 1000,
                    },
                }, {
-                   onSuccess: () => {
+                   onSuccess: async () => {
+                       // 🆕 Send notification to customer
+                       if (record) {
+                           try {
+                               await addDoc(collection(db, "notifications"), {
+                                   userId: record.userId,
+                                   title: t.tickets.notifications.autoReplyTitle,
+                                   message: t.tickets.notifications.autoReplyMessage.replace("{subject}", subject),
+                                   timestamp: Date.now(),
+                                   type: "support",
+                                   isRead: false,
+                                   destination: "ticket",
+                                   destinationId: record.id,
+                               });
+                           } catch (e) {
+                               console.error("Error sending notification:", e);
+                           }
+                       }
                        refetchReplies();
                    }
                });
@@ -90,10 +108,27 @@ export const TicketShow = () => {
                 createdAt: Date.now(),
             },
         }, {
-            onSuccess: () => {
+            onSuccess: async () => {
                 form.resetFields();
                 message.success(t.tickets.messages.replySent);
                 refetchReplies();
+
+                // 🆕 Send notification to customer
+                try {
+                    await addDoc(collection(db, "notifications"), {
+                        userId: record.userId,
+                        title: t.tickets.notifications.adminReplyTitle,
+                        message: t.tickets.notifications.adminReplyMessage.replace("{subject}", record.subject),
+                        timestamp: Date.now(),
+                        type: "support",
+                        isRead: false,
+                        destination: "ticket",
+                        destinationId: record.id,
+                    });
+                } catch (e) {
+                    console.error("Error sending notification:", e);
+                }
+
                 if (record.status === "OPEN") {
                     updateTicket({
                         resource: "support_tickets",

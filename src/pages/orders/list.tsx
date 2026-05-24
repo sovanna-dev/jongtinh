@@ -72,11 +72,12 @@ export const OrderList = () => {
                 />
                 <Table.Column
                     dataIndex="paymentStatus"
-                    title="Payment"
+                    title={t.admin.orders.payment}
                     render={(value: string) => {
-                        if (!value || value === "pending") return <Tag color="orange">Pending</Tag>;
-                        if (value === "verified") return <Tag color="green">Verified ✅</Tag>;
-                        if (value === "rejected") return <Tag color="red">Rejected ❌</Tag>;
+                        const pv = t.admin.orders.paymentVerification;
+                        if (!value || value === "pending") return <Tag color="orange">{pv.pending}</Tag>;
+                        if (value === "verified") return <Tag color="green">{pv.verified} ✅</Tag>;
+                        if (value === "rejected") return <Tag color="red">{pv.rejected} ❌</Tag>;
                         return <Tag>Unknown</Tag>;
                     }}
                 />
