@@ -60,7 +60,9 @@ export const ShopLayout: React.FC<ShopLayoutProps> = ({ children, searchQuery, s
             try {
                 const userDoc = await getDoc(doc(db, "users", currentUser.uid));
                 if (userDoc.exists()) {
-                    setIsAdmin(userDoc.data()?.isAdmin === true);
+                    const userData = userDoc.data();
+                    // User is considered admin if isAdmin is true OR they have a specific staff role
+                    setIsAdmin(userData?.isAdmin === true || !!userData?.role);
                 } else {
                     setIsAdmin(false);
                 }
