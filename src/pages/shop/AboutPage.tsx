@@ -10,13 +10,15 @@ import {
 } from "@ant-design/icons";
 import { ShopLayout } from "./ShopLayout";
 import { useLanguage } from "../../contexts/LanguageContext";
+import { ColorModeContext } from "../../contexts/color-mode";
 import logo from "../../images/logo.webp";
 
 const { Title, Text, Paragraph } = Typography;
 
 export const AboutPage: React.FC = () => {
     const { t, language } = useLanguage();
-    const isDark = React.useContext(require("../../contexts/color-mode").ColorModeContext).mode === "dark";
+    const { mode } = React.useContext(ColorModeContext);
+    const isDark = mode === "dark";
 
     const teamMembers = [
         { name: "Ra Sovanna", role: "Project Manager / Lead Developer", initial: "RS" },

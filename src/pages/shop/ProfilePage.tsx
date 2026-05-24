@@ -377,7 +377,7 @@ export const ProfilePage: React.FC = () => {
                     </Form.Item>
                     <Form.Item
                         name="orderId"
-                        label={t.tickets?.orderLabel || "Related Order (Optional)"}
+                        label={t.tickets?.relatedOrder || "Related Order (Optional)"}
                     >
                         <Select placeholder="Select an order" allowClear>
                             {orders.map(order => (
