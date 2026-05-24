@@ -7,8 +7,10 @@ import {
 import { Table, Space, Input, Tag, Button, Tooltip } from "antd";
 import { SearchOutlined, LikeOutlined, DislikeOutlined } from "@ant-design/icons";
 import { IFaq } from "../../interfaces";
+import { useLanguage } from "../../contexts/LanguageContext";
 
 export const FaqList = () => {
+    const { t } = useLanguage();
     const { tableProps, searchFormProps } = useTable<IFaq>({
         syncWithLocation: true,
         resource: "faqs",
@@ -24,10 +26,10 @@ export const FaqList = () => {
     });
 
     return (
-        <List>
+        <List title={t.adminFaq.title}>
             <div style={{ marginBottom: 16 }}>
                 <Input
-                    placeholder="Search FAQs..."
+                    placeholder={t.faq.searchPlaceholder}
                     prefix={<SearchOutlined />}
                     onChange={(e) => {
                         searchFormProps.onFinish?.({ q: e.target.value });
@@ -40,22 +42,22 @@ export const FaqList = () => {
                 <Table.Column dataIndex="id" title="ID" width={100} ellipsis />
                 <Table.Column
                     dataIndex="category"
-                    title="Category"
-                    render={(value) => <Tag color="blue">{value || "General"}</Tag>}
+                    title={t.tickets.category}
+                    render={(value) => <Tag color="blue">{value || t.faq.general}</Tag>}
                 />
-                <Table.Column dataIndex="question" title="Question" />
-                <Table.Column dataIndex="answer" title="Answer" ellipsis />
+                <Table.Column dataIndex="question" title={t.adminFaq.question} />
+                <Table.Column dataIndex="answer" title={t.adminFaq.answer} ellipsis />
                 <Table.Column
-                    title="Feedback"
+                    title={t.adminFaq.feedback}
                     render={(_, record: IFaq) => (
                         <Space size="large">
-                            <Tooltip title={`${record.helpfulCount || 0} found this helpful`}>
+                            <Tooltip title={`${record.helpfulCount || 0} ${t.adminFaq.helpful}`}>
                                 <span>
                                     <LikeOutlined style={{ color: "#52c41a", marginRight: 4 }} />
                                     {record.helpfulCount || 0}
                                 </span>
                             </Tooltip>
-                            <Tooltip title={`${record.unhelpfulCount || 0} found this not helpful`}>
+                            <Tooltip title={`${record.unhelpfulCount || 0} ${t.adminFaq.notHelpful}`}>
                                 <span>
                                     <DislikeOutlined style={{ color: "#ff4d4f", marginRight: 4 }} />
                                     {record.unhelpfulCount || 0}
@@ -64,9 +66,9 @@ export const FaqList = () => {
                         </Space>
                     )}
                 />
-                <Table.Column dataIndex="order" title="Order" width={80} sorter />
+                <Table.Column dataIndex="order" title={t.adminFaq.order} width={80} sorter />
                 <Table.Column
-                    title="Actions"
+                    title={t.tickets.actions}
                     dataIndex="actions"
                     render={(_, record: IFaq) => (
                         <Space>

@@ -1,26 +1,28 @@
 import { List, useTable, EditButton, DeleteButton } from "@refinedev/antd";
 import { Table, Space, Avatar, Tag } from "antd";
 import { ICategory } from "../../interfaces";
+import { useLanguage } from "../../contexts/LanguageContext";
 
 export const CategoryList = () => {
+    const { t } = useLanguage();
     const { tableProps } = useTable<ICategory>({
         syncWithLocation: true,
         resource: "categories",
     });
 
     return (
-        <List>
+        <List title={t.admin.dashboard.categories}>
             <Table {...tableProps} rowKey="id">
                 <Table.Column dataIndex="id" title="ID" />
                 <Table.Column
                     dataIndex="icon"
-                    title="Icon"
+                    title={t.admin.category.icon}
                     render={(value) => <Avatar src={value} shape="square" />}
                 />
-                <Table.Column dataIndex="name" title="Name" />
+                <Table.Column dataIndex="name" title={t.admin.category.name} />
                 <Table.Column
                     dataIndex="subCategories"
-                    title="Subcategories"
+                    title={t.admin.category.subcategories}
                     render={(value: { id: string; name: string }[]) => {
                         if (!value || value.length === 0) return "-";
                         return (
@@ -34,9 +36,9 @@ export const CategoryList = () => {
                         );
                     }}
                 />
-                <Table.Column dataIndex="productCount" title="Product Count" />
+                <Table.Column dataIndex="productCount" title={t.admin.category.productCount} />
                 <Table.Column
-                    title="Actions"
+                    title={t.admin.orders.actions}
                     dataIndex="actions"
                     render={(_, record: ICategory) => (
                         <Space>

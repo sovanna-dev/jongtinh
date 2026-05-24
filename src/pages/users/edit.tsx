@@ -3,17 +3,19 @@ import { Form, Input, Switch, Avatar, Typography, Tag, Select } from "antd";
 import { IUser } from "../../interfaces";
 import { UserOutlined } from "@ant-design/icons";
 import { auth } from "../../firebase";
+import { useLanguage } from "../../contexts/LanguageContext";
 
 const { Title, Text } = Typography;
 
 export const UserEdit = () => {
+    const { t } = useLanguage();
     const { formProps, saveButtonProps, query: queryResult } = useForm<IUser>();
 
     const userData = queryResult?.data?.data;
     const isEditingSelf = userData?.id === auth.currentUser?.uid;
 
     return (
-        <Edit saveButtonProps={saveButtonProps} title="Edit User Permissions">
+        <Edit saveButtonProps={saveButtonProps} title={t.users.editTitle}>
             <Form {...formProps} layout="vertical">
                 <div style={{ textAlign: 'center', marginBottom: 24 }}>
                     <Avatar
@@ -25,53 +27,53 @@ export const UserEdit = () => {
                     <Title level={4} style={{ marginBottom: 4 }}>{userData?.displayName}</Title>
                     <div style={{ marginBottom: 16 }}>
                         <Tag color={userData?.isAdmin ? "red" : "blue"}>
-                            {userData?.isAdmin ? "Administrator" : "Standard User"}
+                            {userData?.isAdmin ? t.users.administrator : t.users.standardUser}
                         </Tag>
                     </div>
                     <Text type="secondary">{userData?.email}</Text>
                     {isEditingSelf && (
                         <div style={{ marginTop: 8 }}>
-                            <Text type="warning" italic>(You are editing your own profile)</Text>
+                            <Text type="warning" italic>{t.users.editingSelf}</Text>
                         </div>
                     )}
                 </div>
 
-                <Form.Item label="Full Name" name="displayName">
+                <Form.Item label={t.users.fullName} name="displayName">
                     <Input disabled />
                 </Form.Item>
 
-                <Form.Item label="Email" name="email">
+                <Form.Item label={t.users.email} name="email">
                     <Input disabled />
                 </Form.Item>
 
                 <Form.Item
-                    label="Administrator Access"
+                    label={t.users.adminAccess}
                     name="isAdmin"
                     valuePropName="checked"
                     extra={isEditingSelf
-                        ? "You cannot revoke your own admin status for security reasons."
-                        : "Granting admin access allows this user to log in to this dashboard."}
+                        ? t.users.revokeWarning
+                        : t.users.grantHelp}
                 >
                     <Switch
-                        checkedChildren="Admin"
-                        unCheckedChildren="User"
+                        checkedChildren={t.users.admin}
+                        unCheckedChildren={t.users.user}
                         disabled={isEditingSelf}
                     />
                 </Form.Item>
 
                 {/* NEW: Role Selection */}
                 <Form.Item
-                    label="Admin Role"
+                    label={t.users.adminRole}
                     name="role"
                     rules={[{ required: true }]}
-                    extra="Determines which sections this admin can access."
+                    extra={t.users.roleHelp}
                 >
                     <Select>
-                        <Select.Option value="super_admin">Super Admin — Full Access</Select.Option>
-                        <Select.Option value="product_manager">Product Manager — Products, Categories, Banners</Select.Option>
-                        <Select.Option value="order_manager">Order Manager — Orders, Notifications</Select.Option>
-                        <Select.Option value="support_agent">Support Agent — Tickets, FAQs</Select.Option>
-                        <Select.Option value="viewer">Viewer — Dashboard Only (Read-Only)</Select.Option>
+                        <Select.Option value="super_admin">{t.users.roles.super_admin}</Select.Option>
+                        <Select.Option value="product_manager">{t.users.roles.product_manager}</Select.Option>
+                        <Select.Option value="order_manager">{t.users.roles.order_manager}</Select.Option>
+                        <Select.Option value="support_agent">{t.users.roles.support_agent}</Select.Option>
+                        <Select.Option value="viewer">{t.users.roles.viewer}</Select.Option>
                     </Select>
                 </Form.Item>
             </Form>

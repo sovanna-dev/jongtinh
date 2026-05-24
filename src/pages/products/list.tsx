@@ -8,10 +8,12 @@ import { Table, Space, Tag, Image, Typography, Select, Button, Tooltip } from "a
 import { useMany } from "@refinedev/core";
 import { useSelect } from "@refinedev/antd";
 import { IProduct, ICategory } from "../../interfaces";
+import { useLanguage } from "../../contexts/LanguageContext";
 
 const { Text } = Typography;
 
 export const ProductList = () => {
+    const { t } = useLanguage();
     const { tableProps } = useTable<IProduct>({
         syncWithLocation: true,
         resource: "products",
@@ -34,12 +36,12 @@ export const ProductList = () => {
     const categoriesLoading = categoriesQuery?.isLoading;
 
     return (
-        <List>
+        <List title={t.admin.dashboard.products}>
             <Table {...tableProps} rowKey="id">
                 <Table.Column dataIndex="id" title="ID" width={100} ellipsis />
                 <Table.Column
                     dataIndex="images"
-                    title="Image"
+                    title={t.product.details}
                     render={(value: string[]) => (
                         <Image
                             width={50}
@@ -48,10 +50,10 @@ export const ProductList = () => {
                         />
                     )}
                 />
-                <Table.Column dataIndex="name" title="Name" />
+                <Table.Column dataIndex="name" title={t.admin.product.name} />
                 <Table.Column
                     dataIndex="brand"
-                    title="Brand"
+                    title={t.admin.product.brand}
                     render={(value: string) => (
                         <Tag color={value === "JongTinh" ? "#FF006E" : "blue"}>
                             {value || "JongTinh"}
@@ -60,7 +62,7 @@ export const ProductList = () => {
                 />
                 <Table.Column
                     dataIndex="category"
-                    title="Category"
+                    title={t.admin.product.category}
                     render={(value) => {
                         if (categoriesLoading) return "Loading...";
                         const category = categoriesData?.data.find((item: any) => item.id === value);
@@ -71,7 +73,7 @@ export const ProductList = () => {
                             <Select
                                 {...(categorySelectProps as any)}
                                 style={{ width: 200, display: "block", marginBottom: 8 }}
-                                placeholder="Select Category"
+                                placeholder={t.admin.product.validation.categoryRequired}
                                 allowClear
                                 value={selectedKeys[0] as string}
                                 onChange={(value: string) => {
@@ -87,14 +89,14 @@ export const ProductList = () => {
                                 }}
                                 style={{ width: "100%" }}
                             >
-                                Reset
+                                {t.home.reset}
                             </Button>
                         </div>
                     )}
                 />
                 <Table.Column
                     dataIndex="price"
-                    title="Price"
+                    title={t.admin.product.price}
                     render={(value) => (
                         <Text strong>${value?.toFixed(2)}</Text>
                     )}
@@ -102,34 +104,34 @@ export const ProductList = () => {
                 />
                 <Table.Column
                     dataIndex="stockQuantity"
-                    title="Stock"
+                    title={t.admin.product.stock}
                     render={(value) => (
                         <Tag color={value > 10 ? "green" : "volcano"}>
-                            {value} units
+                            {value} {t.product.quantity}
                         </Tag>
                     )}
                     sorter
                 />
                 <Table.Column
                     dataIndex="isAvailable"
-                    title="Available"
+                    title={t.admin.product.available}
                     render={(value) => (
                         <Tag color={value ? "cyan" : "red"}>
-                            {value ? "Yes" : "No"}
+                            {value ? t.faq.yes : t.faq.no}
                         </Tag>
                     )}
                 />
                 <Table.Column
                     dataIndex="isFeatured"
-                    title="Featured"
+                    title={t.admin.product.featured}
                     render={(value) => (
                         <Tag color={value ? "gold" : "default"}>
-                            {value ? "Featured" : "No"}
+                            {value ? t.admin.product.featured : t.faq.no}
                         </Tag>
                     )}
                 />
                 <Table.Column
-                    title="Attributes"
+                    title={t.admin.product.attributes}
                     render={(_, record: IProduct) => {
                         // Handle potential legacy data where attributes/specifications might be objects
                         const attributes = Array.isArray(record.attributes)
@@ -181,7 +183,7 @@ export const ProductList = () => {
                     }}
                 />
                 <Table.Column
-                    title="Actions"
+                    title={t.admin.orders.actions}
                     dataIndex="actions"
                     render={(_, record: IProduct) => (
                         <Space>

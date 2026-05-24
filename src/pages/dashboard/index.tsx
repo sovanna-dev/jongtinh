@@ -13,6 +13,7 @@ import {
     XAxis, YAxis, CartesianGrid, Tooltip as ReTooltip, ResponsiveContainer, Legend,
 } from "recharts";
 import { IOrder, IProduct, IUser, ISupportTicket, ICategory } from "../../interfaces";
+import { useLanguage } from "../../contexts/LanguageContext";
 
 const { Title, Text } = Typography;
 
@@ -36,14 +37,6 @@ const STATUS_COLORS: Record<string, string> = {
     CANCELLED: COLORS.red,
 };
 
-const STATUS_ICONS: Record<string, React.ReactNode> = {
-    PENDING: <ClockCircleOutlined />,
-    PROCESSING: <SyncOutlined spin />,
-    SHIPPING: <SendOutlined />,
-    DELIVERED: <CheckCircleOutlined />,
-    CANCELLED: <CloseCircleOutlined />,
-};
-
 const PIE_COLORS = [COLORS.primary, COLORS.blue, COLORS.purple, COLORS.green, COLORS.red];
 
 // ============================================================
@@ -51,6 +44,7 @@ const PIE_COLORS = [COLORS.primary, COLORS.blue, COLORS.purple, COLORS.green, CO
 // ============================================================
 
 const ModernDashboard: React.FC = () => {
+    const { t, language } = useLanguage();
     const { data: identity } = useGetIdentity<{ name: string; role?: string }>();
 
     // --- Data Fetching ---
@@ -113,7 +107,7 @@ const ModernDashboard: React.FC = () => {
     }, {});
 
     const statusData = Object.entries(statusCounts).map(([name, value]) => ({
-        name: name.charAt(0) + name.slice(1).toLowerCase(),
+        name: t.order.status[name as keyof typeof t.order.status] || name,
         value,
     }));
 
@@ -130,7 +124,7 @@ const ModernDashboard: React.FC = () => {
             o => new Date(o.createdAt).toISOString().split("T")[0] === dayStr && o.orderStatus !== "CANCELLED"
         );
         return {
-            date: date.toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+            date: date.toLocaleDateString(language === 'km' ? 'km-KH' : 'en-US', { month: "short", day: "numeric" }),
             revenue: dayOrders.reduce((sum, o) => sum + (o.total || 0), 0),
             orders: dayOrders.length,
         };
@@ -152,54 +146,70 @@ const ModernDashboard: React.FC = () => {
         .sort((a, b) => b.revenue - a.revenue)
         .slice(0, 6);
 
+    // Helper: Greeting based on time
+    const getGreetingTime = (): string => {
+        const hour = new Date().getHours();
+        if (hour < 12) return t.admin.dashboard.times.morning;
+        if (hour < 17) return t.admin.dashboard.times.afternoon;
+        return t.admin.dashboard.times.evening;
+    };
+
     // --- KPI Cards ---
     const kpiCards = [
         {
-            title: "Total Revenue",
+            title: t.admin.dashboard.revenue,
             value: totalRevenue,
             prefix: "$",
             icon: <DollarOutlined />,
             color: COLORS.green,
             bgColor: "#F0FFF4",
-            subText: `This month: $${thisMonthRevenue.toFixed(0)}`,
+            subText: `${t.admin.dashboard.thisMonth}: $${thisMonthRevenue.toFixed(0)}`,
         },
         {
-            title: "Total Orders",
+            title: t.admin.dashboard.orders,
             value: ordersQuery.data?.total ?? 0,
             prefix: "",
             icon: <OrderedListOutlined />,
             color: COLORS.blue,
             bgColor: "#F0F5FF",
-            subText: `${statusCounts["PENDING"] || 0} pending`,
+            subText: `${statusCounts["PENDING"] || 0} ${t.admin.dashboard.pending}`,
         },
         {
-            title: "Active Products",
+            title: t.admin.dashboard.products,
             value: productsQuery.data?.total ?? 0,
             prefix: "",
             icon: <ShoppingOutlined />,
             color: COLORS.primary,
             bgColor: "#FFF0F6",
-            subText: "In catalog",
+            subText: t.admin.dashboard.inCatalog,
         },
         {
-            title: "Open Tickets",
+            title: t.admin.dashboard.tickets,
             value: ticketsQuery.data?.total ?? 0,
             prefix: "",
             icon: <CustomerServiceOutlined />,
             color: COLORS.yellow,
             bgColor: "#FFFBE6",
-            subText: "Needs attention",
+            subText: t.admin.dashboard.needsAttention,
         },
     ];
 
     // Quick Actions
     const quickActions = [
-        { title: "Add Product", icon: <PlusOutlined />, link: "/#/admin/products/create", color: COLORS.primary },
-        { title: "Manage Orders", icon: <EditOutlined />, link: "/#/admin/orders", color: COLORS.blue },
-        { title: "Send Notification", icon: <SendOutlined />, link: "/#/admin/notifications/create", color: COLORS.purple },
-        { title: "Update Banners", icon: <PictureOutlined />, link: "/#/admin/promotion-banners", color: COLORS.orange },
-        { title: "Categories", icon: <AppstoreOutlined />, link: "/#/admin/categories", color: COLORS.teal },
+        { title: t.admin.dashboard.add, icon: <PlusOutlined />, link: "/#/admin/products/create", color: COLORS.primary },
+        { title: t.admin.dashboard.manageOrders, icon: <EditOutlined />, link: "/#/admin/orders", color: COLORS.blue },
+        { title: t.admin.dashboard.sendNotif, icon: <SendOutlined />, link: "/#/admin/notifications/create", color: COLORS.purple },
+        { title: t.admin.dashboard.updateBanners, icon: <PictureOutlined />, link: "/#/admin/promotion-banners", color: COLORS.orange },
+        { title: t.admin.dashboard.categories, icon: <AppstoreOutlined />, link: "/#/admin/categories", color: COLORS.teal },
     ];
+
+    const STATUS_ICONS: Record<string, React.ReactNode> = {
+        PENDING: <ClockCircleOutlined />,
+        PROCESSING: <SyncOutlined spin />,
+        SHIPPING: <SendOutlined />,
+        DELIVERED: <CheckCircleOutlined />,
+        CANCELLED: <CloseCircleOutlined />,
+    };
 
     // --- JSX ---
     return (
@@ -211,18 +221,18 @@ const ModernDashboard: React.FC = () => {
             }}>
                 <div>
                     <Title level={2} style={{ margin: 0, fontWeight: 800, fontSize: 28 }}>
-                        👋 Good {getGreeting()}, {identity?.name || "Admin"}
+                        {t.admin.dashboard.greeting.replace("{time}", getGreetingTime())}, {identity?.name || "Admin"}
                     </Title>
                     <Text type="secondary" style={{ fontSize: 15 }}>
-                        Here's what's happening with your store today.
+                        {t.admin.dashboard.subtitle}
                     </Text>
                 </div>
                 <div style={{ textAlign: "right" }}>
                     <Text strong style={{ fontSize: 16, display: "block" }}>
-                        {new Date().toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
+                        {new Date().toLocaleDateString(language === 'km' ? 'km-KH' : 'en-US', { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
                     </Text>
                     <Text type="secondary">
-                        {new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })}
+                        {new Date().toLocaleTimeString(language === 'km' ? 'km-KH' : 'en-US', { hour: "2-digit", minute: "2-digit" })}
                     </Text>
                 </div>
             </div>
@@ -240,7 +250,7 @@ const ModernDashboard: React.FC = () => {
                                 height: "100%",
                                 transition: "all 0.3s ease",
                             }}
-                            bodyStyle={{ padding: 24 }}
+                            styles={{ body: { padding: 24 } }}
                         >
                             <Skeleton loading={isLoading} active paragraph={{ rows: 2 }}>
                                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
@@ -280,12 +290,12 @@ const ModernDashboard: React.FC = () => {
                         title={
                             <Space>
                                 <DollarOutlined style={{ color: COLORS.green }} />
-                                <Text strong style={{ fontSize: 16 }}>Revenue Trend</Text>
-                                <Tag color="green">Last 14 Days</Tag>
+                                <Text strong style={{ fontSize: 16 }}>{t.admin.dashboard.revenueTrend}</Text>
+                                <Tag color="green">{t.admin.dashboard.last14Days}</Tag>
                             </Space>
                         }
                         style={{ borderRadius: 20, border: "none", boxShadow: "0 4px 20px rgba(0,0,0,0.06)" }}
-                        bodyStyle={{ padding: "24px 16px 8px" }}
+                        styles={{ body: { padding: "24px 16px 8px" } }}
                     >
                         <ResponsiveContainer width="100%" height={300}>
                             <AreaChart data={revenueTrend}>
@@ -303,7 +313,7 @@ const ModernDashboard: React.FC = () => {
                                         borderRadius: 12, border: "none",
                                         boxShadow: "0 8px 24px rgba(0,0,0,0.12)",
                                     }}
-                                   formatter={(value: any) => [`$${Number(value).toFixed(2)}`, "Revenue"]}
+                                   formatter={(value: any) => [`$${Number(value).toFixed(2)}`, t.admin.dashboard.revenue]}
                                 />
                                 <Area
                                     type="monotone"
@@ -325,11 +335,11 @@ const ModernDashboard: React.FC = () => {
                         title={
                             <Space>
                                 <OrderedListOutlined style={{ color: COLORS.blue }} />
-                                <Text strong style={{ fontSize: 16 }}>Order Status</Text>
+                                <Text strong style={{ fontSize: 16 }}>{t.admin.dashboard.orderStatus}</Text>
                             </Space>
                         }
                         style={{ borderRadius: 20, border: "none", boxShadow: "0 4px 20px rgba(0,0,0,0.06)", height: "100%" }}
-                        bodyStyle={{ padding: "16px" }}
+                        styles={{ body: { padding: "16px" } }}
                     >
                         <ResponsiveContainer width="100%" height={280}>
                             <PieChart>
@@ -379,11 +389,11 @@ const ModernDashboard: React.FC = () => {
                         title={
                             <Space>
                                 <RiseOutlined style={{ color: COLORS.primary }} />
-                                <Text strong style={{ fontSize: 16 }}>Top Products</Text>
+                                <Text strong style={{ fontSize: 16 }}>{t.admin.dashboard.topProducts}</Text>
                             </Space>
                         }
                         style={{ borderRadius: 20, border: "none", boxShadow: "0 4px 20px rgba(0,0,0,0.06)" }}
-                        bodyStyle={{ padding: "16px 8px" }}
+                        styles={{ body: { padding: "16px 8px" } }}
                     >
                         <ResponsiveContainer width="100%" height={250}>
                             <BarChart data={topProducts} layout="vertical" margin={{ left: 20 }}>
@@ -400,7 +410,7 @@ const ModernDashboard: React.FC = () => {
                                 />
                                 <ReTooltip
                                     contentStyle={{ borderRadius: 12, border: "none", boxShadow: "0 8px 24px rgba(0,0,0,0.12)" }}
-                                    formatter={(value: any) => [`$${Number(value).toFixed(2)}`, "Revenue"]}
+                                    formatter={(value: any) => [`$${Number(value).toFixed(2)}`, t.admin.dashboard.revenue]}
                                 />
                                 <Bar dataKey="revenue" fill={COLORS.primary} radius={[0, 6, 6, 0]} barSize={20} />
                             </BarChart>
@@ -414,12 +424,12 @@ const ModernDashboard: React.FC = () => {
                         title={
                             <Space>
                                 <OrderedListOutlined style={{ color: COLORS.purple }} />
-                                <Text strong style={{ fontSize: 16 }}>Recent Orders</Text>
+                                <Text strong style={{ fontSize: 16 }}>{t.admin.dashboard.recentOrders}</Text>
                             </Space>
                         }
-                        extra={<a href="/#/admin/orders" style={{ fontSize: 13 }}>View All →</a>}
+                        extra={<a href="/#/admin/orders" style={{ fontSize: 13 }}>{t.admin.dashboard.viewAll}</a>}
                         style={{ borderRadius: 20, border: "none", boxShadow: "0 4px 20px rgba(0,0,0,0.06)" }}
-                        bodyStyle={{ padding: "8px 16px" }}
+                        styles={{ body: { padding: "8px 16px" } }}
                     >
                         <List
                             loading={ordersQuery.isLoading}
@@ -454,13 +464,13 @@ const ModernDashboard: React.FC = () => {
                                                     color={STATUS_COLORS[order.orderStatus]}
                                                     style={{ borderRadius: 10, fontSize: 11 }}
                                                 >
-                                                    {order.orderStatus}
+                                                    {t.order.status[order.orderStatus as keyof typeof t.order.status] || order.orderStatus}
                                                 </Tag>
                                             </Space>
                                         }
                                         description={
                                             <Text type="secondary" style={{ fontSize: 12 }}>
-                                                {order.shippingAddress?.fullName} · {new Date(order.createdAt).toLocaleDateString()}
+                                                {order.shippingAddress?.fullName} · {new Date(order.createdAt).toLocaleDateString(language === 'km' ? 'km-KH' : 'en-US')}
                                             </Text>
                                         }
                                     />
@@ -482,11 +492,11 @@ const ModernDashboard: React.FC = () => {
                         title={
                             <Space>
                                 <ThunderboltOutlined style={{ color: COLORS.yellow }} />
-                                <Text strong style={{ fontSize: 16 }}>Quick Actions</Text>
+                                <Text strong style={{ fontSize: 16 }}>{t.admin.dashboard.quickActions}</Text>
                             </Space>
                         }
                         style={{ borderRadius: 20, border: "none", boxShadow: "0 4px 20px rgba(0,0,0,0.06)" }}
-                        bodyStyle={{ padding: "16px 20px" }}
+                        styles={{ body: { padding: "16px 20px" } }}
                     >
                         <Row gutter={[12, 12]}>
                             {quickActions.map((action) => (
@@ -502,7 +512,7 @@ const ModernDashboard: React.FC = () => {
                                                 background: `${action.color}08`,
                                                 transition: "all 0.3s ease",
                                             }}
-                                            bodyStyle={{ padding: "20px 12px" }}
+                                            styles={{ body: { padding: "20px 12px" } }}
                                         >
                                             <div style={{
                                                 width: 44, height: 44, borderRadius: 14,
@@ -525,18 +535,17 @@ const ModernDashboard: React.FC = () => {
                 </Col>
 
                 {/* Categories */}
-                                {/* Categories */}
                                 <Col xs={24} lg={10}>
                                     <Card
                                         title={
                                             <Space>
                                                 <AppstoreOutlined style={{ color: COLORS.teal }} />
-                                                <Text strong style={{ fontSize: 16 }}>Categories</Text>
+                                                <Text strong style={{ fontSize: 16 }}>{t.admin.dashboard.categories}</Text>
                                             </Space>
                                         }
-                                        extra={<a href="/#/admin/categories" style={{ fontSize: 13 }}>Manage →</a>}
+                                        extra={<a href="/#/admin/categories" style={{ fontSize: 13 }}>{t.admin.dashboard.manage}</a>}
                                         style={{ borderRadius: 20, border: "none", boxShadow: "0 4px 20px rgba(0,0,0,0.06)" }}
-                                        bodyStyle={{ padding: "16px 20px" }}
+                                        styles={{ body: { padding: "16px 20px" } }}
                                     >
                                         <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
                                             {categories.map((cat) => (
@@ -586,7 +595,7 @@ const ModernDashboard: React.FC = () => {
                                                             {cat.name}
                                                         </Text>
                                                         <Text type="secondary" style={{ fontSize: 11 }}>
-                                                            {cat.productCount || 0} products
+                                                            {cat.productCount || 0} {t.admin.category.productCount || 'products'}
                                                         </Text>
                                                     </div>
                                                 </div>

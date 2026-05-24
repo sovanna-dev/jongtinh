@@ -461,5 +461,150 @@
       "delivery": "Shipping times vary by location, but most orders arrive within 3-5 business days. You'll receive a notification once your package is on its way!",
       "botPrefix": "[Auto-Reply Bot]: "
     }
+  },
+  "admin": {
+    "category": {
+      "name": "Category Name",
+      "icon": "Category Icon",
+      "uploadIcon": "Upload Icon Image",
+      "pasteUrl": "Or Paste Icon URL",
+      "subcategories": "Subcategories",
+      "productCount": "Product Count",
+      "newSubName": "New subcategory name",
+      "add": "Add",
+      "validation": {
+        "nameRequired": "Please enter category name",
+        "urlInvalid": "Please enter a valid image URL"
+      }
+    },
+    "product": {
+      "name": "Product Name",
+      "description": "Description",
+      "price": "Price ($)",
+      "discountPrice": "Discount Price ($)",
+      "stock": "Stock Quantity",
+      "brand": "Brand",
+      "category": "Category",
+      "subcategory": "Subcategory",
+      "barcode": "Barcode",
+      "rating": "Rating",
+      "reviewCount": "Review Count",
+      "media": "Media",
+      "images": "Product Images",
+      "colors": "Colors",
+      "specifications": "Specifications",
+      "attributes": "Attributes",
+      "available": "Is Available",
+      "featured": "Is Featured",
+      "addColor": "Add Color",
+      "addSpec": "Add Specification",
+      "addAttr": "Add Attribute",
+      "newSub": "Add new subcategory",
+      "validation": {
+        "nameRequired": "Please enter product name",
+        "descRequired": "Please enter product description",
+        "priceRequired": "Please enter price",
+        "stockRequired": "Please enter stock quantity",
+        "categoryRequired": "Please select a category",
+        "discountError": "Discount price must be less than the original price",
+        "subExists": "Subcategory already exists",
+        "subSelectFirst": "Please select a category first"
+      }
+    },
+    "orders": {
+      "status": "Order Status",
+      "details": "Order Details",
+      "id": "Order ID",
+      "date": "Date",
+      "customer": "Customer",
+      "phone": "Phone",
+      "address": "Address",
+      "payment": "Payment Method",
+      "total": "Total Amount",
+      "items": "Items",
+      "product": "Product",
+      "price": "Price",
+      "qty": "Qty",
+      "subtotal": "Subtotal",
+      "notifications": {
+        "statusUpdated": "Order Status Updated",
+        "processing": "Your order #{id} is now being processed.",
+        "shipping": "Your order #{id} has been shipped!",
+        "delivered": "Your order #{id} has been delivered. Enjoy!",
+        "cancelled": "Your order #{id} has been cancelled.",
+        "default": "Your order #{id} status is now {status}."
+      }
+    },
+    "dashboard": {
+      "greeting": "Good {time}",
+      "subtitle": "Here's what's happening with your store today.",
+      "revenue": "Total Revenue",
+      "orders": "Total Orders",
+      "products": "Active Products",
+      "tickets": "Open Tickets",
+      "revenueTrend": "Revenue Trend",
+      "orderStatus": "Order Status",
+      "topProducts": "Top Products",
+      "recentOrders": "Recent Orders",
+      "quickActions": "Quick Actions",
+      "categories": "Categories",
+      "viewAll": "View All →",
+      "manage": "Manage →",
+      "thisMonth": "This month",
+      "pending": "pending",
+      "inCatalog": "In catalog",
+      "needsAttention": "Needs attention",
+      "last14Days": "Last 14 Days",
+      "add": "Add Product",
+      "manageOrders": "Manage Orders",
+      "sendNotif": "Send Notification",
+      "updateBanners": "Update Banners",
+      "times": {
+        "morning": "Morning",
+        "afternoon": "Afternoon",
+        "evening": "Evening"
+      }
+    },
+    "users": {
+      "title": "Users Management",
+      "avatar": "Avatar",
+      "fullName": "Full Name",
+      "email": "Email",
+      "role": "Role",
+      "joinedAt": "Joined At",
+      "actions": "Actions",
+      "admin": "Admin",
+      "user": "User",
+      "editTitle": "Edit User Permissions",
+      "standardUser": "Standard User",
+      "administrator": "Administrator",
+      "editingSelf": "(You are editing your own profile)",
+      "adminAccess": "Administrator Access",
+      "revokeWarning": "You cannot revoke your own admin status for security reasons.",
+      "grantHelp": "Granting admin access allows this user to log in to this dashboard.",
+      "adminRole": "Admin Role",
+      "roleHelp": "Determines which sections this admin can access.",
+      "roles": {
+        "super_admin": "Super Admin — Full Access",
+        "product_manager": "Product Manager — Products, Categories, Banners",
+        "order_manager": "Order Manager — Orders, Notifications",
+        "support_agent": "Support Agent — Tickets, FAQs",
+        "viewer": "Viewer — Dashboard Only (Read-Only)"
+      }
+    },
+    "adminFaq": {
+      "title": "FAQs Management",
+      "question": "Question",
+      "answer": "Answer",
+      "order": "Display Order",
+      "feedback": "Feedback",
+      "helpful": "Helpful",
+      "notHelpful": "Not Helpful",
+      "validation": {
+        "questionRequired": "Please enter a question",
+        "answerRequired": "Please enter an answer",
+        "categoryRequired": "Please select or enter a category"
+      }
+    }
   }
 }

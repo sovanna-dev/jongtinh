@@ -4,8 +4,10 @@ import { PlusOutlined } from "@ant-design/icons";
 import { useState } from "react";
 import { ICategory } from "../../interfaces";
 import { CloudinaryUpload } from "../../components/CloudinaryUpload";
+import { useLanguage } from "../../contexts/LanguageContext";
 
 export const CategoryCreate = () => {
+    const { t } = useLanguage();
     const { formProps, saveButtonProps, onFinish, form } = useForm<ICategory>();
     const [newSubName, setNewSubName] = useState("");
     const [tempSubs, setTempSubs] = useState<{ id: string; name: string }[]>([]);
@@ -37,13 +39,13 @@ export const CategoryCreate = () => {
     return (
         <Create saveButtonProps={saveButtonProps}>
             <Form {...formProps} layout="vertical" onFinish={handleOnFinish}>
-                <Form.Item label="Category Name" name="name" rules={[{ required: true }]}>
+                <Form.Item label={t.admin.category.name} name="name" rules={[{ required: true, message: t.admin.category.validation.nameRequired }]}>
                     <Input placeholder="e.g. Electronics" />
                 </Form.Item>
 
-                <Divider orientation="left">Category Icon</Divider>
+                <Divider orientation="left">{t.admin.category.icon}</Divider>
 
-                <Form.Item label="Upload Icon Image">
+                <Form.Item label={t.admin.category.uploadIcon}>
                     <CloudinaryUpload
                         onUploadComplete={(url) => {
                             form.setFieldValue("icon", url);
@@ -53,25 +55,25 @@ export const CategoryCreate = () => {
                 </Form.Item>
 
                 <Form.Item
-                    label="Or Paste Icon URL"
+                    label={t.admin.category.pasteUrl}
                     name="icon"
-                    rules={[{ required: true, type: "url", message: "Please enter a valid image URL" }]}
+                    rules={[{ required: true, type: "url", message: t.admin.category.validation.urlInvalid }]}
                 >
                     <Input placeholder="https://example.com/icon.png" />
                 </Form.Item>
 
-                <Divider orientation="left">Subcategories</Divider>
+                <Divider orientation="left">{t.admin.category.subcategories}</Divider>
 
                 <Space style={{ marginBottom: 12 }}>
                     <Input
-                        placeholder="New subcategory name"
+                        placeholder={t.admin.category.newSubName}
                         value={newSubName}
                         onChange={(e) => setNewSubName(e.target.value)}
                         onPressEnter={addSubCategory}
                         style={{ width: 250 }}
                     />
                     <Button icon={<PlusOutlined />} onClick={addSubCategory}>
-                        Add
+                        {t.admin.category.add}
                     </Button>
                 </Space>
 
@@ -89,7 +91,7 @@ export const CategoryCreate = () => {
                     ))}
                 </div>
 
-                <Form.Item label="Product Count" name="productCount" initialValue={0}>
+                <Form.Item label={t.admin.category.productCount} name="productCount" initialValue={0}>
                     <InputNumber min={0} style={{ width: "100%" }} />
                 </Form.Item>
             </Form>

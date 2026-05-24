@@ -524,19 +524,36 @@ export const CheckoutPage: React.FC = () => {
                             }}
                             title={<Title level={4} style={{ margin: 0 }}>{t.checkout.orderSummary}</Title>}
                         >
-                            <div style={{ maxHeight: 300, overflowY: "auto", marginBottom: 20 }}>
+                            <div style={{ maxHeight: 400, overflowY: "auto", marginBottom: 20, paddingRight: 8 }}>
                                 {cart.map((item) => {
                                     const p = item.product.discountPrice ?? item.product.price;
                                     return (
-                                        <div key={item.product.id} style={{ display: "flex", gap: 12, marginBottom: 16 }}>
-                                            <Badge count={item.quantity} color="#FF006E">
-                                                <img src={item.product.images?.[0]} style={{ width: 50, height: 50, borderRadius: 8, objectFit: "cover", border: isDark ? "1px solid #333" : "1px solid #eee" }} />
+                                        <div key={item.product.id} style={{ display: "flex", gap: 16, marginBottom: 20, alignItems: "center" }}>
+                                            <Badge count={item.quantity} color="#FF006E" offset={[-2, 2]}>
+                                                <img
+                                                    src={item.product.images?.[0]}
+                                                    style={{
+                                                        width: 64,
+                                                        height: 64,
+                                                        borderRadius: 12,
+                                                        objectFit: "cover",
+                                                        border: isDark ? "1px solid #333" : "1px solid #f0f0f0"
+                                                    }}
+                                                />
                                             </Badge>
-                                            <div style={{ flex: 1 }}>
-                                                <Text strong style={{ display: "block", fontSize: 13 }} ellipsis>{item.product.name}</Text>
-                                                <Text type="secondary" style={{ fontSize: 12 }}>${p.toFixed(2)} {t.checkout.each}</Text>
+                                            <div style={{ flex: 1, minWidth: 0 }}>
+                                                <Text strong style={{ display: "block", fontSize: 14, marginBottom: 4 }} ellipsis={{ tooltip: item.product.name }}>
+                                                    {item.product.name}
+                                                </Text>
+                                                <Text type="secondary" style={{ fontSize: 12 }}>
+                                                    ${p.toFixed(2)} {t.checkout.each}
+                                                </Text>
                                             </div>
-                                            <Text strong style={{ marginLeft: 8 }}>${(p * item.quantity).toFixed(2)}</Text>
+                                            <div style={{ textAlign: "right", minWidth: 80 }}>
+                                                <Text strong style={{ fontSize: 15 }}>
+                                                    ${(p * item.quantity).toFixed(2)}
+                                                </Text>
+                                            </div>
                                         </div>
                                     );
                                 })}

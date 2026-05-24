@@ -5,8 +5,10 @@ import { MinusCircleOutlined, PlusOutlined } from "@ant-design/icons";
 import { useEffect, useMemo, useState } from "react";
 import { IProduct, ICategory } from "../../interfaces";
 import { ProductImageList } from "../../components/ProductImageList";
+import { useLanguage } from "../../contexts/LanguageContext";
 
 export const ProductEdit = () => {
+    const { t } = useLanguage();
     const { formProps, saveButtonProps, query: queryResult, onFinish } = useForm<IProduct>();
     const { mutate: updateCategory } = useUpdate();
 
@@ -47,7 +49,7 @@ export const ProductEdit = () => {
         const subCategoryId = newSubCategoryName.toLowerCase().trim().replace(/\s+/g, "_");
 
         if (currentCategory.subCategories?.some((sub: any) => sub.id === subCategoryId)) {
-            message.error("Subcategory already exists");
+            message.error(t.admin.product.validation.subExists);
             setIsSubmittingSubCategory(false);
             return;
         }
@@ -146,42 +148,55 @@ export const ProductEdit = () => {
                 layout="vertical"
                 onFinish={handleOnFinish}
             >
-                <Form.Item label="Product Name" name="name" rules={[{ required: true }]}>
+                <Form.Item label={t.admin.product.name} name="name" rules={[{ required: true, message: t.admin.product.validation.nameRequired }]}>
                     <Input />
                 </Form.Item>
 
-                <Form.Item label="Description" name="description" rules={[{ required: true }]}>
+                <Form.Item label={t.admin.product.description} name="description" rules={[{ required: true, message: t.admin.product.validation.descRequired }]}>
                     <Input.TextArea rows={4} />
                 </Form.Item>
 
                 <Space size="large" wrap>
-                    <Form.Item label="Price ($)" name="price" rules={[{ required: true }]}>
+                    <Form.Item label={t.admin.product.price} name="price" rules={[{ required: true, message: t.admin.product.validation.priceRequired }]}>
                         <InputNumber min={0} step={0.01} precision={2} style={{ width: 150 }} />
                     </Form.Item>
 
-                    <Form.Item label="Discount Price ($)" name="discountPrice">
+                    <Form.Item
+                        label={t.admin.product.discountPrice}
+                        name="discountPrice"
+                        rules={[
+                            ({ getFieldValue }) => ({
+                                validator(_, value) {
+                                    if (!value || getFieldValue('price') > value) {
+                                        return Promise.resolve();
+                                    }
+                                    return Promise.reject(new Error(t.admin.product.validation.discountError));
+                                },
+                            }),
+                        ]}
+                    >
                         <InputNumber min={0} step={0.01} precision={2} style={{ width: 150 }} />
                     </Form.Item>
 
-                    <Form.Item label="Stock Quantity" name="stockQuantity" rules={[{ required: true }]}>
+                    <Form.Item label={t.admin.product.stock} name="stockQuantity" rules={[{ required: true, message: t.admin.product.validation.stockRequired }]}>
                         <InputNumber min={0} style={{ width: 120 }} />
                     </Form.Item>
                 </Space>
 
                 <Form.Item
-                    label="Brand"
+                    label={t.admin.product.brand}
                     name="brand"
                 >
                     <Input placeholder="e.g. JongTinh, Nike, Adidas" />
                 </Form.Item>
 
-                <Form.Item label="Category" name="category" rules={[{ required: true }]}>
+                <Form.Item label={t.admin.product.category} name="category" rules={[{ required: true, message: t.admin.product.validation.categoryRequired }]}>
                     <Select {...categorySelectProps} />
                 </Form.Item>
 
-                <Form.Item label="Subcategory" name="subCategory">
+                <Form.Item label={t.admin.product.subcategory} name="subCategory">
                     <Select
-                        placeholder="Select Subcategory"
+                        placeholder={t.admin.product.subcategory}
                         options={subCategoryOptions}
                         disabled={!selectedCategoryId}
                         allowClear
@@ -197,12 +212,12 @@ export const ProductEdit = () => {
                                             if (selectedCategoryId && currentCategory) {
                                                 setIsSubCategoryModalVisible(true);
                                             } else {
-                                                message.warning("Please select a valid category first");
+                                                message.warning(t.admin.product.validation.subSelectFirst);
                                             }
                                         }}
                                         disabled={!selectedCategoryId}
                                     >
-                                        Add new subcategory
+                                        {t.admin.product.newSub}
                                     </Button>
                                 </Space>
                             </>
@@ -210,26 +225,26 @@ export const ProductEdit = () => {
                     />
                 </Form.Item>
 
-                <Form.Item label="Barcode" name="barcode">
+                <Form.Item label={t.admin.product.barcode} name="barcode">
                     <Input />
                 </Form.Item>
 
                 <Space size="large" wrap>
-                    <Form.Item label="Rating" name="rating">
+                    <Form.Item label={t.admin.product.rating} name="rating">
                         <InputNumber min={0} max={5} step={0.1} style={{ width: 100 }} />
                     </Form.Item>
-                    <Form.Item label="Review Count" name="reviewCount">
+                    <Form.Item label={t.admin.product.reviewCount} name="reviewCount">
                         <InputNumber min={0} style={{ width: 100 }} />
                     </Form.Item>
                 </Space>
 
-                <Divider orientation="left">Media</Divider>
-                <Form.Item label="Product Images">
+                <Divider orientation="left">{t.admin.product.media}</Divider>
+                <Form.Item label={t.admin.product.images}>
                     <ProductImageList />
                 </Form.Item>
 
-                <Divider orientation="left">Attributes</Divider>
-                <Form.Item label="Colors">
+                <Divider orientation="left">{t.admin.product.attributes}</Divider>
+                <Form.Item label={t.admin.product.colors}>
                     <Form.List name="colors">
                         {(fields, { add, remove }) => (
                             <>
@@ -252,13 +267,13 @@ export const ProductEdit = () => {
                                         <MinusCircleOutlined onClick={() => remove(name)} />
                                     </Space>
                                 ))}
-                                <Button type="dashed" onClick={() => add()} block icon={<PlusOutlined />}>Add Color</Button>
+                                <Button type="dashed" onClick={() => add()} block icon={<PlusOutlined />}>{t.admin.product.addColor}</Button>
                             </>
                         )}
                     </Form.List>
                 </Form.Item>
 
-                <Divider orientation="left">Specifications</Divider>
+                <Divider orientation="left">{t.admin.product.specifications}</Divider>
                 <Form.List name="specifications">
                     {(fields, { add, remove }) => (
                         <>
@@ -273,12 +288,12 @@ export const ProductEdit = () => {
                                     <MinusCircleOutlined onClick={() => remove(name)} />
                                 </Space>
                             ))}
-                            <Button type="dashed" onClick={() => add()} block icon={<PlusOutlined />}>Add Specification</Button>
+                            <Button type="dashed" onClick={() => add()} block icon={<PlusOutlined />}>{t.admin.product.addSpec}</Button>
                         </>
                     )}
                 </Form.List>
 
-                <Divider orientation="left">Attributes (Size, etc.)</Divider>
+                <Divider orientation="left">{t.admin.product.attributes} (Size, etc.)</Divider>
                 <Form.List name="attributes">
                     {(fields, { add, remove }) => (
                         <>
@@ -305,22 +320,22 @@ export const ProductEdit = () => {
                                     <MinusCircleOutlined onClick={() => remove(name)} />
                                 </Space>
                             ))}
-                            <Button type="dashed" onClick={() => add()} block icon={<PlusOutlined />}>Add Attribute</Button>
+                            <Button type="dashed" onClick={() => add()} block icon={<PlusOutlined />}>{t.admin.product.addAttr}</Button>
                         </>
                     )}
                 </Form.List>
 
-                <Form.Item label="Is Available" name="isAvailable" valuePropName="checked">
+                <Form.Item label={t.admin.product.available} name="isAvailable" valuePropName="checked">
                     <Switch />
                 </Form.Item>
 
-                <Form.Item label="Is Featured" name="isFeatured" valuePropName="checked">
+                <Form.Item label={t.admin.product.featured} name="isFeatured" valuePropName="checked">
                     <Switch />
                 </Form.Item>
             </Form>
 
             <Modal
-                title="Add New Subcategory"
+                title={t.admin.product.newSub}
                 open={isSubCategoryModalVisible}
                 onOk={handleAddSubCategory}
                 onCancel={() => setIsSubCategoryModalVisible(false)}
@@ -332,7 +347,7 @@ export const ProductEdit = () => {
                     <p>Adding subcategory to: <b>{currentCategory?.name}</b></p>
                 </div>
                 <Input
-                    placeholder="Enter subcategory name"
+                    placeholder={t.admin.product.subcategory}
                     value={newSubCategoryName}
                     onChange={(e) => setNewSubCategoryName(e.target.value)}
                     onPressEnter={handleAddSubCategory}

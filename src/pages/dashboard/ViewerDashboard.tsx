@@ -1,12 +1,12 @@
 import React from "react";
 import { useList } from "@refinedev/core";
-import { Row, Col, Card, Statistic, Table, Tag, Typography, List, Skeleton, Space } from "antd";
+import { Row, Col, Card, Table, Tag, Typography, List, Skeleton, Space } from "antd";
 import {
     ShoppingOutlined,
     OrderedListOutlined,
     ClockCircleOutlined,
-    RiseOutlined,
     FallOutlined,
+    DollarOutlined,
 } from "@ant-design/icons";
 import {
     BarChart, Bar,
@@ -14,6 +14,7 @@ import {
     PieChart, Pie, Cell, Legend,
 } from "recharts";
 import { IOrder, IProduct } from "../../interfaces";
+import { useLanguage } from "../../contexts/LanguageContext";
 
 const { Title, Text } = Typography;
 
@@ -28,6 +29,7 @@ const STATUS_COLORS: Record<string, string> = {
 };
 
 export const ViewerDashboard: React.FC = () => {
+    const { t, language } = useLanguage();
     // Fetch all orders
     const { query: ordersQuery } = useList<IOrder>({
         resource: "orders",
@@ -68,7 +70,7 @@ export const ViewerDashboard: React.FC = () => {
             (o: IOrder) => new Date(o.createdAt).toISOString().split("T")[0] === date && o.orderStatus !== "CANCELLED"
         );
         return {
-            date: new Date(date).toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+            date: new Date(date).toLocaleDateString(language === 'km' ? 'km-KH' : 'en-US', { month: "short", day: "numeric" }),
             revenue: dayOrders.reduce((sum: number, o: IOrder) => sum + o.total, 0),
             orders: dayOrders.length,
         };
@@ -77,7 +79,7 @@ export const ViewerDashboard: React.FC = () => {
     // Order status distribution
     const statusData = ["PENDING", "PROCESSING", "SHIPPING", "DELIVERED", "CANCELLED"].map(
         (status) => ({
-            name: status,
+            name: t.order.status[status as keyof typeof t.order.status] || status,
             value: orders.filter((o: IOrder) => o.orderStatus === status).length,
             color: STATUS_COLORS[status],
         })
@@ -113,60 +115,70 @@ export const ViewerDashboard: React.FC = () => {
         <div style={{ padding: "24px" }}>
             <div style={{ marginBottom: 24 }}>
                 <Title level={3} style={{ margin: 0 }}>
-                    📊 Sales Overview
+                    📊 {t.analytics.title}
                 </Title>
-                <Text type="secondary">Real-time e-commerce analytics dashboard</Text>
+                <Text type="secondary">{t.admin.dashboard.subtitle}</Text>
             </div>
 
             {/* Stats Cards */}
             <Row gutter={[16, 16]}>
                 <Col xs={24} sm={12} lg={6}>
-                    <Card bordered={false}>
-                        <Skeleton loading={ordersLoading} active>
-                            <Statistic
-                                title="Total Revenue"
-                                value={totalRevenue}
-                                precision={2}
-                                prefix="$"
-                                valueStyle={{ color: "#4CAF50" }}
-                                suffix={<RiseOutlined />}
-                            />
+                    <Card bordered={false} hoverable style={{ borderRadius: 16 }}>
+                        <Skeleton loading={ordersLoading} active paragraph={{ rows: 1 }}>
+                            <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                <Text type="secondary">{t.admin.dashboard.revenue}</Text>
+                                <Title level={3} style={{ margin: '4px 0', color: '#4CAF50' }}>
+                                    ${totalRevenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                </Title>
+                                <Text type="secondary" style={{ fontSize: 12 }}>
+                                    <DollarOutlined /> {t.admin.dashboard.thisMonth}
+                                </Text>
+                            </div>
                         </Skeleton>
                     </Card>
                 </Col>
                 <Col xs={24} sm={12} lg={6}>
-                    <Card bordered={false}>
-                        <Skeleton loading={ordersLoading} active>
-                            <Statistic
-                                title="Total Orders"
-                                value={totalOrders}
-                                prefix={<OrderedListOutlined />}
-                                valueStyle={{ color: "#3A86FF" }}
-                            />
+                    <Card bordered={false} hoverable style={{ borderRadius: 16 }}>
+                        <Skeleton loading={ordersLoading} active paragraph={{ rows: 1 }}>
+                            <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                <Text type="secondary">{t.admin.dashboard.orders}</Text>
+                                <Title level={3} style={{ margin: '4px 0', color: '#3A86FF' }}>
+                                    {totalOrders.toLocaleString()}
+                                </Title>
+                                <Text type="secondary" style={{ fontSize: 12 }}>
+                                    <OrderedListOutlined /> {t.adminOrders.title}
+                                </Text>
+                            </div>
                         </Skeleton>
                     </Card>
                 </Col>
                 <Col xs={24} sm={12} lg={6}>
-                    <Card bordered={false}>
-                        <Skeleton loading={ordersLoading} active>
-                            <Statistic
-                                title="Pending Orders"
-                                value={pendingOrders}
-                                prefix={<ClockCircleOutlined />}
-                                valueStyle={{ color: "#FFBE0B" }}
-                            />
+                    <Card bordered={false} hoverable style={{ borderRadius: 16 }}>
+                        <Skeleton loading={ordersLoading} active paragraph={{ rows: 1 }}>
+                            <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                <Text type="secondary">{t.admin.dashboard.pending}</Text>
+                                <Title level={3} style={{ margin: '4px 0', color: '#FFBE0B' }}>
+                                    {pendingOrders.toLocaleString()}
+                                </Title>
+                                <Text type="secondary" style={{ fontSize: 12 }}>
+                                    <ClockCircleOutlined /> {t.admin.dashboard.needsAttention}
+                                </Text>
+                            </div>
                         </Skeleton>
                     </Card>
                 </Col>
                 <Col xs={24} sm={12} lg={6}>
-                    <Card bordered={false}>
-                        <Skeleton loading={productsLoading} active>
-                            <Statistic
-                                title="Active Products"
-                                value={activeProducts}
-                                prefix={<ShoppingOutlined />}
-                                valueStyle={{ color: "#FF006E" }}
-                            />
+                    <Card bordered={false} hoverable style={{ borderRadius: 16 }}>
+                        <Skeleton loading={productsLoading} active paragraph={{ rows: 1 }}>
+                            <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                <Text type="secondary">{t.admin.dashboard.products}</Text>
+                                <Title level={3} style={{ margin: '4px 0', color: '#FF006E' }}>
+                                    {activeProducts.toLocaleString()}
+                                </Title>
+                                <Text type="secondary" style={{ fontSize: 12 }}>
+                                    <ShoppingOutlined /> {t.admin.dashboard.inCatalog}
+                                </Text>
+                            </div>
                         </Skeleton>
                     </Card>
                 </Col>
@@ -176,14 +188,18 @@ export const ViewerDashboard: React.FC = () => {
             <Row gutter={[16, 16]} style={{ marginTop: 24 }}>
                 {/* Revenue Chart */}
                 <Col xs={24} lg={16}>
-                    <Card title="💰 Revenue (Last 7 Days)" bordered={false}>
+                    <Card title={<Space><DollarOutlined /> {t.admin.dashboard.revenueTrend}</Space>} bordered={false} style={{ borderRadius: 16 }}>
                         <ResponsiveContainer width="100%" height={300}>
                             <BarChart data={revenueData}>
-                                <CartesianGrid strokeDasharray="3 3" />
-                                <XAxis dataKey="date" />
-                                <YAxis />
-                                <Tooltip formatter={(value: any) => [`$${Number(value).toFixed(2)}`, "Revenue"]} />
-                                <Bar dataKey="revenue" fill="#FF006E" radius={[8, 8, 0, 0]} />
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                                <XAxis dataKey="date" axisLine={false} tickLine={false} />
+                                <YAxis axisLine={false} tickLine={false} tickFormatter={(v) => `$${v}`} />
+                                <Tooltip
+                                    cursor={{ fill: '#f5f5f5' }}
+                                    contentStyle={{ borderRadius: 8, border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
+                                    formatter={(value: any) => [`$${Number(value).toFixed(2)}`, t.admin.dashboard.revenue]}
+                                />
+                                <Bar dataKey="revenue" fill="#FF006E" radius={[4, 4, 0, 0]} barSize={40} />
                             </BarChart>
                         </ResponsiveContainer>
                     </Card>
@@ -191,7 +207,7 @@ export const ViewerDashboard: React.FC = () => {
 
                 {/* Order Status Pie */}
                 <Col xs={24} lg={8}>
-                    <Card title="📦 Order Status" bordered={false}>
+                    <Card title={<Space><OrderedListOutlined /> {t.admin.dashboard.orderStatus}</Space>} bordered={false} style={{ borderRadius: 16 }}>
                         <ResponsiveContainer width="100%" height={300}>
                             <PieChart>
                                 <Pie
@@ -202,13 +218,16 @@ export const ViewerDashboard: React.FC = () => {
                                     outerRadius={90}
                                     paddingAngle={5}
                                     dataKey="value"
+                                    stroke="none"
                                 >
                                     {statusData.map((entry, index) => (
                                         <Cell key={index} fill={entry.color} />
                                     ))}
                                 </Pie>
-                                <Tooltip />
-                                <Legend />
+                                <Tooltip
+                                    contentStyle={{ borderRadius: 8, border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
+                                />
+                                <Legend verticalAlign="bottom" iconType="circle" />
                             </PieChart>
                         </ResponsiveContainer>
                     </Card>
@@ -219,22 +238,22 @@ export const ViewerDashboard: React.FC = () => {
             <Row gutter={[16, 16]} style={{ marginTop: 24 }}>
                 {/* Top Products */}
                 <Col xs={24} lg={12}>
-                    <Card title="🏆 Top Selling Products" bordered={false}>
+                    <Card title={<Space><ShoppingOutlined /> {t.admin.dashboard.topProducts}</Space>} bordered={false} style={{ borderRadius: 16 }}>
                         <List
                             dataSource={topProducts}
-                            locale={{ emptyText: "No sales data yet" }}
+                            locale={{ emptyText: t.home.noProducts }}
                             renderItem={(item: any, index: number) => (
                                 <List.Item>
                                     <List.Item.Meta
                                         avatar={
-                                            <Tag color={COLORS[index]} style={{ width: 32, textAlign: "center" }}>
+                                            <Tag color={COLORS[index % COLORS.length]} style={{ width: 32, textAlign: "center", borderRadius: 4 }}>
                                                 #{index + 1}
                                             </Tag>
                                         }
                                         title={item.name}
-                                        description={`${item.count} units sold`}
+                                        description={`${item.count} ${t.admin.orders.items.toLowerCase()}`}
                                     />
-                                    <Text strong>${item.revenue.toFixed(2)}</Text>
+                                    <Text strong color="#FF006E">${item.revenue.toFixed(2)}</Text>
                                 </List.Item>
                             )}
                         />
@@ -244,13 +263,14 @@ export const ViewerDashboard: React.FC = () => {
                 {/* Low Stock Alert */}
                 <Col xs={24} lg={12}>
                     <Card
-                        title="⚠️ Low Stock Alert"
+                        title={<Space><ClockCircleOutlined /> {t.admin.dashboard.needsAttention}</Space>}
                         bordered={false}
-                        extra={<Tag color="volcano">{lowStockProducts.length} products</Tag>}
+                        style={{ borderRadius: 16 }}
+                        extra={<Tag color="volcano">{lowStockProducts.length}</Tag>}
                     >
                         <List
                             dataSource={lowStockProducts}
-                            locale={{ emptyText: "All products well stocked ✅" }}
+                            locale={{ emptyText: "✅" }}
                             renderItem={(item: any) => (
                                 <List.Item>
                                     <List.Item.Meta
@@ -258,7 +278,7 @@ export const ViewerDashboard: React.FC = () => {
                                         description={
                                             <Space>
                                                 <FallOutlined style={{ color: "#E53935" }} />
-                                                <Text type="danger">Only {item.stockQuantity} left</Text>
+                                                <Text type="danger">{t.product.inStockCount.replace('{count}', item.stockQuantity)}</Text>
                                             </Space>
                                         }
                                     />
@@ -273,42 +293,44 @@ export const ViewerDashboard: React.FC = () => {
             {/* Recent Orders Table */}
             <Row gutter={[16, 16]} style={{ marginTop: 24 }}>
                 <Col span={24}>
-                    <Card title="📋 Recent Orders" bordered={false}>
+                    <Card title={<Space><OrderedListOutlined /> {t.admin.dashboard.recentOrders}</Space>} bordered={false} style={{ borderRadius: 16 }}>
                         <Table
                             dataSource={orders.slice(0, 10)}
                             rowKey="orderId"
                             pagination={false}
                             loading={ordersLoading}
-                            size="small"
+                            size="middle"
                         >
                             <Table.Column
                                 dataIndex="orderId"
-                                title="Order ID"
-                                render={(value: string) => value?.substring(0, 8)?.toUpperCase()}
+                                title={t.admin.orders.id}
+                                render={(value: string) => <Text code>{value?.substring(0, 8)?.toUpperCase()}</Text>}
                             />
                             <Table.Column
                                 dataIndex={["shippingAddress", "fullName"]}
-                                title="Customer"
+                                title={t.admin.orders.customer}
                             />
                             <Table.Column
                                 dataIndex="total"
-                                title="Amount"
+                                title={t.admin.orders.total}
                                 render={(value: number) => (
-                                    <Text strong>${value?.toFixed(2)}</Text>
+                                    <Text strong style={{ color: '#FF006E' }}>${value?.toFixed(2)}</Text>
                                 )}
                             />
                             <Table.Column
                                 dataIndex="orderStatus"
-                                title="Status"
+                                title={t.admin.orders.status}
                                 render={(value: string) => (
-                                    <Tag color={STATUS_COLORS[value]}>{value}</Tag>
+                                    <Tag color={STATUS_COLORS[value]} style={{ borderRadius: 8 }}>
+                                        {t.order.status[value as keyof typeof t.order.status] || value}
+                                    </Tag>
                                 )}
                             />
                             <Table.Column
                                 dataIndex="createdAt"
-                                title="Date"
+                                title={t.admin.orders.date}
                                 render={(value: number) =>
-                                    new Date(value).toLocaleDateString("en-US", {
+                                    new Date(value).toLocaleDateString(language === 'km' ? 'km-KH' : 'en-US', {
                                         month: "short",
                                         day: "numeric",
                                         hour: "2-digit",
