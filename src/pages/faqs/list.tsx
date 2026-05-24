@@ -26,7 +26,7 @@ export const FaqList = () => {
     });
 
     return (
-        <List title={t.adminFaq.title}>
+        <List title={t.admin.adminFaq.title}>
             <div style={{ marginBottom: 16 }}>
                 <Input
                     placeholder={t.faq.searchPlaceholder}
@@ -45,19 +45,19 @@ export const FaqList = () => {
                     title={t.tickets.category}
                     render={(value) => <Tag color="blue">{value || t.faq.general}</Tag>}
                 />
-                <Table.Column dataIndex="question" title={t.adminFaq.question} />
-                <Table.Column dataIndex="answer" title={t.adminFaq.answer} ellipsis />
+                <Table.Column dataIndex="question" title={t.admin.adminFaq.question} />
+                <Table.Column dataIndex="answer" title={t.admin.adminFaq.answer} ellipsis />
                 <Table.Column
-                    title={t.adminFaq.feedback}
+                    title={t.admin.adminFaq.feedback}
                     render={(_, record: IFaq) => (
                         <Space size="large">
-                            <Tooltip title={`${record.helpfulCount || 0} ${t.adminFaq.helpful}`}>
+                            <Tooltip title={`${record.helpfulCount || 0} ${t.admin.adminFaq.helpful}`}>
                                 <span>
                                     <LikeOutlined style={{ color: "#52c41a", marginRight: 4 }} />
                                     {record.helpfulCount || 0}
                                 </span>
                             </Tooltip>
-                            <Tooltip title={`${record.unhelpfulCount || 0} ${t.adminFaq.notHelpful}`}>
+                            <Tooltip title={`${record.unhelpfulCount || 0} ${t.admin.adminFaq.notHelpful}`}>
                                 <span>
                                     <DislikeOutlined style={{ color: "#ff4d4f", marginRight: 4 }} />
                                     {record.unhelpfulCount || 0}
@@ -66,7 +66,7 @@ export const FaqList = () => {
                         </Space>
                     )}
                 />
-                <Table.Column dataIndex="order" title={t.adminFaq.order} width={80} sorter />
+                <Table.Column dataIndex="order" title={t.admin.adminFaq.order} width={80} sorter />
                 <Table.Column
                     title={t.tickets.actions}
                     dataIndex="actions"

@@ -14,24 +14,24 @@ export const FaqCreate = () => {
     };
 
     return (
-        <Create saveButtonProps={saveButtonProps} title={t.adminFaq.title}>
+        <Create saveButtonProps={saveButtonProps} title={t.admin.adminFaq.title}>
             <Form
                 {...formProps}
                 layout="vertical"
                 onFinish={handleOnFinish}
             >
                 <Form.Item
-                    label={t.adminFaq.question}
+                    label={t.admin.adminFaq.question}
                     name="question"
-                    rules={[{ required: true, message: t.adminFaq.validation.questionRequired }]}
+                    rules={[{ required: true, message: t.admin.adminFaq.validation.questionRequired }]}
                 >
                     <Input placeholder="e.g. How do I track my order?" />
                 </Form.Item>
 
                 <Form.Item
-                    label={t.adminFaq.answer}
+                    label={t.admin.adminFaq.answer}
                     name="answer"
-                    rules={[{ required: true, message: t.adminFaq.validation.answerRequired }]}
+                    rules={[{ required: true, message: t.admin.adminFaq.validation.answerRequired }]}
                 >
                     <Input.TextArea rows={4} placeholder="Enter the answer..." />
                 </Form.Item>
@@ -39,7 +39,7 @@ export const FaqCreate = () => {
                 <Form.Item
                     label={t.tickets.category}
                     name="category"
-                    rules={[{ required: true, message: t.adminFaq.validation.categoryRequired }]}
+                    rules={[{ required: true, message: t.admin.adminFaq.validation.categoryRequired }]}
                 >
                     <Select
                         showSearch
@@ -56,7 +56,7 @@ export const FaqCreate = () => {
                 </Form.Item>
 
                 <Form.Item
-                    label={t.adminFaq.order}
+                    label={t.admin.adminFaq.order}
                     name="order"
                     initialValue={0}
                 >

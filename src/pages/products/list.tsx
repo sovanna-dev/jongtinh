@@ -183,7 +183,7 @@ export const ProductList = () => {
                     }}
                 />
                 <Table.Column
-                    title={t.admin.orders.actions}
+                    title={t.adminOrders.actions}
                     dataIndex="actions"
                     render={(_, record: IProduct) => (
                         <Space>

@@ -38,7 +38,7 @@ export const CategoryList = () => {
                 />
                 <Table.Column dataIndex="productCount" title={t.admin.category.productCount} />
                 <Table.Column
-                    title={t.admin.orders.actions}
+                    title={t.adminOrders.actions}
                     dataIndex="actions"
                     render={(_, record: ICategory) => (
                         <Space>

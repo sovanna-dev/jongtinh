@@ -9,37 +9,37 @@ export const UserList = () => {
     const { tableProps } = useTable<IUser>();
 
     return (
-        <List title={t.users.title}>
+        <List title={t.admin.users.title}>
             <Table {...tableProps} rowKey="id">
                 <Table.Column
                     dataIndex="photoUrl"
-                    title={t.users.avatar}
+                    title={t.admin.users.avatar}
                     render={(value: string) => (
                         <Avatar src={value} icon={<UserOutlined />} />
                     )}
                 />
-                <Table.Column dataIndex="displayName" title={t.users.fullName} />
+                <Table.Column dataIndex="displayName" title={t.admin.users.fullName} />
                 <Table.Column
                     dataIndex="email"
-                    title={t.users.email}
+                    title={t.admin.users.email}
                     render={(value: string) => <EmailField value={value} />}
                 />
                 <Table.Column
                     dataIndex="isAdmin"
-                    title={t.users.role}
+                    title={t.admin.users.role}
                     render={(value: boolean) => (
                         <Tag color={value ? "red" : "blue"}>
-                            {value ? t.users.admin : t.users.user}
+                            {value ? t.admin.users.admin : t.admin.users.user}
                         </Tag>
                     )}
                 />
                 <Table.Column
                     dataIndex="createdAt"
-                    title={t.users.joinedAt}
+                    title={t.admin.users.joinedAt}
                     render={(value: number) => value ? new Date(value).toLocaleDateString() : "-"}
                 />
                 <Table.Column
-                    title={t.users.actions}
+                    title={t.admin.users.actions}
                     dataIndex="actions"
                     render={(_, record: IUser) => (
                         <Space>
