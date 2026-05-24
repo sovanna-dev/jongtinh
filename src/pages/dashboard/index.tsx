@@ -303,7 +303,7 @@ const ModernDashboard: React.FC = () => {
                                         borderRadius: 12, border: "none",
                                         boxShadow: "0 8px 24px rgba(0,0,0,0.12)",
                                     }}
-                                    formatter={(value: number) => [`$${value.toFixed(2)}`, "Revenue"]}
+                                   formatter={(value: any) => [`$${Number(value).toFixed(2)}`, "Revenue"]}
                                 />
                                 <Area
                                     type="monotone"
@@ -400,7 +400,7 @@ const ModernDashboard: React.FC = () => {
                                 />
                                 <ReTooltip
                                     contentStyle={{ borderRadius: 12, border: "none", boxShadow: "0 8px 24px rgba(0,0,0,0.12)" }}
-                                    formatter={(value: number) => [`$${value.toFixed(2)}`, "Revenue"]}
+                                    formatter={(value: any) => [`$${Number(value).toFixed(2)}`, "Revenue"]}
                                 />
                                 <Bar dataKey="revenue" fill={COLORS.primary} radius={[0, 6, 6, 0]} barSize={20} />
                             </BarChart>
