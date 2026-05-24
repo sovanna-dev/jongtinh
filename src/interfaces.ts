@@ -1,4 +1,5 @@
 // src/interfaces.ts
+
 export interface IPromotionBanner {
     id: string;
     title: string;
@@ -7,6 +8,12 @@ export interface IPromotionBanner {
     backgroundColor: string;
     actionUrl: string;
     isActive: boolean;
+    createdAt?: number;
+}
+
+export interface ISubCategory {
+    id: string;
+    name: string;
 }
 
 export interface ICategory {
@@ -14,25 +21,58 @@ export interface ICategory {
     name: string;
     icon: string;
     productCount: number;
+    subCategories: ISubCategory[];
+}
+
+export interface IProductVariant {
+    id: string;
+    name: string; // e.g., "iPhone 15 - Blue - 256GB"
+    attributes: Record<string, string>;
+    price: number;
+    stockQuantity: number;
+    images: string[];
+}
+
+export interface IProductAttribute {
+    key: string;
+    label: string;
+    value: string;
+    displayType: "TEXT" | "CHIP" | "COLOR" | "DROPDOWN";
+}
+
+export interface IProductColor {
+    name: string;
+    hex: string;
+    isSelected?: boolean;
 }
 
 export interface IProduct {
     id: string;
     name: string;
     nameLowercase: string;
+    brandLowercase: string;
     description: string;
     price: number;
     discountPrice?: number;
     images: string[];
     category: string;
+    subCategory?: string;
+    brand?: string;
     barcode: string;
     rating: number;
     reviewCount: number;
     stockQuantity: number;
     isAvailable: boolean;
-    colors: string[];
+    colors: IProductColor[];
     createdAt: number;
+    updatedAt: number;
     specifications: Record<string, string>;
+    attributes: IProductAttribute[];
+    filterTags: string[];
+    isFeatured: boolean;
+    variants?: IProductVariant[];
+    selectedColor?: string | IProductColor;
+    selectedSize?: string;
 }
 
 export type OrderStatus = "PENDING" | "PROCESSING" | "SHIPPING" | "DELIVERED" | "CANCELLED";
@@ -55,6 +95,8 @@ export interface ICartItem {
     quantity: number;
     userId: string;
     totalPrice: number;
+    selectedColor?: string | IProductColor;
+    selectedSize?: string;
 }
 
 export interface ITrackingStep {
@@ -78,6 +120,10 @@ export interface IOrder {
     createdAt: number;
     updatedAt: number;
     trackingSteps: ITrackingStep[];
+    paymentReceiptUrl?: string;
+    paymentStatus?: "pending" | "verified" | "rejected";
+    paymentVerifiedAt?: number;
+    paymentVerifiedBy?: string;
 }
 
 export interface IUser {
@@ -87,8 +133,19 @@ export interface IUser {
     profileImage?: string;
     photoUrl?: string;
     isAdmin: boolean;
+    role?: "super_admin" | "product_manager" | "order_manager" | "support_agent" | "viewer" | "customer";
     phoneNumber?: string;
     createdAt?: number;
+}
+
+export interface IFaq {
+    id: string;
+    question: string;
+    answer: string;
+    order: number;
+    category?: string;
+    helpfulCount?: number;
+    unhelpfulCount?: number;
 }
 
 export interface ISupportTicket {
@@ -106,6 +163,7 @@ export interface ISupportTicket {
     updatedAt: number;
 }
 
+
 export interface ITicketReply {
     id: string;
     userId: string;
@@ -119,7 +177,28 @@ export interface INotification {
     userId: string;
     title: string;
     message: string;
-    type: "INFO" | "ORDER" | "PROMO";
+    timestamp: number;         // Changed from 'createdAt' to match Android
+    type: string;              // "order", "promo", "general" (match Android)
     isRead: boolean;
-    createdAt: number;
+    destination?: string;      // Added
+    destinationId?: string;    // Added
+    imageUrl?: string;         // Added
+    targetEmail?: string;      // Added
+}
+
+export interface IStyle {
+    id: string;
+    name: string;
+    slug?: string;
+    title?: string;
+    description?: string;
+    bannerImage?: string;
+    gallery?: string[];
+    color: string;
+    image: string;
+    label: string;
+    isActive: boolean;
+    order?: number;
+    createdAt?: number;
+    updatedAt?: number;
 }

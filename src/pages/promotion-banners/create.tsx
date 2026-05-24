@@ -1,9 +1,10 @@
 import { Create, useForm } from "@refinedev/antd";
-import { Form, Input, Switch, ColorPicker } from "antd";
+import { Form, Input, Switch, ColorPicker, Divider } from "antd";
 import { IPromotionBanner } from "../../interfaces";
+import { CloudinaryUpload } from "../../components/CloudinaryUpload";
 
 export const BannerCreate = () => {
-    const { formProps, saveButtonProps, onFinish } = useForm<IPromotionBanner>();
+    const { formProps, saveButtonProps, onFinish, form } = useForm<IPromotionBanner>();
 
     const handleOnFinish = (values: any) => {
         onFinish({
@@ -37,13 +38,28 @@ export const BannerCreate = () => {
                 >
                     <Input />
                 </Form.Item>
+
+                <Divider orientation="left">Banner Image</Divider>
+
+                {/* Cloudinary Upload */}
+                <Form.Item label="Upload Banner Image">
+                    <CloudinaryUpload
+                        onUploadComplete={(url) => {
+                            form.setFieldValue("imageUrl", url);
+                            form.validateFields(["imageUrl"]);
+                        }}
+                    />
+                </Form.Item>
+
+                {/* Manual URL Input */}
                 <Form.Item
-                    label="Image URL"
+                    label="Or Paste Image URL"
                     name="imageUrl"
                     rules={[{ required: true, type: "url", message: "Please enter a valid image URL" }]}
                 >
                     <Input placeholder="https://example.com/banner.png" />
                 </Form.Item>
+
                 <Form.Item
                     label="Action URL (Deep link)"
                     name="actionUrl"
@@ -56,7 +72,7 @@ export const BannerCreate = () => {
                     name="backgroundColor"
                     initialValue="#FF6200"
                 >
-                     <ColorPicker showText />
+                    <ColorPicker showText />
                 </Form.Item>
                 <Form.Item
                     label="Is Active"

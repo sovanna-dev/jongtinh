@@ -1,7 +1,6 @@
 import {
     List,
     useTable,
-    TextField,
     DateField,
     DeleteButton,
 } from "@refinedev/antd";
@@ -14,7 +13,7 @@ export const NotificationList = () => {
         sorters: {
             initial: [
                 {
-                    field: "createdAt",
+                    field: "timestamp",  // ✅ Changed from "createdAt"
                     order: "desc",
                 },
             ],
@@ -29,9 +28,10 @@ export const NotificationList = () => {
                     title="Type"
                     render={(value) => {
                         let color = "blue";
-                        if (value === "PROMO") color = "green";
-                        if (value === "ORDER") color = "orange";
-                        return <Tag color={color}>{value}</Tag>;
+                        if (value === "promo") color = "green";
+                        if (value === "order") color = "orange";
+                        if (value === "general") color = "blue";
+                        return <Tag color={color}>{value?.toUpperCase()}</Tag>;
                     }}
                 />
                 <Table.Column dataIndex="title" title="Title" />
@@ -46,7 +46,12 @@ export const NotificationList = () => {
                     )}
                 />
                 <Table.Column
-                    dataIndex="createdAt"
+                    dataIndex="targetEmail"
+                    title="Target Email"
+                    render={(value) => value ? <Tag>{value}</Tag> : <Tag color="default">N/A</Tag>}
+                />
+                <Table.Column
+                    dataIndex="timestamp"
                     title="Sent At"
                     render={(value) => <DateField value={value} format="LLL" />}
                 />

@@ -1,9 +1,11 @@
 import { Edit, useForm } from "@refinedev/antd";
-import { Form, Input, Switch, ColorPicker } from "antd";
+import { Form, Input, Switch, ColorPicker, Divider, Image, Space } from "antd";
 import { IPromotionBanner } from "../../interfaces";
+import { CloudinaryUpload } from "../../components/CloudinaryUpload";
 
 export const BannerEdit = () => {
-    const { formProps, saveButtonProps, onFinish } = useForm<IPromotionBanner>();
+    const { formProps, saveButtonProps, onFinish, form, query } = useForm<IPromotionBanner>();
+    const bannerData = query?.data?.data;
 
     const handleOnFinish = (values: any) => {
         onFinish({
@@ -36,13 +38,42 @@ export const BannerEdit = () => {
                 >
                     <Input />
                 </Form.Item>
+
+                <Divider orientation="left">Banner Image</Divider>
+
+                {/* Current Image Preview */}
+                {bannerData?.imageUrl && (
+                    <Form.Item label="Current Image">
+                        <Space direction="vertical">
+                            <Image
+                                src={bannerData.imageUrl}
+                                width={200}
+                                fallback="https://via.placeholder.com/200x100?text=No+Image"
+                                style={{ borderRadius: 8 }}
+                            />
+                        </Space>
+                    </Form.Item>
+                )}
+
+                {/* Cloudinary Upload */}
+                <Form.Item label="Upload New Banner Image">
+                    <CloudinaryUpload
+                        onUploadComplete={(url) => {
+                            form.setFieldValue("imageUrl", url);
+                            form.validateFields(["imageUrl"]);
+                        }}
+                    />
+                </Form.Item>
+
+                {/* Manual URL Input */}
                 <Form.Item
-                    label="Image URL"
+                    label="Or Update Image URL"
                     name="imageUrl"
                     rules={[{ required: true, type: "url", message: "Please enter a valid image URL" }]}
                 >
                     <Input placeholder="https://example.com/banner.png" />
                 </Form.Item>
+
                 <Form.Item
                     label="Action URL (Deep link)"
                     name="actionUrl"
@@ -54,7 +85,7 @@ export const BannerEdit = () => {
                     label="Background Color"
                     name="backgroundColor"
                 >
-                     <ColorPicker showText />
+                    <ColorPicker showText />
                 </Form.Item>
                 <Form.Item
                     label="Is Active"

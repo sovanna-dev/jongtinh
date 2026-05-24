@@ -7,7 +7,7 @@ export const NotificationCreate = () => {
 
     const { selectProps: userSelectProps } = useSelect<IUser>({
         resource: "users",
-        optionLabel: "fullName",
+        optionLabel: "displayName",
     });
 
     const handleOnFinish = (values: any) => {
@@ -16,7 +16,7 @@ export const NotificationCreate = () => {
             ...rest,
             userId: targetType === "all" ? "all" : values.userId,
             isRead: false,
-            createdAt: Date.now(),
+            timestamp: Date.now(),
         });
     };
 
