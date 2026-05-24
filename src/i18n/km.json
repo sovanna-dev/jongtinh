@@ -430,9 +430,15 @@
   },
   "tickets": {
     "title": "សំបុត្រគាំទ្រ",
+    "createTicket": "បង្កើតសំបុត្រគាំទ្រ",
+    "noTickets": "រកមិនឃើញសំបុត្រគាំទ្រទេ",
     "ticketDetails": "ព័ត៌មានលម្អិតនៃសំបុត្រ",
     "subject": "ប្រធានបទ",
+    "subjectRequired": "សូមបញ្ចូលប្រធានបទ",
     "message": "សារ",
+    "messageLabel": "ការពិពណ៌នា",
+    "messageRequired": "សូមរៀបរាប់ពីបញ្ហារបស់អ្នក",
+    "submit": "បញ្ជូនសំបុត្រ",
     "category": "ប្រភេទ",
     "categoryLabel": "ប្រភេទជំនួយ",
     "categories": {
@@ -473,6 +479,7 @@
     "createdAt": "បង្កើតនៅថ្ងៃទី",
     "actions": "សកម្មភាព",
     "messages": {
+      "created": "បានបង្កើតសំបុត្រគាំទ្រដោយជោគជ័យ",
       "loginToReply": "អ្នកត្រូវតែចូលគណនីដើម្បីឆ្លើយតប",
       "replySent": "ផ្ញើការឆ្លើយតបបានជោគជ័យ",
       "botTriggered": "បានដំណើរការការវិភាគដោយ Bot",

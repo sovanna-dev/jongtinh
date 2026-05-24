@@ -429,9 +429,15 @@
   },
   "tickets": {
     "title": "Support Tickets",
+    "createTicket": "Create Support Ticket",
+    "noTickets": "No tickets found",
     "ticketDetails": "Ticket Details",
     "subject": "Subject",
+    "subjectRequired": "Please enter a subject",
     "message": "Message",
+    "messageLabel": "Description",
+    "messageRequired": "Please describe your issue",
+    "submit": "Submit Ticket",
     "category": "Category",
     "categoryLabel": "Support Category",
     "categories": {
@@ -472,6 +478,7 @@
     "createdAt": "Created At",
     "actions": "Actions",
     "messages": {
+      "created": "Ticket created successfully",
       "loginToReply": "You must be logged in to reply",
       "replySent": "Reply sent successfully",
       "botTriggered": "Bot analysis triggered",

@@ -103,7 +103,7 @@ export const OrderEdit = () => {
 
                         <Divider />
 
-                        <Text strong style={{ block: "block", marginBottom: 8 }}>
+                        <Text strong style={{ display: "block", marginBottom: 8 }}>
                             {t.admin.orders.paymentVerification.steps.title}
                         </Text>
                         <ol style={{ marginBottom: 16, paddingLeft: 20 }}>

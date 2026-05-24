@@ -20,6 +20,7 @@ export const ProfilePage: React.FC = () => {
     const [profile, setProfile] = useState<UserProfile | null>(null);
     const [notifications, setNotifications] = useState<INotification[]>([]);
     const [tickets, setTickets] = useState<ISupportTicket[]>([]);
+    const [orders, setOrders] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [editModalOpen, setEditModalOpen] = useState(false);
     const [createTicketModalOpen, setCreateTicketModalOpen] = useState(false);
@@ -78,9 +79,25 @@ export const ProfilePage: React.FC = () => {
             setTickets(data);
         });
 
+        // Orders listener
+        const qOrders = query(
+            collection(db, "orders"),
+            where("userId", "==", user.uid),
+            orderBy("createdAt", "desc")
+        );
+
+        const unsubscribeOrders = onSnapshot(qOrders, (snapshot) => {
+            const data = snapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data()
+            } as any));
+            setOrders(data);
+        });
+
         return () => {
             unsubscribeNotif();
             unsubscribeTickets();
+            unsubscribeOrders();
         };
     }, [user]);
 
@@ -95,6 +112,7 @@ export const ProfilePage: React.FC = () => {
                 subject: values.subject,
                 message: values.message,
                 category: values.category || "General",
+                orderId: values.orderId || null,
                 status: "OPEN",
                 priority: "MEDIUM",
                 createdAt: Date.now(),
@@ -355,6 +373,18 @@ export const ProfilePage: React.FC = () => {
                             <Select.Option value="delivery">{t.tickets?.categories?.delivery || "Delivery"}</Select.Option>
                             <Select.Option value="refund">{t.tickets?.categories?.refund || "Returns & Refunds"}</Select.Option>
                             <Select.Option value="general">{t.tickets?.categories?.general || "General Inquiry"}</Select.Option>
+                        </Select>
+                    </Form.Item>
+                    <Form.Item
+                        name="orderId"
+                        label={t.tickets?.orderLabel || "Related Order (Optional)"}
+                    >
+                        <Select placeholder="Select an order" allowClear>
+                            {orders.map(order => (
+                                <Select.Option key={order.id} value={order.orderId}>
+                                    #{order.orderId} - {new Date(order.createdAt).toLocaleDateString()} ({order.orderStatus})
+                                </Select.Option>
+                            ))}
                         </Select>
                     </Form.Item>
                     <Form.Item

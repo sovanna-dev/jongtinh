@@ -42,7 +42,7 @@ export const TicketDetailPage: React.FC = () => {
                         navigate("/shop/profile");
                         return;
                     }
-                    setTicket({ id: docSnap.id, ...data });
+                    setTicket({ ...data, id: docSnap.id });
                 } else {
                     message.error(t.tickets.messages.notFound || "Ticket not found");
                     navigate("/shop/profile");
@@ -144,6 +144,13 @@ export const TicketDetailPage: React.FC = () => {
                     <Paragraph style={{ fontSize: 16, color: "#555" }}>
                         {ticket?.message}
                     </Paragraph>
+                    {ticket?.orderId && (
+                        <div style={{ marginTop: 8 }}>
+                            <Tag color="purple" style={{ cursor: 'pointer' }} onClick={() => navigate(`/shop/order/${ticket.orderId}`)}>
+                                {t.tickets.relatedOrder}: #{ticket.orderId}
+                            </Tag>
+                        </div>
+                    )}
                     <div style={{ marginTop: 16 }}>
                         <Text type="secondary" style={{ fontSize: 12 }}>
                             {t.tickets.category}: {ticket?.category} • {new Date(ticket?.createdAt || 0).toLocaleString(language === 'km' ? 'km-KH' : 'en-US')}
