@@ -3,7 +3,7 @@ import { defineConfig } from "vite";
 
 export default defineConfig(({ command }) => ({
   plugins: [react()],
-  base: command === 'serve' ? '/' : '/-JongTinh-admin/',
+  base: command === 'serve' ? '/' : '/jongtinh/',
   server: {
     host: true,
     port: 5173,

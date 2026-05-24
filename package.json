@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "homepage": "https://sovanna-dev.github.io/JongTinh-admin",
+  "homepage": "https://sovanna-dev.github.io/jongtinh",
   "dependencies": {
     "@ant-design/icons": "^5.5.1",
     "@refinedev/antd": "^6.0.1",
